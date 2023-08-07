@@ -1,0 +1,191 @@
+package com.muhammaddaffa.nextgens.database;
+
+import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
+import com.muhammaddaffa.nextgens.utils.LocationSerializer;
+import com.muhammaddaffa.nextgens.utils.Logger;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.Bukkit;
+import org.bukkit.util.Consumer;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+
+public class DatabaseManager {
+
+    public static final String GENERATOR_TABLE = "nextgens_generator";
+    public static final String USER_TABLE = "nextgens_user";
+
+    private HikariDataSource dataSource;
+    private Connection connection;
+
+    public void connect() {
+        // database path
+        String path = "plugins/NextGens/generators.db";
+        // create the hikari config
+        HikariConfig config = new HikariConfig();
+        config.setConnectionTestQuery("SELECT 1");
+        config.setDriverClassName("org.sqlite.JDBC");
+        config.setJdbcUrl("jdbc:sqlite:" + path);
+        config.setPoolName("NextGens Generators Pool");
+        config.setMaximumPoolSize(1);
+        config.setConnectionTimeout(10000);
+        config.setIdleTimeout(600000);
+        config.setLeakDetectionThreshold(10000);
+
+        Logger.info("Trying to connect to the SQLite database...");
+        // create the file if it's not exist
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            this.dataSource = new HikariDataSource(config);
+            Logger.info("Successfully established connection with SQLite database!");
+        } catch (IOException ex) {
+            Logger.severe("Failed to create the database file, stopping the server!");
+            Bukkit.getPluginManager().disablePlugin(NextGens.getInstance());
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void createGeneratorTable() {
+        this.executeUpdate("CREATE TABLE IF NOT EXISTS " + GENERATOR_TABLE + " (" +
+                "owner VARCHAR(255), " +
+                "location TEXT UNIQUE, " +
+                "generator_id TEXT, " +
+                "timer DECIMAL(18,2), " +
+                "is_corrupted INT" +
+                ");");
+    }
+
+    public void createUserTable() {
+        this.executeUpdate("CREATE TABLE IF NOT EXISTS " + USER_TABLE + " (" +
+                "uuid VARCHAR(255) UNIQUE, " +
+                "bonus INT" +
+                ");");
+    }
+
+    public void deleteGenerator(ActiveGenerator active) {
+        String query = "DELETE FROM " + GENERATOR_TABLE + " WHERE location=?;";
+        this.buildStatement(query, statement -> {
+            statement.setString(1, LocationSerializer.serialize(active.getLocation()));
+
+            statement.executeUpdate();
+        });
+    }
+
+    public void saveGenerator(ActiveGenerator active) {
+        String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
+        this.buildStatement(query, statement -> {
+            statement.setString(1, active.getOwner().toString());
+            statement.setString(2, LocationSerializer.serialize(active.getLocation()));
+            statement.setString(3, active.getGenerator().id());
+            statement.setDouble(4, active.getTimer());
+            statement.setBoolean(5, active.isCorrupted());
+
+            statement.executeUpdate();
+        });
+    }
+
+    public void saveGenerator(Collection<ActiveGenerator> activeGenerators) {
+        try (Connection connection = this.getConnection()) {
+            String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
+
+            for (ActiveGenerator active : activeGenerators) {
+                try (PreparedStatement statement = connection.prepareStatement(query)) {
+                    statement.setString(1, active.getOwner().toString());
+                    statement.setString(2, LocationSerializer.serialize(active.getLocation()));
+                    statement.setString(3, active.getGenerator().id());
+                    statement.setDouble(4, active.getTimer());
+                    statement.setBoolean(5, active.isCorrupted());
+
+                    statement.executeUpdate();
+                }
+            }
+
+            // send log message
+            Logger.info("Successfully saved " + activeGenerators.size() + " active generators!");
+
+        } catch (SQLException ex) {
+            Logger.severe("Failed to save all generators!");
+            ex.printStackTrace();
+        }
+    }
+
+    public void executeUpdate(String statement) {
+        this.executeUpdate(statement, error -> {
+            Logger.severe("An error occurred while running statement: " + statement);
+            error.printStackTrace();
+        });
+    }
+
+    public void executeUpdate(String statement, Consumer<SQLException> onFailure) {
+        try (Connection connection = this.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(statement)) {
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            onFailure.accept(ex);
+        }
+    }
+
+    public void executeQuery(String statement, QueryConsumer<ResultSet> callback) {
+        this.executeQuery(statement, callback, error -> {
+            Logger.severe("An error occurred while running query: " + statement);
+            error.printStackTrace();
+        });
+    }
+
+    public void executeQuery(String statement, QueryConsumer<ResultSet> callback, Consumer<SQLException> onFailure) {
+        try (Connection connection = this.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(statement);
+                ResultSet result = preparedStatement.executeQuery()) {
+
+            callback.accept(result);
+        } catch (SQLException ex) {
+            onFailure.accept(ex);
+        }
+    }
+
+    public void buildStatement(String query, QueryConsumer<PreparedStatement> consumer) {
+        this.buildStatement(query, consumer, error -> {
+            Logger.severe("An error occurred while building statement: " + query);
+            error.printStackTrace();
+        });
+    }
+
+    public void buildStatement(String query, QueryConsumer<PreparedStatement> consumer, Consumer<SQLException> onFailure) {
+        try (Connection connection = this.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            consumer.accept(preparedStatement);
+        } catch (SQLException ex) {
+            onFailure.accept(ex);
+        }
+    }
+
+    public Connection getConnection() throws SQLException {
+        if (this.connection == null || this.connection.isClosed()) {
+            this.connection = this.dataSource.getConnection();
+        }
+        return this.connection;
+    }
+
+    public void close() {
+        this.dataSource.close();
+    }
+
+    public interface QueryConsumer<T> {
+
+        void accept(T value) throws SQLException;
+
+    }
+
+}
