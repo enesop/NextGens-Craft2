@@ -63,8 +63,12 @@ public class UpgradeInventory extends SimpleInventory {
                 .placeholder(new Placeholder()
                         .add("{current}", this.generator.displayName())
                         .add("{speed}", this.generator.interval())
+                        .add("{corruption}", Common.digits(this.generator.corruptChance()))
+                        .add("{repair}", Common.digits(this.generator.fixCost()))
                         .add("{next}", this.nextGenerator.displayName())
                         .add("{next_speed}", this.nextGenerator.interval())
+                        .add("{next_corruption}", Common.digits(this.nextGenerator.corruptChance()))
+                        .add("{next_repair}", Common.digits(this.nextGenerator.fixCost()))
                         .add("{cost}", Common.digits(this.generator.cost()))
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
 
@@ -121,8 +125,12 @@ public class UpgradeInventory extends SimpleInventory {
                 .placeholder(new Placeholder()
                         .add("{current}", this.generator.displayName())
                         .add("{speed}", this.generator.interval())
+                        .add("{corruption}", Common.digits(this.generator.corruptChance()))
+                        .add("{repair}", Common.digits(this.generator.fixCost()))
                         .add("{next}", this.nextGenerator.displayName())
                         .add("{next_speed}", this.nextGenerator.interval())
+                        .add("{next_corruption}", Common.digits(this.nextGenerator.corruptChance()))
+                        .add("{next_repair}", Common.digits(this.nextGenerator.fixCost()))
                         .add("{cost}", Common.digits(this.generator.cost()))
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
 
