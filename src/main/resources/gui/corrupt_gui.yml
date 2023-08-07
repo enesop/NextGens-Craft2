@@ -9,11 +9,13 @@ display-enough-money:
   glowing: false
   custom-model-data: 0
   lore:
-    - "&7Current Generator: {current}"
-    - "&7Reason: &cPower Outages"
-    - "&7--------------------"
-    - "&7Repair Cost: &a${cost}"
-    - "&7You have: &a${balance}"
+    - "&f&m--------------------"
+    - "&8Current Generator: {current}"
+    - "&8Reason: &cPower Outages"
+    - "&f&m--------------------"
+    - "&8Repair Cost: &a${cost}"
+    - "&8You have: &a${balance}"
+    - "&7"
     - "&a> Click to repair <"
 
 # Item that will be shown when player doesn't have enough money to upgrade the generator
@@ -22,11 +24,13 @@ display-no-money:
   glowing: false
   custom-model-data: 0
   lore:
+    - "&f&m--------------------"
     - "&7Current Generator: {current}"
     - "&7Reason: &cPower Outages"
-    - "&7--------------------"
-    - "&7Repair Cost: &a${cost}"
-    - "&7You have: &a${balance}"
+    - "&f&m--------------------"
+    - "&8Repair Cost: &a${cost}"
+    - "&8You have: &a${balance}"
+    - "&7"
     - "&c> You cannot afford <"
 
 # The slots for confirm button

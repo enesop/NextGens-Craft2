@@ -6,34 +6,46 @@ size: 27
 display-slots: [13]
 # Item that will be shown when player have enough money to upgrade the generator
 display-enough-money:
-  display-name: "&eInformation"
+  display-name: "&e&lInformation"
   glowing: false
   custom-model-data: 0
   lore:
-    - "&7Current Generator: {current}"
-    - "&7Speed: &e{speed}s"
-    - "&7--------------------"
-    - "&7Next Generator: {next}"
-    - "&7Speed: &e{next_speed}s"
-    - "&7--------------------"
-    - "&7Upgrade Cost: &a${cost}"
-    - "&7You have: &a${balance}"
+    - "&f&m--------------------"
+    - "&8Current Generator: {current}"
+    - "&8Speed: &f{speed}s"
+    - "&8Corruption chance: &f{corruption}%"
+    - "&8Repair cost: &a${repair}"
+    - "&f&m--------------------"
+    - "&8Next Generator: {next}"
+    - "&8Speed: &f{next_speed}s"
+    - "&8Corruption chance: &f{next_corruption}%"
+    - "&8Repair cost: &a${next_repair}"
+    - "&f&m--------------------"
+    - "&8Upgrade Cost: &a${cost}"
+    - "&8You have: &a${balance}"
+    - "&7"
     - "&a> Click to upgrade <"
 
 # Item that will be shown when player doesn't have enough money to upgrade the generator
 display-no-money:
-  display-name: "&cInformation"
+  display-name: "&c&lInformation"
   glowing: false
   custom-model-data: 0
   lore:
-    - "&7Current Generator: {current}"
-    - "&7Speed: &e{speed}s"
-    - "&7--------------------"
-    - "&7Next Generator: {next}"
-    - "&7Speed: &e{next_speed}s"
-    - "&7--------------------"
-    - "&7Upgrade Cost: &a${cost}"
-    - "&7You have: &a${balance}"
+    - "&f&m--------------------"
+    - "&8Current Generator: {current}"
+    - "&8Speed: &f{speed}s"
+    - "&8Corruption chance: &f{corruption}%"
+    - "&8Repair cost: &a${repair}"
+    - "&f&m--------------------"
+    - "&8Next Generator: {next}"
+    - "&8Speed: &f{next_speed}s"
+    - "&8Corruption chance: &f{next_corruption}%"
+    - "&8Repair cost: &a${next_repair}"
+    - "&f&m--------------------"
+    - "&8Upgrade Cost: &a${cost}"
+    - "&8You have: &a${balance}"
+    - "&7"
     - "&c> You cannot afford <"
 
 # Item that will be shown if generator has no upgrades
@@ -43,7 +55,11 @@ no-upgrade-button:
   glowing: false
   custom-model-data: 0
   lore:
+    - "&7"
     - "&7This generator cannot be upgraded anymore!"
+    - "&7"
+    - "&7Get more generators in &f&n/genshop!"
+    - "&7"
 
 # The slots for confirm button
 confirm-slots: [4, 5, 6, 7, 8, 14, 15, 16, 17, 23, 24, 25, 26]
