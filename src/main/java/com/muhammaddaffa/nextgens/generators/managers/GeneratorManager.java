@@ -224,13 +224,21 @@ public class GeneratorManager {
                     this.loadGenerators(YamlConfiguration.loadConfiguration(file));
                 }
             }
+            // load generator from 'generators.yml'
+            this.loadGenerators(Config.GENERATORS.getConfig());
+            // send log message
+            Logger.info("Successfully loaded " + this.generatorMap.size() + " generators!");
         } else {
             directory.mkdirs();
+            // generate default files
+            Logger.info("Creating default files for per-file generators system...");
+            NextGens.getInstance().saveResource("generators/elemental_generators.yml", true);
+            Logger.info("Successfully created 'generators/elemental_generators.yml' file");
+            NextGens.getInstance().saveResource("generators/orion_generators.yml", true);
+            Logger.info("Successfully created 'generators/orion_generators.yml' file");
+            // load back the generator
+            this.loadGenerators();
         }
-        // load generator from 'generators.yml'
-        this.loadGenerators(Config.GENERATORS.getConfig());
-        // send log message
-        Logger.info("Successfully loaded " + this.generatorMap.size() + " generators!");
     }
 
     private void loadGenerators(FileConfiguration config) {
