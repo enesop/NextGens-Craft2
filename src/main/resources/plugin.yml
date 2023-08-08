@@ -15,5 +15,6 @@ commands:
     aliases: [gens, gen, ngens, ngen]
   sell:
   genshop:
+    aliases: [gensshop]
   pickupgens:
     aliases: [pickupgen]

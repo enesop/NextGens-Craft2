@@ -99,8 +99,13 @@ blacklisted-worlds:
 # Should we give generator to player who just joined the server?
 first-join-generator:
   enabled: true
+  # The generator id that will be given
   generator: wheat_generator
+  # The amount of generator
   amount: 3
+  # List of commands that will be executed
+  commands:
+    - "eco give {player} 500"
 
 # List of options available for /sell commands
 sell-options:
@@ -221,12 +226,16 @@ messages:
   gens-repaired: '&6[NextGens] &aAll of your broken generators have been repaired!'
   pickup-gens: '&6[NextGens] &aYou have picked up &e{amount} &agenerators!'
   force-pickup: '&6[NextGens] &aYou have forced pickup &e{amount} &agenerators for &e{player}'
-  player-pickup: '&6[NextGens] &aYour generators have been forced pickup! &7(Total:
-    {amount})'
+  player-pickup: '&6[NextGens] &aYour generators have been forced pickup! &7(Total: {amount})'
+  give-all: '&6[NextGens] &aYou have given everyone online &e{amount}x {gen}'
   help:
     - '&6&lNextGens &7- by aglerr'
-    - '&6/genshop &7- open up the generator shop gui'
-    - '&6/gens give <player> <generator> <player> &7- give generator to player'
+    - '&6/genshop [player] &7- open up the generator shop gui'
+    - '&6/pickupgens [player] &7- pickup all of specific player generators'
+    - '&6/sell [player] &7- sell player''s inventory contents'
+    - '&6/gens give <player> <generator> <amount> &7- give generator to player'
+    - '&6/gens giveall <generator> <amount> &7- give generator to online players'
     - '&6/gens addmax/removemax <player> <amount> &7- add/remove bonus max generator'
     - '&6/gens clearmax <player|all> &7- clear the bonus max generator'
+    - '&6/gens repair <player|all> &7- repair broken generator for specific players or globally'
     - '&6/gens reload &7- reload the configuration'

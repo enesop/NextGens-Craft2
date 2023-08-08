@@ -36,6 +36,7 @@ public record MainCommand(
             // add suggestion for admin commands
             if (sender.hasPermission("nextgens.admin")) {
                 suggestions.add("give");
+                suggestions.add("giveall");
                 suggestions.add("reload");
                 suggestions.add("addmax");
                 suggestions.add("removemax");
@@ -51,13 +52,18 @@ public record MainCommand(
                 return null;
             }
 
+            if (args.length == 2 && args[0].equalsIgnoreCase("giveall")) {
+                return StringUtil.copyPartialMatches(args[2], this.generatorManager
+                        .getGeneratorIDs().stream().toList(), new ArrayList<>());
+            }
+
             // suggestions for args.length == 3
             if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("give")) {
                     return StringUtil.copyPartialMatches(args[2], this.generatorManager
                             .getGeneratorIDs().stream().toList(), new ArrayList<>());
                 }
-                if (List.of("addmax", "removemax").contains(args[0].toLowerCase())) {
+                if (List.of("addmax", "removemax", "giveall").contains(args[0].toLowerCase())) {
                     return List.of("<amount>");
                 }
             }
@@ -76,6 +82,11 @@ public record MainCommand(
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
 
+        if (!sender.hasPermission("nextgens.admin")) {
+            Common.config(sender, "messages.no-permission");
+            return true;
+        }
+
         if (args.length == 0) {
             Common.config(sender, "messages.help");
             return true;
@@ -87,6 +98,7 @@ public record MainCommand(
             case "removemax" -> this.removeMax(sender, args);
             case "resetmax" -> this.resetMax(sender, args);
             case "repair" -> this.repair(sender, args);
+            case "giveall" -> this.giveAll(sender, args);
             case "reload" -> this.reload(sender);
             default -> Common.config(sender, "messages.help");
         }
@@ -260,6 +272,42 @@ public record MainCommand(
                 .add("{player}", player.getName()));
         // send message to the player
         Common.config(player, "messages.gens-repaired");
+    }
+
+    private void giveAll(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nextgens.admin")) {
+            Common.config(sender, "messages.no-permission");
+            return;
+        }
+        // gens giveall <player>
+        if (args.length < 3) {
+            Common.sendMessage(sender, "&cUsage: /gens giveall <generator> <amount>");
+            return;
+        }
+        Generator generator = this.generatorManager.getGenerator(args[1]);
+        if (generator == null) {
+            Common.config(sender, "messages.invalid-gen");
+            return;
+        }
+        int amount = 1;
+        if (args.length >= 4 && Common.isInt(args[2])) {
+            amount = Integer.parseInt(args[2]);
+        }
+        amount = Math.max(1, amount);
+        // send message to command sender
+        Common.config(sender, "messages.give-all", new Placeholder()
+                .add("{amount}", Common.digits(amount))
+                .add("{gen}", generator.displayName()));
+        // loop online players
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            // actually give the generator
+            Common.addInventoryItem(player, generator.createItem(amount));
+            // send message to the receiver
+            Common.config(player, "messages.receive-gen", new Placeholder()
+                    .add("{amount}", Common.digits(amount))
+                    .add("{gen}", generator.displayName()));
+        }
+
     }
 
     private void reload(CommandSender sender) {

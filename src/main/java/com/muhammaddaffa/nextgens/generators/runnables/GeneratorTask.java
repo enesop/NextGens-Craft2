@@ -33,7 +33,7 @@ public class GeneratorTask extends BukkitRunnable {
     }
 
     public static void flush() {
-        if (runnable == null) {
+        if (runnable == null || Bukkit.getPluginManager().getPlugin("HolographicDisplays") != null) {
             return;
         }
         runnable.clearHologram();

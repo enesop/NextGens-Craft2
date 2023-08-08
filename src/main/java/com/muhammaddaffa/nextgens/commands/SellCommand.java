@@ -40,7 +40,7 @@ public record SellCommand(
             this.sell(player);
         }
 
-        if (args.length == 1 && sender.hasPermission("nextgens.admin")) {
+        if (args.length == 1 && sender.hasPermission("nextgens.sell.others")) {
             Player player = Bukkit.getPlayer(args[0]);
             if (player == null) {
                 Common.config(sender, "messages.target-not-found");
