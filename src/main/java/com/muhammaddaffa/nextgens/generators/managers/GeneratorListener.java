@@ -241,13 +241,15 @@ public record GeneratorListener(
             }
             // get the generator
             Generator generator = this.generatorManager.getGenerator(config.getString("first-join-generator.generator"));
-            // if generator is invalid, skip it
-            if (generator == null) {
-                return;
+            // give the generator to the player
+            if (generator != null) {
+                ItemStack stack = generator.createItem(config.getInt("first-join-generator.amount", 1));
+                Common.addInventoryItem(player, stack);
             }
-            // give player the generator
-            ItemStack stack = generator.createItem(config.getInt("first-join-generator.amount", 1));
-            Common.addInventoryItem(player, stack);
+            // execute the commands
+            for (String command : config.getStringList("first-join-generator.commands")) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{player}", player.getName()));
+            }
         }
     }
 
