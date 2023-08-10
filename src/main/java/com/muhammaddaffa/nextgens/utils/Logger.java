@@ -22,4 +22,10 @@ public class Logger {
         }
     }
 
+    public static void finest(String... messages) {
+        for (String message : messages) {
+            NextGens.getInstance().getLogger().finest(message);
+        }
+    }
+
 }
