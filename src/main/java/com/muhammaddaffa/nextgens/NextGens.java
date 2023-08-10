@@ -19,6 +19,7 @@ import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.Config;
 import com.muhammaddaffa.nextgens.utils.Executor;
 import com.muhammaddaffa.nextgens.utils.Logger;
+import com.muhammaddaffa.nextgens.utils.UpdateChecker;
 import com.muhammaddaffa.nextgens.utils.gui.SimpleInventoryManager;
 import com.tchristofferson.configupdater.ConfigUpdater;
 import org.bstats.bukkit.Metrics;
@@ -36,6 +37,8 @@ import java.util.ArrayList;
 public final class NextGens extends JavaPlugin {
 
     private static final int BSTATS_ID = 19417;
+    private static final int SPIGOT_ID = 111857;
+    private static final int BUILTBYBIT_ID = 30903;
 
     private static NextGens instance;
     public static NamespacedKey generator_id;
@@ -95,6 +98,8 @@ public final class NextGens extends JavaPlugin {
         this.registerTask();
         // register hook
         this.registerHook();
+        // update checker
+        this.updateCheck();
     }
 
     @Override
@@ -203,7 +208,40 @@ public final class NextGens extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("hook_shopguiplus", () -> this.yesOrNo(config.getBoolean("sell-options.hook_shopguiplus"))));
         metrics.addCustomChart(new SimplePie("drop_on_break", () -> this.yesOrNo(config.getBoolean("drop-on-break"))));
         metrics.addCustomChart(new SimplePie("broken_pickup", () -> this.yesOrNo(config.getBoolean("broken-pickup"))));
+    }
 
+    private void updateCheck(){
+        Executor.async(() -> {
+            UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, exception) -> {
+                if (result.requiresUpdate()) {
+                    Logger.info(
+                            "&r----------------------------------------------------------------",
+                            String.format("&rAn update is available! NextGens %s may be downloaded on SpigotMC", result.getNewestVersion()),
+                            String.format("&b* &cCurrent Version: %s", this.getDescription().getVersion()),
+                            String.format("&b* &aLatest Version: %s", result.getNewestVersion()),
+                            " ",
+                            "&rUpdate the plugin at:",
+                            "&rSpigotMC: https://www.spigotmc.org/resources/111857/",
+                            "&rBuiltByBit: https://builtbybit.com/resources/30903/",
+                            "&r----------------------------------------------------------------"
+                    );
+                    return;
+                }
+
+                if (result.getReason() == UpdateChecker.UpdateReason.UP_TO_DATE) {
+                    Logger.info(String.format("&aYour version of NextGens (%s) is up to date!", result.getNewestVersion()));
+                } else if (result.getReason() == UpdateChecker.UpdateReason.UNRELEASED_VERSION) {
+                    Logger.info(
+                            "&r----------------------------------------------------------------",
+                            String.format("&eYour version of NextGens (%s) is more recent than the", result.getNewestVersion()),
+                            "&eone publicly available. Are you on development build?",
+                            "&r----------------------------------------------------------------"
+                    );
+                } else {
+                    this.getLogger().warning("Could not check for a new version of NextGens. Reason: " + result.getReason());
+                }
+            });
+        });
     }
 
     private String yesOrNo(boolean status) {
