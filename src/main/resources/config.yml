@@ -63,6 +63,8 @@ corruption:
     - disabled_generator
     - unbreakable_generator
 
+# Should we use and override /sell command?
+sell-command: true
 # Should we use permission to place specific generator?
 # The permission will be 'nextgens.generator.<id>'
 place-permission: false
@@ -90,11 +92,49 @@ close-on-no-money: false
 drop-on-break: false
 # Should /pickupgens pickup broken generator?
 broken-pickup: true
+# Should a broken generator can only be repaired by the owner of the generator?
+repair-owner-only: true
+# Should generator require to have some distance from each other?
+# Note: this feature is not recommended especially if there are a lot of generators in your server!
+generator-place-distance:
+  enabled: false
+  distance: 3
 # Player will not be able to place generators on this world
 # and generators that are already on this world will not work
 blacklisted-worlds:
   - disablegen
   - notagenworld
+
+# Configuration options for sellwand
+sellwand:
+  hooks:
+    # Should we hook with wild tools?
+    wildtools: true
+  # The text that will be used for unlimited uses
+  unlimited-placeholder: "Unlimited"
+  # The sellwand item configuration
+  item:
+    material: STICK
+    display-name: "&e&lSellwand &7(Right Click)"
+    custom-model-data: 0
+    flags:
+      - "HIDE_ATTRIBUTES"
+      - "HIDE_ENCHANTS"
+    enchantments:
+      - "DURABILITY;1"
+    lore:
+      - "&7Use this item to sell the contents"
+      - "&7of a chest in one go!"
+      - "&7"
+      - "&6&l*&e&l*&6&l* Information *&e&l*&6&l*"
+      - "&7Multiplier: &f{multiplier}x"
+      - "&7Uses: &f{uses} uses"
+      - "&7"
+      - "&6&l*&e&l*&6&l* Statistics *&e&l*&6&l*"
+      - "&7Total Earned: &a${total_sold}"
+      - "&7Total Items: &a{total_items} items"
+      - "&7"
+      - "&7Right-click on a container to use!"
 
 # Should we give generator to player who just joined the server?
 first-join-generator:
@@ -216,7 +256,7 @@ messages:
   global-reset: '&6[NextGens] &aYou have reset bonus generators for all players!'
   reset-max: '&6[NextGens] &aYou have reset &e{player} &agenerator bonus max'
   max-resetted: '&6[NextGens] &cYour generators bonus max has been reset &7({current}/{max})'
-  no-sell: '&6[NextGens] &cYou don''t have anything to sell!'
+  no-sell: '&6[NextGens] &cThere are no items to be sold!'
   no-permission-gen: '&6[NextGens] &cYou are not allowed to place this {gen}!'
   invalid-world: '&6[NextGens] &cYou are not allowed to place generator here!'
   gen-purchase: '&6[NextGens] &aYou have purchased {gen}'
@@ -226,8 +266,12 @@ messages:
   gens-repaired: '&6[NextGens] &aAll of your broken generators have been repaired!'
   pickup-gens: '&6[NextGens] &aYou have picked up &e{amount} &agenerators!'
   force-pickup: '&6[NextGens] &aYou have forced pickup &e{amount} &agenerators for &e{player}'
-  player-pickup: '&6[NextGens] &aYour generators have been forced pickup! &7(Total: {amount})'
   give-all: '&6[NextGens] &aYou have given everyone online &e{amount}x {gen}'
+  too-close: '&6[NextGens] &cYou''re placing too close with other generator'
+  sellwand-broke: '&6[NextGens] &cYour sellwand has been broken!'
+  sellwand-give: '&6[NextGens] &aYou have given sellwand &7({multiplier}x with {uses} uses) &ato &e{player}'
+  sellwand-receive: '&6[NextGens] &aYou have received sellwand with &e{multiplier}x &aand &e{uses} uses'
+  sellwand-failed: '&6[NextGens] &cYou can''t use your sellwand here!'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'

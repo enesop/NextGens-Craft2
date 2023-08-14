@@ -2,7 +2,6 @@ package com.muhammaddaffa.nextgens.gui;
 
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
-import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
 import com.muhammaddaffa.nextgens.utils.gui.SimpleInventory;
@@ -37,13 +36,13 @@ public class FixInventory extends SimpleInventory {
         List<Integer> slots = Config.CORRUPT_GUI.getIntegerList("display-slots");
         // if player has enough money
         if (VaultEconomy.getBalance(this.player) >= this.generator.fixCost()) {
-            this.setUpgradeButton(slots);
+            this.setFixButton(slots);
         } else {
             this.setNoMoneyButton(slots);
         }
     }
 
-    private void setUpgradeButton(List<Integer> slots) {
+    private void setFixButton(List<Integer> slots) {
         FileConfiguration config = Config.CORRUPT_GUI.getConfig();
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())

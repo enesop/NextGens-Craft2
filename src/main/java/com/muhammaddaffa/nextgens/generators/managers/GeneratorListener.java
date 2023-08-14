@@ -49,6 +49,20 @@ public record GeneratorListener(
         }
         // get the generator
         Generator generator = active.getGenerator();
+        // corruption check
+        if (active.isCorrupted()) {
+            if (Config.CONFIG.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
+                Common.config(player, "messages.not-owner");
+                // play bass sound
+                Common.playBassSound(player);
+                return;
+            }
+            // create gui
+            FixInventory gui = new FixInventory(player, active, generator);
+            // open the gui
+            gui.open(player);
+            return;
+        }
         // check if player is the owner
         if (!player.getUniqueId().equals(active.getOwner())) {
             Common.config(player, "messages.not-owner");
@@ -56,14 +70,7 @@ public record GeneratorListener(
             Common.playBassSound(player);
             return;
         }
-        // corruption check
-        if (active.isCorrupted()) {
-            // create gui
-            FixInventory gui = new FixInventory(player, active, generator);
-            // open the gui
-            gui.open(player);
-            return;
-        }
+
         // check for next tier
         Generator nextGenerator = this.generatorManager.getGenerator(generator.nextTier());
         // upgrade gui option
@@ -200,16 +207,38 @@ public record GeneratorListener(
             return;
         }
         if (Config.CONFIG.getBoolean("place-permission") && !player.hasPermission("nextgens.generator." + generator.id()) && !player.hasPermission("nextgens.generator.*")) {
+            event.setCancelled(true);
+            // send message
             Common.config(player, "messages.no-permission-gen");
             // bass sound
             Common.playBassSound(player);
             return;
         }
         if (Config.CONFIG.getStringList("blacklisted-worlds").contains(player.getWorld().getName())) {
+            event.setCancelled(true);
+            // send message
             Common.config(player, "messages.invalid-world");
             // bass sound
             Common.playBassSound(player);
             return;
+        }
+        // generator distance
+        if (Config.CONFIG.getBoolean("generator-place-distance.enabled")) {
+            double distance = Config.CONFIG.getInt("generator-place-distance.distance");
+            // loop through all generators
+            for (ActiveGenerator active : this.generatorManager.getActiveGenerator()) {
+                if (!active.getLocation().getWorld().equals(block.getWorld())) {
+                    continue;
+                }
+                if (active.getLocation().distance(block.getLocation()) < distance) {
+                    event.setCancelled(true);
+                    // send message
+                    Common.config(player, "messages.too-close");
+                    // bass sound
+                    Common.playBassSound(player);
+                    return;
+                }
+            }
         }
         // register active gen
         this.generatorManager.registerGenerator(player, generator, block);

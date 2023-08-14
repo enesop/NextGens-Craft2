@@ -1,5 +1,6 @@
 package com.muhammaddaffa.nextgens;
 
+import com.bgsoftware.wildtools.api.WildToolsAPI;
 import com.muhammaddaffa.nextgens.commands.MainCommand;
 import com.muhammaddaffa.nextgens.commands.PickupCommand;
 import com.muhammaddaffa.nextgens.commands.SellCommand;
@@ -15,6 +16,9 @@ import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
+import com.muhammaddaffa.nextgens.sellwand.hooks.DSWHook;
+import com.muhammaddaffa.nextgens.sellwand.hooks.WTHook;
+import com.muhammaddaffa.nextgens.sellwand.managers.SellwandListener;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.Config;
 import com.muhammaddaffa.nextgens.utils.Executor;
@@ -22,6 +26,9 @@ import com.muhammaddaffa.nextgens.utils.Logger;
 import com.muhammaddaffa.nextgens.utils.UpdateChecker;
 import com.muhammaddaffa.nextgens.utils.gui.SimpleInventoryManager;
 import com.tchristofferson.configupdater.ConfigUpdater;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.norska.dsw.DeluxeSellwands;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
@@ -41,8 +48,19 @@ public final class NextGens extends JavaPlugin {
     private static final int BUILTBYBIT_ID = 30903;
 
     private static NextGens instance;
+
+    // -----------------------------
+    // NamespacedKey Section
     public static NamespacedKey generator_id;
     public static NamespacedKey drop_value;
+    public static NamespacedKey sellwand_global;
+    public static NamespacedKey sellwand_multiplier;
+    public static NamespacedKey sellwand_uses;
+    public static NamespacedKey sellwand_total_sold;
+    public static NamespacedKey sellwand_total_items;
+
+    // End of NamespacedKey Section
+    // ------------------------------
 
     private final DatabaseManager dbm = new DatabaseManager();
     private final GeneratorManager generatorManager = new GeneratorManager(this.dbm);
@@ -50,10 +68,20 @@ public final class NextGens extends JavaPlugin {
     private final RefundManager refundManager = new RefundManager(this.generatorManager);
 
     @Override
+    public void onLoad() {
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true));
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
         generator_id = new NamespacedKey(this, "nextgens_generator_id");
         drop_value = new NamespacedKey(this, "nextgens_drop_value");
+        sellwand_global = new NamespacedKey(this, "nextgens_sellwand_global");
+        sellwand_multiplier = new NamespacedKey(this, "nextgens_sellwand_multiplier");
+        sellwand_uses = new NamespacedKey(this, "nextgens_sellwand_uses");
+        sellwand_total_sold = new NamespacedKey(this, "nextgens_sellwand_total_sold");
+        sellwand_total_items = new NamespacedKey(this, "nextgens_sellwand_total_items");
 
         // fancy big text
         Logger.info("""
@@ -66,6 +94,9 @@ public final class NextGens extends JavaPlugin {
                 ██║░╚███║███████╗██╔╝╚██╗░░░██║░░░╚██████╔╝███████╗██║░╚███║██████╔╝
                 ╚═╝░░╚══╝╚══════╝╚═╝░░╚═╝░░░╚═╝░░░░╚═════╝░╚══════╝╚═╝░░╚══╝╚═════╝░
                 """);
+
+        // commandapi libs
+        CommandAPI.onEnable();
 
         // initialize stuff
         Config.init();
@@ -148,6 +179,17 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("DecentHolograms") != null) {
             Logger.info("Found DecentHolograms! Registering hook...");
         }
+        if (pm.getPlugin("WildTools") != null && Config.CONFIG.getBoolean("sellwand.hooks.wildtools")) {
+            Logger.info("Found WildTools! Registering hook...");
+            WildToolsAPI.getWildTools().getProviders().setPricesProvider(new WTHook());
+        }
+        if (pm.getPlugin("DeluxeSellwands") != null) {
+            Logger.info("Found DeluxeSellwands! Registering hook...");
+            DeluxeSellwands.getInstance().getPriceHandler().registerNewPriceHandler("NEXTGENS", new DSWHook());
+        }
+        if (pm.getPlugin("LWC") != null) {
+            Logger.info("Found LWC! Registering hook...");
+        }
         // register bstats metrics hook
         this.connectMetrics();
     }
@@ -172,21 +214,17 @@ public final class NextGens extends JavaPlugin {
         // register events
         pm.registerEvents(new GeneratorListener(this.generatorManager, this.userManager), this);
         pm.registerEvents(this.refundManager, this);
+        pm.registerEvents(new SellwandListener(), this);
         // register the gui lib
         SimpleInventoryManager.register(this);
     }
 
     private void registerCommands() {
-        // main commands
-        MainCommand command = new MainCommand(this.generatorManager, this.userManager);
-        this.getCommand("nextgens").setExecutor(command);
-        this.getCommand("nextgens").setTabCompleter(command);
-        // sell commands
-        this.getCommand("sell").setExecutor(new SellCommand(this.generatorManager));
-        // shop command
-        this.getCommand("genshop").setExecutor(new ShopCommand(this.generatorManager));
-        // pickup command
-        this.getCommand("pickupgens").setExecutor(new PickupCommand(this.generatorManager));
+        // register commands
+        MainCommand.register(this.generatorManager, this.userManager);
+        SellCommand.register(this.generatorManager);
+        ShopCommand.register(this.generatorManager);
+        PickupCommand.register(this.generatorManager);
     }
 
     private void connectMetrics() {

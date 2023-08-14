@@ -310,6 +310,18 @@ public class GeneratorManager {
         }
     }
 
+    public void refreshActiveGenerator() {
+        for (ActiveGenerator active : this.activeGenerators.values()) {
+            // get the new generator
+            Generator refreshed = this.getGenerator(active.getGenerator().id());
+            // if the refreshed is not null
+            if (refreshed != null) {
+                // refresh it
+                active.setGenerator(refreshed);
+            }
+        }
+    }
+
     private File getMainDirectory() {
         return new File(NextGens.getInstance().getDataFolder() + File.separator + "generators");
     }

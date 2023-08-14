@@ -6,7 +6,7 @@
 
     <groupId>com.muhammaddaffa</groupId>
     <artifactId>NextGens</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>NextGens</name>
@@ -52,6 +52,10 @@
                             <pattern>org.bstats</pattern>
                             <!-- Replace this with your package! -->
                             <shadedPattern>com.muhammaddaffa.nextgens.utils.bstats</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>dev.jorel.commandapi</pattern>
+                            <shadedPattern>com.muhammaddaffa.nextgens.utils.commandapi</shadedPattern>
                         </relocation>
                     </relocations>
                     <!-- Here you can remove the classes you don't use. -->
@@ -139,6 +143,10 @@
             <id>codemc-repo</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -198,7 +206,34 @@
             <version>3.0.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- WildTools -->
+        <dependency>
+            <groupId>com.bgsoftware</groupId>
+            <artifactId>WildToolsAPI</artifactId>
+            <version>2023.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- DeluxeSellwands -->
+        <dependency>
+            <groupId>com.github.N0RSKA</groupId>
+            <artifactId>DeluxeSellwandsAPI</artifactId>
+            <version>32c</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- LWC-Extended -->
+        <dependency>
+            <groupId>com.griefcraft</groupId>
+            <artifactId>lwc</artifactId>
+            <version>2.2.9-dev</version>
+            <scope>provided</scope>
+        </dependency>
 
+        <!-- CommandAPI -->
+        <dependency>
+            <groupId>dev.jorel</groupId>
+            <artifactId>commandapi-bukkit-shade</artifactId>
+            <version>9.0.4-SNAPSHOT</version>
+        </dependency>
         <!-- BStats -->
         <dependency>
             <groupId>org.bstats</groupId>

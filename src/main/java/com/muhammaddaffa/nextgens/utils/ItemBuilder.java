@@ -41,6 +41,10 @@ public class ItemBuilder {
         }
     }
 
+    public ItemMeta getItemMeta() {
+        return meta;
+    }
+
     public ItemBuilder type(Material material) {
         this.item.setType(material);
         return this;
@@ -245,46 +249,48 @@ public class ItemBuilder {
         Integer cmd = section.get("custom-model-data") == null ? null : section.getInt("custom-model-data");
         int amount = section.getInt("amount");
         String displayName = section.getString("display-name");
-        boolean glowing = section.getBoolean("glowing");
         List<String> lore = section.getStringList("lore");
+        List<String> flags = section.getStringList("flags");
+        List<String> enchantments = section.getStringList("enchantments");
 
         // start building the itemstack
-        ItemStack stack;
+        ItemBuilder builder;
         if (materialString.contains(";")) {
             String value = materialString.split(";")[1];
-            stack = new ItemStack(Material.PLAYER_HEAD, 1);
-            // get the item meta of the item
-            ItemMeta meta = stack.getItemMeta();
-            // apply the custmo skull
-            SkullUtils.applySkin(meta, value);
-            // set the item meta of the item
-            stack.setItemMeta(meta);
+            builder = new ItemBuilder(Material.PLAYER_HEAD);
+            builder.skull(value);
         } else {
             Material material = Material.matchMaterial(materialString);
             if (material == null) {
                 material = Material.DIRT;
             }
-            stack = new ItemStack(material, 1);
+            builder = new ItemBuilder(material);
         }
-
-        // create the itembuilder
-        ItemBuilder builder = new ItemBuilder(stack);
         // set the amount
         builder.amount(Math.max(1, amount));
         // set the cmd
-        if (cmd != null) {
+        if (cmd != null && cmd != 0) {
             builder.customModelData(cmd);
         }
         // set the display name
-        builder.name(displayName);
+        if (displayName != null) {
+            builder.name(displayName);
+        }
         // set the lore
         builder.lore(lore);
         // set the item flag
-        builder.flags(ItemFlag.HIDE_ATTRIBUTES);
-        // glowing set
-        if (glowing) {
-            builder.enchant(Enchantment.DURABILITY);
-            builder.flags(ItemFlag.HIDE_ENCHANTS);
+        for (String flag : flags) {
+            try {
+                builder.flags(ItemFlag.valueOf(flag));
+            } catch (IllegalArgumentException ignored) { }
+        }
+        // enchantments
+        for (String enchantment : enchantments) {
+            String[] split = enchantment.split(";");
+            Enchantment enchant = Enchantment.getByName(split[0]);
+            int level = Integer.parseInt(split[1]);
+            // enchant the item
+            builder.enchant(enchant, level);
         }
         // set the placeholder
         if (placeholder != null) {
@@ -298,4 +304,14 @@ public class ItemBuilder {
         this.item.setItemMeta(this.meta);
         return this.item;
     }
+
+    private boolean isValidItemFlag(String flag) {
+        try {
+            ItemFlag.valueOf(flag);
+            return true;
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
 }

@@ -3,18 +3,18 @@ version: '${project.version}'
 main: com.muhammaddaffa.nextgens.NextGens
 api-version: 1.17
 depend: [Vault, PlaceholderAPI]
-softdepend: [MyWorlds, Multiverse-Core, BentoBox, HolographicDisplays, DecentHolograms, SuperiorSkyblock2]
-loadbefore: [ShopGUIPlus]
+softdepend:
+  - MyWorlds
+  - Multiverse-Core
+  - BentoBox
+  - HolographicDisplays
+  - DecentHolograms
+  - SuperiorSkyblock2
+  - ShopGUIPlus
+  - WildTools
+  - DeluxeSellwands
+  - LWC
 authors: [aglerr]
 description: A next generation gens tycoon plugin
 website: https://muhammaddaffa.com
 load: POSTWORLD
-
-commands:
-  nextgens:
-    aliases: [gens, gen, ngens, ngen]
-  sell:
-  genshop:
-    aliases: [gensshop]
-  pickupgens:
-    aliases: [pickupgen]

@@ -3,48 +3,53 @@ package com.muhammaddaffa.nextgens.commands;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.ShopInventory;
 import com.muhammaddaffa.nextgens.utils.Common;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.PlayerArgument;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
-public record ShopCommand(
-        GeneratorManager generatorManager
-) implements CommandExecutor {
+public class ShopCommand {
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
+    public static void register(GeneratorManager generatorManager) {
+        ShopCommand command = new ShopCommand(generatorManager);
+        // register the command
+        command.register();
+    }
 
-        if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
-                Common.sendMessage(sender, "&cUsage: /genshop <player>");
-                return true;
-            }
-            if (!sender.hasPermission("nextgens.shop")) {
-                Common.config(sender, "messages.no-permission");
-                return true;
-            }
-            // open the gui for player
-            ShopInventory.openInventory(player, this.generatorManager);
-        }
+    private final GeneratorManager generatorManager;
+    private final CommandAPICommand command;
+    public ShopCommand(GeneratorManager generatorManager) {
+        this.generatorManager = generatorManager;
+        this.command = new CommandAPICommand("genshop")
+                .withAliases("gensshop")
+                .withOptionalArguments(new PlayerArgument("target"))
+                .executes((sender, args) -> {
+                    Player target = (Player) args.get("target");
+                    Player actualTarget = null;
+                    if (target == null) {
+                        if (!sender.hasPermission("nextgens.shop")) {
+                            Common.config(sender, "messages.no-permission");
+                            return;
+                        }
+                        if (!(sender instanceof Player player)) {
+                            Common.sendMessage(sender, "&cUsage: /genshop <player>");
+                            return;
+                        }
+                        actualTarget = player;
 
-        if (args.length == 1) {
-            if (!sender.hasPermission("nextgens.shop.others")) {
-                Common.config(sender, "messages.no-permission");
-                return true;
-            }
-            Player player = Bukkit.getPlayer(args[0]);
-            if (player == null) {
-                Common.config(sender, "messages.target-not-found");
-                return true;
-            }
-            // open the gui for player
-            ShopInventory.openInventory(player, this.generatorManager);
-        }
+                    } else {
+                        if (!sender.hasPermission("nextgens.shop.others")) {
+                            Common.config(sender, "messages.no-permission");
+                            return;
+                        }
+                        actualTarget = target;
+                    }
+                    // open the gui for the target
+                    ShopInventory.openInventory(actualTarget, this.generatorManager);
+                });
+    }
 
-        return true;
+    public void register() {
+        this.command.register();
     }
 
 }

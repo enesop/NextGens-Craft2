@@ -3,53 +3,66 @@ package com.muhammaddaffa.nextgens.commands;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
-import com.muhammaddaffa.nextgens.utils.VisualAction;
+import com.muhammaddaffa.nextgens.utils.*;
+import dev.jorel.commandapi.CommandAPIBukkit;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.PlayerArgument;
 import net.brcdev.shopgui.ShopGuiPlusApi;
-import net.brcdev.shopgui.shop.item.ShopItem;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.jetbrains.annotations.NotNull;
 
-public record SellCommand(
-        GeneratorManager generatorManager
-) implements CommandExecutor {
+public class SellCommand {
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-
-        if (args.length == 0) {
-            if (!sender.hasPermission("nextgens.sell")) {
-                Common.config(sender, "messages.no-permission");
-                return true;
-            }
-            if (!(sender instanceof Player player)) {
-                Common.sendMessage(sender, "&cUsage: /sell <player>");
-                return true;
-            }
-            // sell the items
-            this.sell(player);
+    public static void register(GeneratorManager generatorManager) {
+        SellCommand command = new SellCommand(generatorManager);
+        // check if sell command is enabled
+        if (!Config.CONFIG.getBoolean("sell-command")) {
+            return;
         }
+        Executor.sync(() -> {
+            Logger.info("Sell command is enabled, overriding and registering sell command...");
+            // unregister the command
+            CommandAPIBukkit.unregister("sell", true, true);
+            // register back the command
+            command.register();
+        });
+    }
 
-        if (args.length == 1 && sender.hasPermission("nextgens.sell.others")) {
-            Player player = Bukkit.getPlayer(args[0]);
-            if (player == null) {
-                Common.config(sender, "messages.target-not-found");
-                return true;
-            }
-            // sell the items
-            this.sell(player);
-        }
-        return true;
+    private final GeneratorManager generatorManager;
+    private final CommandAPICommand command;
+    public SellCommand(GeneratorManager generatorManager) {
+        this.generatorManager = generatorManager;
+        this.command = new CommandAPICommand("sell")
+                .withOptionalArguments(new PlayerArgument("target"))
+                .executes((sender, args) -> {
+                    Player target = (Player) args.get("target");
+                    if (target == null) {
+                        if (!sender.hasPermission("nextgens.sell")) {
+                            Common.config(sender, "messages.no-permission");
+                            return;
+                        }
+                        if (!(sender instanceof Player player)) {
+                            Common.sendMessage(sender, "&cUsage: /sell <player>");
+                            return;
+                        }
+                        // sell the item to the player
+                        this.sell(player);
+                    } else {
+                        if (!sender.hasPermission("nextgens.sell.others")) {
+                            Common.config(sender, "messages.no-permission");
+                            return;
+                        }
+                        // sell the items
+                        this.sell(target);
+                    }
+                });
+    }
+
+    public void register() {
+        this.command.register();
     }
 
     private void sell(Player player) {
@@ -58,7 +71,7 @@ public record SellCommand(
         // loop through inventory contents
         for (ItemStack stack : player.getInventory()) {
             // get value
-            double value = this.getPriceValue(player, stack);
+            double value = Utils.getPriceValue(player, stack);
             // if the item has value, register it
             if (value > 0) {
                 totalItems += stack.getAmount();
@@ -79,35 +92,8 @@ public record SellCommand(
         VaultEconomy.deposit(player, totalValue);
         // send the visual action
         VisualAction.send(player, Config.CONFIG.getConfig(), "sell-options", new Placeholder()
-                .add("{amount}", totalItems)
+                .add("{amount}", Common.digits(totalItems))
                 .add("{value}", Common.digits(totalValue)));
-    }
-
-    private double getPriceValue(Player player, ItemStack stack) {
-        if (stack == null || stack.getItemMeta() == null || this.generatorManager.isGeneratorItem(stack)) {
-            return 0;
-        }
-        ItemMeta meta = stack.getItemMeta();
-        // check if the item is from generator
-        if (meta.getPersistentDataContainer().has(NextGens.drop_value, PersistentDataType.DOUBLE)) {
-            // get the drop value
-            Double value = meta.getPersistentDataContainer().get(NextGens.drop_value, PersistentDataType.DOUBLE);
-            // if value is null, skip it
-            if (value == null) {
-                return 0;
-            }
-            return value * stack.getAmount();
-        }
-        // check if the shopgui+ hook is enabled
-        if (Config.CONFIG.getBoolean("sell-options.hook_shopguiplus") && this.isShopGUIPlus()) {
-            // get the price from shopgui+
-            return ShopGuiPlusApi.getItemStackPriceSell(player, stack);
-        }
-        return 0;
-    }
-
-    private boolean isShopGUIPlus() {
-        return Bukkit.getPluginManager().getPlugin("ShopGUIPlus") != null;
     }
 
 }
