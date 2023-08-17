@@ -1,7 +1,11 @@
 name: NextGens
 version: '${project.version}'
 main: com.muhammaddaffa.nextgens.NextGens
-api-version: 1.17
+api-version: 1.13
+authors: [aglerr]
+description: A next generation gens tycoon plugin
+website: https://muhammaddaffa.com
+load: POSTWORLD
 depend: [Vault, PlaceholderAPI]
 softdepend:
   - MyWorlds
@@ -14,7 +18,3 @@ softdepend:
   - WildTools
   - DeluxeSellwands
   - LWC
-authors: [aglerr]
-description: A next generation gens tycoon plugin
-website: https://muhammaddaffa.com
-load: POSTWORLD

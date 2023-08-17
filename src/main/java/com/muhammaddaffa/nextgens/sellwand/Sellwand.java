@@ -1,6 +1,8 @@
 package com.muhammaddaffa.nextgens.sellwand;
 
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.events.Event;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Sound;
@@ -14,7 +16,7 @@ import java.util.UUID;
 
 public class Sellwand {
 
-    public static boolean action(Player player, ItemStack stack, Inventory inventory) {
+    public static boolean action(Player player, ItemStack stack, Inventory inventory, EventManager eventManager) {
         // scrap the data from the item
         ItemBuilder builder = new ItemBuilder(stack);
         ItemMeta meta = builder.getItemMeta();
@@ -27,6 +29,7 @@ public class Sellwand {
             return false;
         }
         double totalValue = 0.0;
+        double bonus = 0.0;
         int totalItems = 0;
         // loop through inventory contents
         for (ItemStack item : inventory) {
@@ -48,8 +51,18 @@ public class Sellwand {
             Common.playBassSound(player);
             return true;
         }
+        /**
+         * Event-related code
+         */
+        Event event = eventManager.getActiveEvent();
+        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
+            // set the total value
+            bonus += totalValue * Math.max(1.0, event.getSellMultiplier());
+        }
         // apply the multiplier
-        final double afterMultiplier = totalValue * multiplier;
+        bonus += totalValue * multiplier;
+        // apply the bonuses
+        final double afterMultiplier = totalValue + bonus;
         // deposit the money
         VaultEconomy.deposit(player, afterMultiplier);
         // send the visual action

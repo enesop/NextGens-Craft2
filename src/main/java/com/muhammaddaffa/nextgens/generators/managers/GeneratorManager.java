@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class GeneratorManager {
@@ -57,6 +58,13 @@ public class GeneratorManager {
             return null;
         }
         return this.getGenerator(id);
+    }
+
+    @NotNull
+    public Generator getRandomGenerator() {
+        // turn the key into list
+        List<String> generators = this.generatorMap.keySet().stream().toList();
+        return this.generatorMap.get(generators.get(ThreadLocalRandom.current().nextInt(generators.size())));
     }
 
     public Set<String> getGeneratorIDs() {

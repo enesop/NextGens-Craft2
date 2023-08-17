@@ -1,6 +1,8 @@
 package com.muhammaddaffa.nextgens.commands;
 
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.events.Event;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
@@ -16,8 +18,8 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class SellCommand {
 
-    public static void register(GeneratorManager generatorManager) {
-        SellCommand command = new SellCommand(generatorManager);
+    public static void register(EventManager eventManager) {
+        SellCommand command = new SellCommand(eventManager);
         // check if sell command is enabled
         if (!Config.CONFIG.getBoolean("sell-command")) {
             return;
@@ -31,10 +33,10 @@ public class SellCommand {
         });
     }
 
-    private final GeneratorManager generatorManager;
+    private final EventManager eventManager;
     private final CommandAPICommand command;
-    public SellCommand(GeneratorManager generatorManager) {
-        this.generatorManager = generatorManager;
+    public SellCommand(EventManager eventManager) {
+        this.eventManager = eventManager;
         this.command = new CommandAPICommand("sell")
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
@@ -87,6 +89,14 @@ public class SellCommand {
             // play bass sound
             Common.playBassSound(player);
             return;
+        }
+        /**
+         * Event-related code
+         */
+        Event event = this.eventManager.getActiveEvent();
+        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
+            // set the total value
+            totalValue = totalValue * Math.max(1.0, event.getSellMultiplier());
         }
         // deposit the money
         VaultEconomy.deposit(player, totalValue);

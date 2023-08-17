@@ -1,6 +1,7 @@
 package com.muhammaddaffa.nextgens.sellwand.managers;
 
 import com.griefcraft.lwc.LWC;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.sellwand.Sellwand;
 import com.muhammaddaffa.nextgens.utils.Common;
 import org.bukkit.Bukkit;
@@ -14,7 +15,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class SellwandListener implements Listener {
+public record SellwandListener(
+        EventManager eventManager
+) implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void onInteract(PlayerInteractEvent event) {
@@ -40,7 +43,7 @@ public class SellwandListener implements Listener {
                 return;
             }
             // try to sell the content of the chest
-            if (Sellwand.action(player, stack, container.getInventory())) {
+            if (Sellwand.action(player, stack, container.getInventory(), this.eventManager())) {
                 event.setCancelled(true);
             }
         }

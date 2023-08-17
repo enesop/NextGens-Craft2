@@ -1,6 +1,8 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.events.Event;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Generator;
@@ -21,13 +23,13 @@ public class GeneratorTask extends BukkitRunnable {
 
     private static GeneratorTask runnable;
 
-    public static void start(GeneratorManager generatorManager) {
+    public static void start(GeneratorManager generatorManager, EventManager eventManager) {
         if (runnable != null) {
             runnable.cancel();
             runnable = null;
         }
         // set back the runnable
-        runnable = new GeneratorTask(generatorManager);
+        runnable = new GeneratorTask(generatorManager, eventManager);
         // run the task
         runnable.runTaskTimerAsynchronously(NextGens.getInstance(), 20L, 2L);
     }
@@ -49,9 +51,11 @@ public class GeneratorTask extends BukkitRunnable {
     private final Map<String, CorruptedHologram> hologramMap = new HashMap<>();
 
     private final GeneratorManager generatorManager;
+    private final EventManager eventManager;
 
-    public GeneratorTask(GeneratorManager generatorManager) {
+    public GeneratorTask(GeneratorManager generatorManager, EventManager eventManager) {
         this.generatorManager = generatorManager;
+        this.eventManager = eventManager;
     }
 
     @Override
@@ -61,6 +65,7 @@ public class GeneratorTask extends BukkitRunnable {
             // get variables
             Generator generator = active.getGenerator();
             Player player = Bukkit.getPlayer(active.getOwner());
+            Event event = this.eventManager.getActiveEvent();
             // if generator is invalid or chunk is not loaded, skip it
             if (generator == null || !active.isChunkLoaded()) {
                 continue;
@@ -92,16 +97,65 @@ public class GeneratorTask extends BukkitRunnable {
             if (!active.isCorrupted() && hologram != null) {
                 hologram.destroy();
             }
+            Generator chosenGenerator = generator;
+            double interval = generator.interval();
+            int dropAmount = 1;
+            /**
+             * Event-related code
+             */
+            if (event != null) {
+                if (event.getType() == Event.Type.GENERATOR_SPEED &&
+                        event.getSpeedMultiplier() != null &&
+                        !event.getBlacklistedGenerators().contains(generator.id())) {
+                    // get the speed boost
+                    Double boost = event.getSpeedMultiplier();
+                    double discount = (generator.interval() * boost) / 100;
+                    // deduct the interval
+                    interval = interval - discount;
+                }
+                if (event.getType() == Event.Type.GENERATOR_UPGRADE &&
+                        event.getTierUpgrade() != null &&
+                        !event.getBlacklistedGenerators().contains(generator.id())) {
+                    // get the amount of tier upgrade
+                    Integer amount = event.getTierUpgrade();
+                    // make a for-each and upgrade the generator
+                    for (int i = 0; i < amount; i++) {
+                        if (chosenGenerator.nextTier() == null) {
+                            break;
+                        }
+                        Generator upgraded = this.generatorManager.getGenerator(chosenGenerator.nextTier());
+                        if (upgraded != null) {
+                            chosenGenerator = upgraded;
+                        }
+                    }
+                }
+                if (event.getType() == Event.Type.MIXED_UP &&
+                        !event.getBlacklistedGenerators().contains(generator.id())) {
+                    // choose a random generator
+                    chosenGenerator = this.generatorManager.getRandomGenerator();
+                }
+                if (event.getType() == Event.Type.DROP_MULTIPLIER &&
+                        event.getDropMultiplier() != null &&
+                        !event.getBlacklistedGenerators().contains(generator.id())) {
+                    // get the drop multiplier and set the drop amount
+                    dropAmount = Math.max(1, event.getDropMultiplier());
+                }
+            }
             // add timer
             active.addTimer(0.1);
             // check if the generator should drop
-            if (active.getTimer() >= generator.interval()) {
+            if (active.getTimer() >= interval) {
                 // set the timer back to 0
                 active.setTimer(0);
+                // get the final variable
+                Generator finalGenerator = chosenGenerator;
+                int finalDropAmount = dropAmount;
                 // execute drop mechanics
                 Block block = active.getLocation().getBlock();
                 Executor.sync(() -> {
-                    generator.drop(block, active.getOwner());
+                    for (int i = 0; i < finalDropAmount; i++) {
+                        finalGenerator.drop(block, active.getOwner());
+                    }
                     // set the block to desired type
                     block.setType(generator.item().getType());
                 });

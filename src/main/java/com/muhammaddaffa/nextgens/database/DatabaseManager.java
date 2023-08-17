@@ -82,6 +82,11 @@ public class DatabaseManager {
     }
 
     public void saveGenerator(ActiveGenerator active) {
+        // if the world is null, skip it
+        if (active.getLocation().getWorld() == null) {
+            return;
+        }
+
         String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
         this.buildStatement(query, statement -> {
             statement.setString(1, active.getOwner().toString());
@@ -99,6 +104,11 @@ public class DatabaseManager {
             String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
 
             for (ActiveGenerator active : activeGenerators) {
+                // if the world is null, skip it
+                if (active.getLocation().getWorld() == null) {
+                    continue;
+                }
+
                 try (PreparedStatement statement = connection.prepareStatement(query)) {
                     statement.setString(1, active.getOwner().toString());
                     statement.setString(2, LocationSerializer.serialize(active.getLocation()));

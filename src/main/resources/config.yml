@@ -115,26 +115,31 @@ sellwand:
   # The sellwand item configuration
   item:
     material: STICK
-    display-name: "&e&lSellwand &7(Right Click)"
+    display-name: '&c&lSellwand &f({uses})'
     custom-model-data: 0
     flags:
-      - "HIDE_ATTRIBUTES"
-      - "HIDE_ENCHANTS"
+      - HIDE_ATTRIBUTES
+      - HIDE_ENCHANTS
     enchantments:
-      - "DURABILITY;1"
+      - DURABILITY;1
     lore:
-      - "&7Use this item to sell the contents"
-      - "&7of a chest in one go!"
-      - "&7"
-      - "&6&l*&e&l*&6&l* Information *&e&l*&6&l*"
-      - "&7Multiplier: &f{multiplier}x"
-      - "&7Uses: &f{uses} uses"
-      - "&7"
-      - "&6&l*&e&l*&6&l* Statistics *&e&l*&6&l*"
-      - "&7Total Earned: &a${total_sold}"
-      - "&7Total Items: &a{total_items} items"
-      - "&7"
-      - "&7Right-click on a container to use!"
+      - '&7'
+      - '&b・&7Right Click &f→ &cSell Container'
+      - '&7'
+      - '&c&nUsable on:'
+      - '&b・&fAll Chests'
+      - '&b・&fBarrels'
+      - '&b・&fHoppers'
+      - '&b・&fShulkers'
+      - '&7'
+      - '&c&nInformation:'
+      - '&b・&cMultiplier: &f{multiplier}x'
+      - '&b・&cUses: &f{uses} uses'
+      - '&7'
+      - '&c&nStatistics:'
+      - '&b・&cTotal Earned: &f${total_sold}'
+      - '&b・&cTotal Items: &f{total_items} items'
+      - '&7'
 
 # Should we give generator to player who just joined the server?
 first-join-generator:
@@ -272,14 +277,21 @@ messages:
   sellwand-give: '&6[NextGens] &aYou have given sellwand &7({multiplier}x with {uses} uses) &ato &e{player}'
   sellwand-receive: '&6[NextGens] &aYou have received sellwand with &e{multiplier}x &aand &e{uses} uses'
   sellwand-failed: '&6[NextGens] &cYou can''t use your sellwand here!'
+  invalid-event: '&6[NextGens] &cThere is no event with that name!'
+  no-event: '&6[NextGens] &cThere is no active event.'
+  event-is-running: '&6[NextGens] &cThere is an event currently running, stop it first with /gens stopevent'
+  event-start: '&6[NextGens] &aYou have started {event} &aevent!'
+  event-stop: '&6[NextGens] &aYou have forced stop the event'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
     - '&6/pickupgens [player] &7- pickup all of specific player generators'
     - '&6/sell [player] &7- sell player''s inventory contents'
+    - "&7"
     - '&6/gens give <player> <generator> <amount> &7- give generator to player'
-    - '&6/gens giveall <generator> <amount> &7- give generator to online players'
     - '&6/gens addmax/removemax <player> <amount> &7- add/remove bonus max generator'
-    - '&6/gens clearmax <player|all> &7- clear the bonus max generator'
+    - '&6/gens resetmax <player|all> &7- clear the bonus max generator'
     - '&6/gens repair <player|all> &7- repair broken generator for specific players or globally'
+    - '&6/gens startevent <event> &7- force to start an event'
+    - '&6/gens stopevent &7- force stop the running event'
     - '&6/gens reload &7- reload the configuration'

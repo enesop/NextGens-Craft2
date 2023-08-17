@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Config {
 
-    public static Config CONFIG, GENERATORS, UPGRADE_GUI, SHOP, CORRUPT_GUI, DATA;
+    public static Config CONFIG, GENERATORS, UPGRADE_GUI, SHOP, CORRUPT_GUI, EVENTS, DATA;
 
     public static void init() {
         CONFIG = new Config("config.yml", null);
@@ -22,6 +22,7 @@ public class Config {
         UPGRADE_GUI = new Config("upgrade_gui.yml", "gui");
         SHOP = new Config("shop.yml", null);
         CORRUPT_GUI = new Config("corrupt_gui.yml", "gui");
+        EVENTS = new Config("events.yml", null);
         DATA = new Config("data.yml", null);
     }
 
@@ -31,6 +32,7 @@ public class Config {
         UPGRADE_GUI.reloadConfig();
         SHOP.reloadConfig();
         CORRUPT_GUI.reloadConfig();
+        EVENTS.reloadConfig();
     }
 
     // -----------------------------------------------------------

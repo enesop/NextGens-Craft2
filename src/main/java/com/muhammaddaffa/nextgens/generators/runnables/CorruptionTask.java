@@ -6,6 +6,7 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Common;
 import com.muhammaddaffa.nextgens.utils.Config;
 import com.muhammaddaffa.nextgens.utils.Placeholder;
+import com.muhammaddaffa.nextgens.utils.TimeFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -29,6 +30,13 @@ public class CorruptionTask extends BukkitRunnable {
         runnable.runTaskTimerAsynchronously(NextGens.getInstance(), 20L, 20L);
     }
 
+    public static int getTimeLeft() {
+        if (runnable == null) {
+            return -1;
+        }
+        return runnable.getCorruptionTime() - runnable.getTimer();
+    }
+
     private final GeneratorManager generatorManager;
     public CorruptionTask(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
@@ -45,7 +53,7 @@ public class CorruptionTask extends BukkitRunnable {
         // increase the timer
         this.timer++;
         // check if the timer exceed the interval
-        if (this.timer >= TimeUnit.MINUTES.toSeconds(Config.CONFIG.getInt("corruption.interval"))) {
+        if (this.timer >= this.getCorruptionTime()) {
             // set the timer back to 0
             this.timer = 0;
             // get possibly infected generators
@@ -100,6 +108,14 @@ public class CorruptionTask extends BukkitRunnable {
         }
 
         return corrupted;
+    }
+
+    public int getTimer() {
+        return timer;
+    }
+
+    public int getCorruptionTime() {
+        return (int) TimeUnit.MINUTES.toSeconds(Config.CONFIG.getInt("corruption.interval"));
     }
 
 }

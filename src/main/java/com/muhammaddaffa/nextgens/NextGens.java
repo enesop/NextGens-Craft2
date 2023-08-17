@@ -6,6 +6,7 @@ import com.muhammaddaffa.nextgens.commands.PickupCommand;
 import com.muhammaddaffa.nextgens.commands.SellCommand;
 import com.muhammaddaffa.nextgens.commands.ShopCommand;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorListener;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
@@ -16,30 +17,29 @@ import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
 import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
-import com.muhammaddaffa.nextgens.sellwand.hooks.DSWHook;
-import com.muhammaddaffa.nextgens.sellwand.hooks.WTHook;
 import com.muhammaddaffa.nextgens.sellwand.managers.SellwandListener;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Executor;
-import com.muhammaddaffa.nextgens.utils.Logger;
-import com.muhammaddaffa.nextgens.utils.UpdateChecker;
+import com.muhammaddaffa.nextgens.utils.*;
 import com.muhammaddaffa.nextgens.utils.gui.SimpleInventoryManager;
 import com.tchristofferson.configupdater.ConfigUpdater;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.norska.dsw.DeluxeSellwands;
+import dev.norska.dsw.prices.DSWPriceHandlerInterface;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class NextGens extends JavaPlugin {
 
@@ -66,10 +66,11 @@ public final class NextGens extends JavaPlugin {
     private final GeneratorManager generatorManager = new GeneratorManager(this.dbm);
     private final UserManager userManager = new UserManager(this.dbm);
     private final RefundManager refundManager = new RefundManager(this.generatorManager);
+    private final EventManager eventManager = new EventManager();
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).verboseOutput(true));
+        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true));
     }
 
     @Override
@@ -121,6 +122,11 @@ public final class NextGens extends JavaPlugin {
         // load the refund
         this.refundManager.load();
 
+        // load events
+        this.eventManager.loadEvents();
+        this.eventManager.load();
+        this.eventManager.startTask();
+
         // register commands & listeners
         this.registerCommands();
         this.registerListeners();
@@ -143,13 +149,15 @@ public final class NextGens extends JavaPlugin {
         this.generatorManager.saveActiveGenerator();
         // save the users
         this.userManager.saveUser();
+        // save the events
+        this.eventManager.save();
         // close the database
         this.dbm.close();
     }
 
     private void registerTask() {
         // start generator task
-        GeneratorTask.start(this.generatorManager);
+        GeneratorTask.start(this.generatorManager, this.eventManager);
         // start auto-save task
         this.generatorManager.startAutosaveTask();
         // corruption task
@@ -163,7 +171,7 @@ public final class NextGens extends JavaPlugin {
         // papi hook
         if (pm.getPlugin("PlaceholderAPI") != null) {
             Logger.info("Found PlaceholderAPI! Registering hook...");
-            new GensExpansion(this.generatorManager, this.userManager).register();
+            new GensExpansion(this.generatorManager, this.userManager, this.eventManager).register();
         }
         if (pm.getPlugin("SuperiorSkyblock2") != null) {
             Logger.info("Found SuperiorSkyblock2! Registering hook...");
@@ -181,11 +189,14 @@ public final class NextGens extends JavaPlugin {
         }
         if (pm.getPlugin("WildTools") != null && Config.CONFIG.getBoolean("sellwand.hooks.wildtools")) {
             Logger.info("Found WildTools! Registering hook...");
-            WildToolsAPI.getWildTools().getProviders().setPricesProvider(new WTHook());
+            WildToolsAPI.getWildTools().getProviders().setPricesProvider(Utils::getPriceValue);
         }
         if (pm.getPlugin("DeluxeSellwands") != null) {
             Logger.info("Found DeluxeSellwands! Registering hook...");
-            DeluxeSellwands.getInstance().getPriceHandler().registerNewPriceHandler("NEXTGENS", new DSWHook());
+            DeluxeSellwands.getInstance().getPriceHandler().registerNewPriceHandler("NEXTGENS", (player, itemStack, i) -> {
+                double value = Utils.getPriceValue(player, itemStack);
+                return value <= 0 ? null :value;
+            });
         }
         if (pm.getPlugin("LWC") != null) {
             Logger.info("Found LWC! Registering hook...");
@@ -196,9 +207,11 @@ public final class NextGens extends JavaPlugin {
 
     private void updateConfig() {
         File configFile = new File(this.getDataFolder(), "config.yml");
+        File eventsFile = new File(this.getDataFolder(), "events.yml");
 
         try {
             ConfigUpdater.update(this, "config.yml", configFile, new ArrayList<>());
+            ConfigUpdater.update(this, "events.yml", eventsFile, List.of("events.events"));
         } catch (IOException ex) {
             Logger.severe("Failed to update the config.yml!");
             ex.printStackTrace();
@@ -214,15 +227,15 @@ public final class NextGens extends JavaPlugin {
         // register events
         pm.registerEvents(new GeneratorListener(this.generatorManager, this.userManager), this);
         pm.registerEvents(this.refundManager, this);
-        pm.registerEvents(new SellwandListener(), this);
+        pm.registerEvents(new SellwandListener(this.eventManager), this);
         // register the gui lib
         SimpleInventoryManager.register(this);
     }
 
     private void registerCommands() {
         // register commands
-        MainCommand.register(this.generatorManager, this.userManager);
-        SellCommand.register(this.generatorManager);
+        MainCommand.register(this.generatorManager, this.userManager, this.eventManager);
+        SellCommand.register(this.eventManager);
         ShopCommand.register(this.generatorManager);
         PickupCommand.register(this.generatorManager);
     }

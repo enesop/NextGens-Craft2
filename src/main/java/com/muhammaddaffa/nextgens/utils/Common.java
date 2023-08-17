@@ -22,6 +22,15 @@ public class Common {
 
     private static final DecimalFormat decimalFormat = new DecimalFormat("###,###,###,###,###.##");
 
+    public static boolean isValid(List<?> list, int index) {
+        try {
+            list.get(index);
+            return true;
+        } catch (IndexOutOfBoundsException ex) {
+            return false;
+        }
+    }
+
     public static void configBroadcast(String path) {
         configBroadcast(path, null);
     }

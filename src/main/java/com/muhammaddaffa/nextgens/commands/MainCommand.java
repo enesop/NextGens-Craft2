@@ -1,5 +1,7 @@
 package com.muhammaddaffa.nextgens.commands;
 
+import com.muhammaddaffa.nextgens.events.Event;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
@@ -16,18 +18,20 @@ import org.bukkit.entity.Player;
 
 public class MainCommand {
 
-    public static void register(GeneratorManager generatorManager, UserManager userManager) {
-        MainCommand command = new MainCommand(generatorManager, userManager);
+    public static void register(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
+        MainCommand command = new MainCommand(generatorManager, userManager, eventManager);
         // register the command
         command.register();
     }
 
     private final GeneratorManager generatorManager;
     private final UserManager userManager;
+    private final EventManager eventManager;
     private final CommandAPICommand command;
-    public MainCommand(GeneratorManager generatorManager, UserManager userManager) {
+    public MainCommand(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
         this.generatorManager = generatorManager;
         this.userManager = userManager;
+        this.eventManager = eventManager;
         this.command = new CommandAPICommand("nextgens")
                 .withAliases("nextgen", "ngens", "ngen", "gens", "gen", "generator", "generators")
                 .withSubcommand(this.getGiveSubcommand())
@@ -37,6 +41,8 @@ public class MainCommand {
                 .withSubcommand(this.getRepairSubcommand())
                 .withSubcommand(this.getReloadSubcommand())
                 .withSubcommand(this.getSellwandSubcommand())
+                .withSubcommand(this.getStartEventCommand())
+                .withSubcommand(this.getStopEventCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.config(sender, "messages.help");
@@ -53,7 +59,8 @@ public class MainCommand {
                 .withArguments(new PlayerArgument("target"))
                 .withArguments(new StringArgument("generator_id")
                         .replaceSuggestions(ArgumentSuggestions.strings(this.generatorManager.getGeneratorIDs())))
-                .withOptionalArguments(new IntegerArgument("generator_amount"))
+                .withOptionalArguments(new IntegerArgument("generator_amount")
+                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -91,7 +98,8 @@ public class MainCommand {
     private CommandAPICommand getAddMaxSubCommand() {
         return new CommandAPICommand("addmax")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new IntegerArgument("amount"))
+                .withArguments(new IntegerArgument("amount")
+                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -118,7 +126,8 @@ public class MainCommand {
     private CommandAPICommand getRemoveMaxSubcommand() {
         return new CommandAPICommand("removemax")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new IntegerArgument("amount"))
+                .withArguments(new IntegerArgument("amount")
+                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -216,8 +225,10 @@ public class MainCommand {
         return new CommandAPICommand("sellwand")
                 .withAliases("sellwands")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new DoubleArgument("multiplier"))
-                .withArguments(new IntegerArgument("uses"))
+                .withArguments(new DoubleArgument("multiplier")
+                        .replaceSuggestions(ArgumentSuggestions.strings("[<multiplier>]")))
+                .withArguments(new IntegerArgument("uses")
+                        .replaceSuggestions(ArgumentSuggestions.strings("[<uses>]")))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -237,6 +248,59 @@ public class MainCommand {
                     Common.config(target, "messages.sellwand-receive", new Placeholder()
                             .add("{multiplier}", Common.digits(multiplier))
                             .add("{uses}", Sellwand.getUsesPlaceholder(uses)));
+                });
+    }
+
+    private CommandAPICommand getStartEventCommand() {
+        // gens startevent <event>
+        return new CommandAPICommand("startevent")
+                .withArguments(new StringArgument("event")
+                        .replaceSuggestions(ArgumentSuggestions.strings(this.eventManager.getEventName())))
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.config(sender, "messages.no-permission");
+                        return;
+                    }
+                    // if there is an event running
+                    if (this.eventManager.getActiveEvent() != null) {
+                        Common.config(sender, "messages.event-is-running");
+                        return;
+                    }
+                    String eventId = (String) args.get("event");
+                    Event event;
+                    if (eventId.equalsIgnoreCase("random")) {
+                        event = this.eventManager.getRandomEvent();
+                    } else {
+                        event = this.eventManager.getEvent(eventId);
+                    }
+                    // check if event is invalid
+                    if (event == null) {
+                        Common.config(sender, "messages.invalid-event");
+                        return;
+                    }
+                    // actually start the event
+                    this.eventManager.forceStart(event);
+                    // send message
+                    Common.config(sender, "messages.event-start", new Placeholder()
+                            .add("{event}", event.getDisplayName()));
+                });
+    }
+
+    private CommandAPICommand getStopEventCommand() {
+        // gens stopevent
+        return new CommandAPICommand("stopevent")
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.config(sender, "messages.no-permission");
+                        return;
+                    }
+                    if (this.eventManager.forceEnd()) {
+                        Common.config(sender, "messages.event-stop");
+                    } else {
+                        Common.config(sender, "messages.no-event");
+                    }
                 });
     }
 
