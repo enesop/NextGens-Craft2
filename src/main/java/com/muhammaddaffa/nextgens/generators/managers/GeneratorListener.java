@@ -106,10 +106,10 @@ public record GeneratorListener(
                     .add("{current}", nextGenerator.displayName())
                     .add("{cost}", Common.digits(generator.cost())));
             // play particle
-            Executor.async(() -> {
+            Executor.asyncLater(3L, () -> {
                 if (Config.CONFIG.getBoolean("generator-upgrade-options.particles")) {
                     // block crack particle
-                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, nextGenerator.item().getType().createBlockData());
                     // happy villager particle
                     block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
