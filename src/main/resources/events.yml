@@ -4,7 +4,7 @@ events:
   enabled: true
   # Should we choose random event instead of start it by order
   random: false
-  # The wait time for each event (in minutes)
+  # The wait time for each event (in seconds)
   wait-time: 900
   # The placeholders that will be used
   placeholders:
@@ -22,7 +22,7 @@ events:
       display-name: "&a&l2x Sell Multiplier"
       # The multiplier of the sell
       multiplier: 2.00
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 120
       # The start message
       start-message:
@@ -46,7 +46,7 @@ events:
       display-name: "&b&l1x Generator Upgrade"
       # How many tier should the generator be upgraded
       tier-amount: 1
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 180
       # The start message
       start-message:
@@ -70,7 +70,7 @@ events:
       display-name: "&c&l2x Generator Speed"
       # How much percentage should we reduce the drop interval
       percentage: 50
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 180
       # The start message
       start-message:
@@ -93,7 +93,7 @@ events:
       display-name: "&d&l2x Drop Multiplier"
       # How many drop should we execute on every generator?
       drop-amount: 2
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 180
       # The start message
       start-message:
@@ -114,7 +114,7 @@ events:
       type: mixed_up
       # The display name of the event
       display-name: "&6&lMixed &e&lUp"
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 180
       # The start message
       start-message:
@@ -137,7 +137,7 @@ events:
       display-name: "&a&l1.5x Sell Multiplier"
       # The multiplier of the sell
       multiplier: 1.5
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 180
       # The start message
       start-message:
@@ -161,7 +161,7 @@ events:
       display-name: "&b&l2x Generator Upgrade"
       # How many tier should the generator be upgraded
       tier-amount: 2
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 60
       # The start message
       start-message:
@@ -185,7 +185,7 @@ events:
       display-name: "&c&l1.5x Generator Speed"
       # How much percentage should we reduce the drop interval
       percentage: 25
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 300
       # The start message
       start-message:
@@ -208,7 +208,7 @@ events:
       display-name: "&d&l3x Drop Multiplier"
       # How many drop should we execute on every generator?
       drop-amount: 3
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 60
       # The start message
       start-message:
@@ -229,7 +229,7 @@ events:
       type: mixed_up
       # The display name of the event
       display-name: "&6&lMixed &e&lUp"
-      # The duration of the event (in minutes)
+      # The duration of the event (in seconds)
       duration: 300
       # The start message
       start-message:
