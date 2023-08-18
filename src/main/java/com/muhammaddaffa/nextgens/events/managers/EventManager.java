@@ -97,6 +97,23 @@ public class EventManager {
         Logger.info("Successfully loaded " + this.eventList.size() + " events!");
     }
 
+    public void refresh() {
+        if (this.activeEvent == null) {
+            return;
+        }
+        String eventId = this.activeEvent.getId();
+        double duration = this.activeEvent.getDuration();
+        // get the new event object
+        Event refreshed = this.getEvent(eventId);
+        // end the event if the event is not exist
+        if (refreshed == null) {
+            this.forceEnd();
+        } else {
+            this.activeEvent = refreshed;
+            this.activeEvent.setDuration(duration);
+        }
+    }
+
     public void startTask() {
         // set the default wait time
         if (this.waitTime == null) {

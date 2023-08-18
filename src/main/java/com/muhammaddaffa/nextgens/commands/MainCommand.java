@@ -213,6 +213,9 @@ public class MainCommand {
                     Executor.async(this.generatorManager::refreshActiveGenerator);
                     // start back the auto save
                     this.generatorManager.startAutosaveTask();
+                    // events stuff
+                    this.eventManager.loadEvents();
+                    this.eventManager.refresh();
                     // send message to the sender
                     Common.config(sender, "messages.reload");
                     // close all gui
