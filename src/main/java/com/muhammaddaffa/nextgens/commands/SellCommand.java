@@ -16,6 +16,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.List;
+
 public class SellCommand {
 
     public static void register(EventManager eventManager) {
@@ -37,7 +39,7 @@ public class SellCommand {
     private final CommandAPICommand command;
     public SellCommand(EventManager eventManager) {
         this.eventManager = eventManager;
-        this.command = new CommandAPICommand("sell")
+        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.sell.command"))
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -61,6 +63,8 @@ public class SellCommand {
                         this.sell(target);
                     }
                 });
+        List<String> aliases = Config.CONFIG.getStringList("commands.sell.aliases");
+        this.command.setAliases(aliases.toArray(new String[0]));
     }
 
     public void register() {

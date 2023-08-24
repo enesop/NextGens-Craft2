@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.users.managers;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.users.User;
+import com.muhammaddaffa.nextgens.utils.Config;
 import com.muhammaddaffa.nextgens.utils.LocationSerializer;
 import com.muhammaddaffa.nextgens.utils.Logger;
 import org.bukkit.Location;
@@ -43,6 +44,9 @@ public class UserManager {
 
     public int getMaxSlot(Player player) {
         int max = 0;
+        if (Config.CONFIG.getBoolean("default-max-generator.enabled")) {
+            max += Config.CONFIG.getInt("default-max-generator.amount");
+        }
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
             if (!permission.startsWith("nextgens.max.")) {

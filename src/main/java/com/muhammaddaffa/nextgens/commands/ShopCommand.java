@@ -3,9 +3,12 @@ package com.muhammaddaffa.nextgens.commands;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.ShopInventory;
 import com.muhammaddaffa.nextgens.utils.Common;
+import com.muhammaddaffa.nextgens.utils.Config;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.PlayerArgument;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class ShopCommand {
 
@@ -19,8 +22,7 @@ public class ShopCommand {
     private final CommandAPICommand command;
     public ShopCommand(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
-        this.command = new CommandAPICommand("genshop")
-                .withAliases("gensshop")
+        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.shop.command"))
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -46,6 +48,8 @@ public class ShopCommand {
                     // open the gui for the target
                     ShopInventory.openInventory(actualTarget, this.generatorManager);
                 });
+        List<String> aliases = Config.CONFIG.getStringList("commands.shop.aliases");
+        this.command.setAliases(aliases.toArray(new String[0]));
     }
 
     public void register() {

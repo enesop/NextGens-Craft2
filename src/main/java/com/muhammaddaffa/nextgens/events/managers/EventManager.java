@@ -1,10 +1,7 @@
 package com.muhammaddaffa.nextgens.events.managers;
 
 import com.muhammaddaffa.nextgens.events.Event;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Executor;
-import com.muhammaddaffa.nextgens.utils.Logger;
+import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -145,7 +142,7 @@ public class EventManager {
                 this.activeEvent = this.getNextEvent(true).clone();
             }
             // send start messages
-            this.activeEvent.getStartMessage().forEach(Common::broadcast);
+            this.activeEvent.sendStartMessage();
             // reset back the wait time
             this.waitTime = this.getDefaultWaitTime();
             // return the code
@@ -163,7 +160,7 @@ public class EventManager {
         // if the start time reaches 0
         if (this.activeEvent.getDuration() <= 0) {
             // send end message
-            this.activeEvent.getEndMessage().forEach(Common::broadcast);
+            this.activeEvent.sendEndMessage();
             this.activeEvent = null;
             return;
         }
@@ -175,7 +172,7 @@ public class EventManager {
         // assign the active event
         this.activeEvent = event.clone();
         // send start messages
-        this.activeEvent.getStartMessage().forEach(Common::broadcast);
+        this.activeEvent.sendStartMessage();
         // reset back the wait time
         this.waitTime = this.getDefaultWaitTime();
     }
@@ -184,7 +181,7 @@ public class EventManager {
         if (this.activeEvent == null) {
             return false;
         }
-        this.activeEvent.getEndMessage().forEach(Common::broadcast);
+        this.activeEvent.sendEndMessage();
         this.activeEvent = null;
         this.waitTime = this.getDefaultWaitTime();
         return true;

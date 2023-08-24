@@ -16,6 +16,8 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class MainCommand {
 
     public static void register(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
@@ -32,8 +34,7 @@ public class MainCommand {
         this.generatorManager = generatorManager;
         this.userManager = userManager;
         this.eventManager = eventManager;
-        this.command = new CommandAPICommand("nextgens")
-                .withAliases("nextgen", "ngens", "ngen", "gens", "gen", "generator", "generators")
+        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.nextgens.command"))
                 .withSubcommand(this.getGiveSubcommand())
                 .withSubcommand(this.getAddMaxSubCommand())
                 .withSubcommand(this.getRemoveMaxSubcommand())
@@ -48,6 +49,8 @@ public class MainCommand {
                         Common.config(sender, "messages.help");
                     }
                 });
+        List<String> aliases = Config.CONFIG.getStringList("commands.nextgens.aliases");
+        this.command.setAliases(aliases.toArray(new String[0]));
     }
 
     public void register() {

@@ -2,6 +2,7 @@ package com.muhammaddaffa.nextgens.generators.managers;
 
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
+import com.muhammaddaffa.nextgens.generators.action.InteractAction;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.gui.FixInventory;
 import com.muhammaddaffa.nextgens.gui.UpgradeInventory;
@@ -37,30 +38,35 @@ public record GeneratorListener(
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
         if (event.getHand() != EquipmentSlot.HAND ||
-                event.getAction() != Action.RIGHT_CLICK_BLOCK ||
-                !player.isSneaking()) {
+                block == null) {
             return;
         }
-        // get active generator
+        // get variables
         ActiveGenerator active = this.generatorManager.getActiveGenerator(block);
+        InteractAction action = InteractAction.find(event, InteractAction.SHIFT_RIGHT);
         // skip if not active generator
-        if (block == null || active == null) {
+        if (active == null || action == null) {
             return;
         }
         // get the generator
         Generator generator = active.getGenerator();
         // corruption check
         if (active.isCorrupted()) {
-            if (Config.CONFIG.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
-                Common.config(player, "messages.not-owner");
-                // play bass sound
-                Common.playBassSound(player);
+            // get the correct interaction type
+            InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-fix"), InteractAction.SHIFT_RIGHT);
+            if (action == required) {
+                if (Config.CONFIG.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
+                    Common.config(player, "messages.not-owner");
+                    // play bass sound
+                    Common.playBassSound(player);
+                    return;
+                }
+                // create gui
+                FixInventory gui = new FixInventory(player, active, generator);
+                // open the gui
+                gui.open(player);
                 return;
             }
-            // create gui
-            FixInventory gui = new FixInventory(player, active, generator);
-            // open the gui
-            gui.open(player);
             return;
         }
         // check if player is the owner
@@ -70,7 +76,11 @@ public record GeneratorListener(
             Common.playBassSound(player);
             return;
         }
-
+        // get correct interaction type
+        InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-upgrade"), InteractAction.SHIFT_RIGHT);
+        if (action != required) {
+            return;
+        }
         // check for next tier
         Generator nextGenerator = this.generatorManager.getGenerator(generator.nextTier());
         // upgrade gui option
@@ -121,25 +131,20 @@ public record GeneratorListener(
     private void generatorBreak(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        if (event.getAction() != Action.LEFT_CLICK_BLOCK ||
-                event.getHand() != EquipmentSlot.HAND ||
+        if (event.getHand() != EquipmentSlot.HAND ||
                 block == null) {
             return;
         }
+        InteractAction action = InteractAction.find(event, InteractAction.LEFT);
+        InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-pickup"), InteractAction.LEFT);
         ActiveGenerator active = this.generatorManager.getActiveGenerator(block);
         // skip if not active generator
-        if (active == null) {
+        if (active == null || action != required) {
             return;
         }
         Generator generator = active.getGenerator();
         // cancel event
         event.setCancelled(true);
-        // check if shift pickup option
-        if (Config.CONFIG.getBoolean("shift-pickup") && !player.isSneaking()) {
-            // play bass sound
-            Common.playBassSound(player);
-            return;
-        }
         // pickup broken check
         if (active.isCorrupted()) {
             Common.config(player, "messages.pickup-broken");
@@ -148,14 +153,14 @@ public record GeneratorListener(
             return;
         }
         // disable breaking others gens
-        if (!player.hasPermission("nextgens.admin") && !player.getUniqueId().equals(active.getOwner())) {
+        if (!player.hasPermission("nextgens.break.others") && !player.getUniqueId().equals(active.getOwner())) {
             Common.config(player, "messages.not-owner");
             // play bass sound
             Common.playBassSound(player);
             return;
         }
         // check if player is eligible
-        if (player.hasPermission("nextgens.admin") || player.getUniqueId().equals(active.getOwner())) {
+        if (player.hasPermission("nextgens.break.others") || player.getUniqueId().equals(active.getOwner())) {
             // unregister generator
             this.generatorManager.unregisterGenerator(block);
             // remove block
@@ -171,8 +176,8 @@ public record GeneratorListener(
             if (owner != null) {
                 VisualAction.send(owner, Config.CONFIG.getConfig(), "generator-break-options", new Placeholder()
                         .add("{gen}", generator.displayName())
-                        .add("{current}", this.generatorManager.getGeneratorCount(player))
-                        .add("{max}", this.userManager.getMaxSlot(player)));
+                        .add("{current}", this.generatorManager.getGeneratorCount(owner))
+                        .add("{max}", this.userManager.getMaxSlot(owner)));
             }
             // play particle
             Executor.async(() -> {

@@ -1,5 +1,9 @@
 package com.muhammaddaffa.nextgens.events;
 
+import com.muhammaddaffa.nextgens.utils.Common;
+import com.muhammaddaffa.nextgens.utils.Config;
+import com.muhammaddaffa.nextgens.utils.Placeholder;
+import com.muhammaddaffa.nextgens.utils.TimeFormat;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
@@ -129,6 +133,18 @@ public class Event implements Cloneable{
     public Event setBlacklistedGenerators(List<String> blacklistedGenerators) {
         this.blacklistedGenerators = blacklistedGenerators;
         return this;
+    }
+
+    public void sendStartMessage() {
+        this.startMessage.forEach(message -> Common.broadcast(message, new Placeholder()
+                .add("{name}", this.displayName)
+                .add("{duration}", TimeFormat.parse((long) this.duration))));
+    }
+
+    public void sendEndMessage() {
+        this.endMessage.forEach(message -> Common.broadcast(message, new Placeholder()
+                .add("{name}", this.displayName)
+                .add("{next_duration}", TimeFormat.parse((long) Config.EVENTS.getDouble("events.wait-time")))));
     }
 
     @Override

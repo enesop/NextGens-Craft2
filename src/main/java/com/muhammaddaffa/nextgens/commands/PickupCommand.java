@@ -25,8 +25,7 @@ public class PickupCommand {
     private final CommandAPICommand command;
     public PickupCommand(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
-        this.command = new CommandAPICommand("pickupgens")
-                .withAliases("pickupgen", "pickgens", "pickgen")
+        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.pickup.command"))
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -74,6 +73,8 @@ public class PickupCommand {
                     // send sound
                     actualTarget.playSound(actualTarget.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
                 });
+        List<String> aliases = Config.CONFIG.getStringList("commands.pickup.aliases");
+        this.command.setAliases(aliases.toArray(new String[0]));
     }
 
     public void register() {

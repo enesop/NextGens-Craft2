@@ -85,7 +85,7 @@ public class Sellwand {
         if (uses > 0) {
             builder.pdc(NextGens.sellwand_uses, finalUses);
         }
-        builder.pdc(NextGens.sellwand_total_sold, totalSold + totalValue);
+        builder.pdc(NextGens.sellwand_total_sold, totalSold + afterMultiplier);
         builder.pdc(NextGens.sellwand_total_items, totalItemsSold + totalItems);
         // update the item
         update(builder.build());

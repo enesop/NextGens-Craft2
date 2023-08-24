@@ -30,6 +30,7 @@ auto-save:
 #       shift + right-clicking the generator
 corruption:
   enabled: true
+  # How often should corruption happen (in minutes)
   interval: 180
   # How many generators can possibly corrupt
   # Default: 10 (If there are 100 generators, 10 of them will be randomly chosen and tested for corruption)
@@ -63,6 +64,26 @@ corruption:
     - disabled_generator
     - unbreakable_generator
 
+# Configuration for commands name and aliases (required restart to take effect)
+commands:
+  # This is the main command
+  nextgens:
+    command: nextgens
+    aliases: [nextgen, ngens, ngen, gens, gen, generator, generators]
+  pickup:
+    command: pickupgens
+    aliases: [pickupgen, pickgens, pickgen]
+  sell:
+    command: sell
+    aliases: []
+  shop:
+    command: genshop
+    aliases: [gensshop]
+
+# What is the default max generator for every player
+default-max-generator:
+  enabled: true
+  amount: 10
 # Should we use and override /sell command?
 sell-command: true
 # Should we use permission to place specific generator?
@@ -74,8 +95,12 @@ online-only: true
 anti-explosion: true
 # Should we prevent placing item dropped by generator?
 disable-drop-place: true
-# Should player need to crouch to pick up the generator?
-shift-pickup: false
+# List of interaction needed to do certain things such as picking up, upgrading, fix generator
+# Interaction Type: LEFT, SHIFT_LEFT, RIGHT, SHIFT_RIGHT
+interaction:
+  gens-pickup: LEFT
+  gens-upgrade: SHIFT_RIGHT
+  gens-fix: SHIFT_RIGHT
 # Should we give back generators to the owner if the owner
 # disbanded, kicked, leave their island?
 # If this option is disabled, the generator will disappear instead.
@@ -294,4 +319,5 @@ messages:
     - '&6/gens repair <player|all> &7- repair broken generator for specific players or globally'
     - '&6/gens startevent <event> &7- force to start an event'
     - '&6/gens stopevent &7- force stop the running event'
+    - '&6/gens sellwand <player> <multiplier> <uses> &7- give player a sellwand'
     - '&6/gens reload &7- reload the configuration'
