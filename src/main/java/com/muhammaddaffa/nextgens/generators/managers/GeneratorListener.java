@@ -1,16 +1,18 @@
 package com.muhammaddaffa.nextgens.generators.managers;
 
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.action.InteractAction;
-import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.gui.FixInventory;
 import com.muhammaddaffa.nextgens.gui.UpgradeInventory;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -37,6 +39,7 @@ public record GeneratorListener(
     private void generatorUpgrade(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         if (event.getHand() != EquipmentSlot.HAND ||
                 block == null) {
             return;
@@ -53,12 +56,12 @@ public record GeneratorListener(
         // corruption check
         if (active.isCorrupted()) {
             // get the correct interaction type
-            InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-fix"), InteractAction.SHIFT_RIGHT);
+            InteractAction required = InteractAction.find(config.getString("interaction.gens-fix"), InteractAction.SHIFT_RIGHT);
             if (action == required) {
-                if (Config.CONFIG.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
-                    Common.config(player, "messages.not-owner");
+                if (config.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
+                    Common.configMessage("config.yml", player, "messages.not-owner");
                     // play bass sound
-                    Common.playBassSound(player);
+                    Utils.bassSound(player);
                     return;
                 }
                 // create gui
@@ -71,39 +74,39 @@ public record GeneratorListener(
         }
         // check if player is the owner
         if (!player.getUniqueId().equals(active.getOwner())) {
-            Common.config(player, "messages.not-owner");
+            Common.configMessage("config.yml", player, "messages.not-owner");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
         // get correct interaction type
-        InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-upgrade"), InteractAction.SHIFT_RIGHT);
+        InteractAction required = InteractAction.find(config.getString("interaction.gens-upgrade"), InteractAction.SHIFT_RIGHT);
         if (action != required) {
             return;
         }
         // check for next tier
         Generator nextGenerator = this.generatorManager.getGenerator(generator.nextTier());
         // upgrade gui option
-        if (Config.CONFIG.getBoolean("upgrade-gui")) {
+        if (config.getBoolean("upgrade-gui")) {
             // create the gui object
             UpgradeInventory gui = new UpgradeInventory(player, active, generator, nextGenerator, this.generatorManager);
             // open the gui for player
             gui.open(player);
         } else {
             if (nextGenerator == null) {
-                Common.config(player, "messages.no-upgrade");
+                Common.configMessage("config.yml", player, "messages.no-upgrade");
                 // play bass sound
-                Common.playBassSound(player);
+                Utils.bassSound(player);
                 return;
             }
             // money check
             if (VaultEconomy.getBalance(player) < generator.cost()) {
-                Common.config(player, "messages.not-enough-money", new Placeholder()
+                Common.configMessage("config.yml", player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(player)))
                         .add("{upgradecost}", Common.digits(generator.cost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.cost())));
                 // play bass sound
-                Common.playBassSound(player);
+                Utils.bassSound(player);
                 return;
             }
             // take the money from player
@@ -111,13 +114,13 @@ public record GeneratorListener(
             // register the generator again
             this.generatorManager.registerGenerator(player, nextGenerator, block);
             // visual actions
-            VisualAction.send(player, Config.CONFIG.getConfig(), "generator-upgrade-options", new Placeholder()
+            VisualAction.send(player, config, "generator-upgrade-options", new Placeholder()
                     .add("{previous}", generator.displayName())
                     .add("{current}", nextGenerator.displayName())
                     .add("{cost}", Common.digits(generator.cost())));
             // play particle
             Executor.asyncLater(3L, () -> {
-                if (Config.CONFIG.getBoolean("generator-upgrade-options.particles")) {
+                if (config.getBoolean("generator-upgrade-options.particles")) {
                     // block crack particle
                     block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, nextGenerator.item().getType().createBlockData());
                     // happy villager particle

@@ -1,13 +1,13 @@
 package com.muhammaddaffa.nextgens.hooks.papi;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.TimeFormat;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.TimeFormat;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -71,19 +71,19 @@ public class GensExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("event_name")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {
-                return Config.EVENTS.getString("events.placeholders.no-event");
+                return Config.getFileConfiguration("events.yml").getString("events.placeholders.no-event");
             }
-            return Config.EVENTS.getString("events.placeholders.active-event")
+            return Config.getFileConfiguration("events.yml").getString("events.placeholders.active-event")
                     .replace("{display_name}", event.getDisplayName());
         }
 
         if (params.equalsIgnoreCase("event_time")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {
-                return Config.EVENTS.getString("events.placeholders.no-event-timer")
+                return Config.getFileConfiguration("events.yml").getString("events.placeholders.no-event-timer")
                         .replace("{timer}", TimeFormat.parse((long) this.eventManager.getWaitTime()));
             }
-            return Config.EVENTS.getString("events.placeholders.active-event-timer")
+            return Config.getFileConfiguration("events.yml").getString("events.placeholders.active-event-timer")
                     .replace("{timer}", TimeFormat.parse((long) event.getDuration()));
         }
 

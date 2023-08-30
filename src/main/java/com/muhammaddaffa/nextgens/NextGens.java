@@ -1,6 +1,14 @@
 package com.muhammaddaffa.nextgens;
 
 import com.bgsoftware.wildtools.api.WildToolsAPI;
+import com.muhammaddaffa.mdlib.MDLib;
+import com.muhammaddaffa.mdlib.configupdater.ConfigUpdater;
+import com.muhammaddaffa.mdlib.gui.SimpleInventoryManager;
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.mdlib.utils.Logger;
+import com.muhammaddaffa.mdlib.utils.SpigotUpdateChecker;
 import com.muhammaddaffa.nextgens.commands.MainCommand;
 import com.muhammaddaffa.nextgens.commands.PickupCommand;
 import com.muhammaddaffa.nextgens.commands.SellCommand;
@@ -15,24 +23,16 @@ import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
 import com.muhammaddaffa.nextgens.sellwand.managers.SellwandListener;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
-import com.muhammaddaffa.nextgens.utils.gui.SimpleInventoryManager;
-import com.tchristofferson.configupdater.ConfigUpdater;
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPIBukkitConfig;
 import dev.norska.dsw.DeluxeSellwands;
-import dev.norska.dsw.prices.DSWPriceHandlerInterface;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -70,7 +70,7 @@ public final class NextGens extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        CommandAPI.onLoad(new CommandAPIBukkitConfig(this).silentLogs(true));
+        MDLib.inject(this);
     }
 
     @Override
@@ -96,11 +96,16 @@ public final class NextGens extends JavaPlugin {
                 ╚═╝░░╚══╝╚══════╝╚═╝░░╚═╝░░░╚═╝░░░░╚═════╝░╚══════╝╚═╝░░╚══╝╚═════╝░
                 """);
 
-        // commandapi libs
-        CommandAPI.onEnable();
-
         // initialize stuff
-        Config.init();
+        MDLib.onEnable(this);
+
+        Config.registerConfig(new Config("config.yml", null, true));
+        Config.registerConfig(new Config("generators.yml", null, true));
+        Config.registerConfig(new Config("upgrade_gui.yml", "gui", true));
+        Config.registerConfig(new Config("corrupt_gui.yml", "gui", true));
+        Config.registerConfig(new Config("events.yml", null, true));
+        Config.registerConfig(new Config("data.yml", null, false));
+
         VaultEconomy.init();
 
         // update config
@@ -141,6 +146,8 @@ public final class NextGens extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // shutdown the lib
+        MDLib.shutdown();
         // remove all holograms
         GeneratorTask.flush();
         // save refunds
@@ -187,7 +194,7 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("DecentHolograms") != null) {
             Logger.info("Found DecentHolograms! Registering hook...");
         }
-        if (pm.getPlugin("WildTools") != null && Config.CONFIG.getBoolean("sellwand.hooks.wildtools")) {
+        if (pm.getPlugin("WildTools") != null && Config.getFileConfiguration("config.yml").getBoolean("sellwand.hooks.wildtools")) {
             Logger.info("Found WildTools! Registering hook...");
             WildToolsAPI.getWildTools().getProviders().setPricesProvider(Utils::getPriceValue);
         }
@@ -228,8 +235,6 @@ public final class NextGens extends JavaPlugin {
         pm.registerEvents(new GeneratorListener(this.generatorManager, this.userManager), this);
         pm.registerEvents(this.refundManager, this);
         pm.registerEvents(new SellwandListener(this.eventManager), this);
-        // register the gui lib
-        SimpleInventoryManager.register(this);
     }
 
     private void registerCommands() {
@@ -243,7 +248,7 @@ public final class NextGens extends JavaPlugin {
     private void connectMetrics() {
         // connect to bstats metrics
         Metrics metrics = new Metrics(this, BSTATS_ID);
-        FileConfiguration config = Config.CONFIG.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         // add custom charts
         metrics.addCustomChart(new SimplePie("corruption", () -> this.yesOrNo(config.getBoolean("corruption.enabled"))));
         metrics.addCustomChart(new SimplePie("auto_save", () -> this.yesOrNo(config.getBoolean("auto-save.enabled"))));
@@ -263,7 +268,7 @@ public final class NextGens extends JavaPlugin {
 
     private void updateCheck(){
         Executor.async(() -> {
-            UpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, exception) -> {
+            SpigotUpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, exception) -> {
                 if (result.requiresUpdate()) {
                     Logger.warning(
                             "----------------------------------------------------------------",
@@ -279,9 +284,9 @@ public final class NextGens extends JavaPlugin {
                     return;
                 }
 
-                if (result.getReason() == UpdateChecker.UpdateReason.UP_TO_DATE) {
+                if (result.getReason() == SpigotUpdateChecker.UpdateReason.UP_TO_DATE) {
                     Logger.finest(String.format("Your version of NextGens (%s) is up to date!", result.getNewestVersion()));
-                } else if (result.getReason() == UpdateChecker.UpdateReason.UNRELEASED_VERSION) {
+                } else if (result.getReason() == SpigotUpdateChecker.UpdateReason.UNRELEASED_VERSION) {
                     Logger.warning(
                             "----------------------------------------------------------------",
                             String.format("Your version of NextGens (%s) is more recent than the", result.getNewestVersion()),

@@ -1,9 +1,9 @@
 package com.muhammaddaffa.nextgens.database;
 
+import com.muhammaddaffa.mdlib.utils.LocationSerializer;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
-import com.muhammaddaffa.nextgens.utils.LocationSerializer;
-import com.muhammaddaffa.nextgens.utils.Logger;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
@@ -35,9 +35,9 @@ public class DatabaseManager {
         config.setJdbcUrl("jdbc:sqlite:" + path);
         config.setPoolName("NextGens Generators Pool");
         config.setMaximumPoolSize(1);
-        config.setConnectionTimeout(10000);
+        config.setConnectionTimeout(60000);
         config.setIdleTimeout(600000);
-        config.setLeakDetectionThreshold(10000);
+        config.setLeakDetectionThreshold(60000);
 
         Logger.info("Trying to connect to the SQLite database...");
         // create the file if it's not exist

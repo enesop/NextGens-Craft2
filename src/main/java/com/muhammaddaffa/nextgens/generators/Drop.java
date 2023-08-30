@@ -1,8 +1,8 @@
 package com.muhammaddaffa.nextgens.generators;
 
+import com.muhammaddaffa.mdlib.utils.ItemBuilder;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.utils.ItemBuilder;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;

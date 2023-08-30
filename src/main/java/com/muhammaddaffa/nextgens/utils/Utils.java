@@ -1,20 +1,14 @@
 package com.muhammaddaffa.nextgens.utils;
 
+import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.nextgens.NextGens;
 import net.brcdev.shopgui.ShopGuiPlusApi;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.SimpleCommandMap;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -34,11 +28,15 @@ public class Utils {
             return value * stack.getAmount();
         }
         // check if the shopgui+ hook is enabled
-        if (Config.CONFIG.getBoolean("sell-options.hook_shopguiplus") && isShopGUIPlus()) {
+        if (Config.getFileConfiguration("config.yml").getBoolean("sell-options.hook_shopguiplus") && isShopGUIPlus()) {
             // get the price from shopgui+
             return ShopGuiPlusApi.getItemStackPriceSell(player, stack);
         }
         return 0;
+    }
+
+    public static void bassSound(Player player) {
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 2.0f);
     }
 
     private static boolean isShopGUIPlus() {

@@ -36,15 +36,6 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>com.tchristofferson.configupdater</pattern>
-                            <shadedPattern>com.muhammaddaffa.nextgens.utils.configupdater</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>com.cryptomorin.xseries</pattern>
-                            <!-- Be sure to change the package below -->
-                            <shadedPattern>com.muhammaddaffa.nextgens.utils.xseries</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>com.zaxxer.hikari</pattern>
                             <shadedPattern>com.muhammaddaffa.nextgens.database.hikaricp</shadedPattern>
                         </relocation>
@@ -54,36 +45,10 @@
                             <shadedPattern>com.muhammaddaffa.nextgens.utils.bstats</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>dev.jorel.commandapi</pattern>
-                            <shadedPattern>com.muhammaddaffa.nextgens.utils.commandapi</shadedPattern>
+                            <pattern>com.muhammaddaffa.mdlib</pattern>
+                            <shadedPattern>com.muhammaddaffa.nextgens.mdlib</shadedPattern>
                         </relocation>
                     </relocations>
-                    <!-- Here you can remove the classes you don't use. -->
-                    <!-- These are some examples. -->
-                    <!-- The "unused" package and SkullCacheListener are excluded by default. -->
-                    <!-- Some utilities such a XItemStack depend on more than 3 other classes, so watch out. -->
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>com/cryptomorin/xseries/XBiome*</exclude>
-                                <exclude>com/cryptomorin/xseries/NMSExtras*</exclude>
-                                <exclude>com/cryptomorin/xseries/NoteBlockMusic*</exclude>
-                                <exclude>com/cryptomorin/xseries/SkullCacheListener*</exclude>
-                                <exclude>com/cryptomorin/xseries/XBlock*</exclude>
-                                <exclude>com/cryptomorin/xseries/XEnchantment*</exclude>
-                                <exclude>com/cryptomorin/xseries/XEntity*</exclude>
-                                <exclude>com/cryptomorin/xseries/XItemStack*</exclude>
-                                <exclude>com/cryptomorin/xseries/XPotion*</exclude>
-                                <exclude>com/cryptomorin/xseries/XSound*</exclude>
-                                <exclude>com/cryptomorin/xseries/XTag*</exclude>
-                                <exclude>com/cryptomorin/xseries/messages/ActionBar*</exclude>
-                                <exclude>com/cryptomorin/xseries/messages/Titles*</exclude>
-                                <exclude>com/cryptomorin/xseries/particles/ParticleDisplay*</exclude>
-                                <exclude>com/cryptomorin/xseries/particles/XParticle*</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
                 </configuration>
                 <executions>
                     <execution>
@@ -157,13 +122,6 @@
             <version>1.20.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Vault -->
-        <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- PlaceholderAPI -->
         <dependency>
             <groupId>me.clip</groupId>
@@ -228,11 +186,11 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- CommandAPI -->
+        <!-- MDLib -->
         <dependency>
-            <groupId>dev.jorel</groupId>
-            <artifactId>commandapi-bukkit-shade</artifactId>
-            <version>9.0.4-SNAPSHOT</version>
+            <groupId>com.github.mdaffa48</groupId>
+            <artifactId>MDLib</artifactId>
+            <version>1.2</version>
         </dependency>
         <!-- BStats -->
         <dependency>
@@ -240,18 +198,6 @@
             <artifactId>bstats-bukkit</artifactId>
             <version>3.0.2</version>
             <scope>compile</scope>
-        </dependency>
-        <!-- XSeries -->
-        <dependency>
-            <groupId>com.github.cryptomorin</groupId>
-            <artifactId>XSeries</artifactId>
-            <version>9.5.0</version>
-        </dependency>
-        <!-- ConfigUpdater -->
-        <dependency>
-            <groupId>com.tchristofferson</groupId>
-            <artifactId>ConfigUpdater</artifactId>
-            <version>2.1-SNAPSHOT</version>
         </dependency>
         <!-- HikariCP -->
         <dependency>

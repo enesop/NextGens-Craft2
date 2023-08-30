@@ -1,10 +1,10 @@
 package com.muhammaddaffa.nextgens.refund;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Executor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,7 +48,7 @@ public class RefundManager implements Listener {
     }
 
     public void load() {
-        FileConfiguration config = Config.DATA.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("data.yml");
         // check if there are any data
         if (!config.isConfigurationSection("items")) {
             return;
@@ -65,7 +65,7 @@ public class RefundManager implements Listener {
     }
 
     public void save() {
-        Config data = Config.DATA;
+        Config data = Config.getConfig("data.yml");
         FileConfiguration config = data.getConfig();
         // loop through all data
         this.itemMap.forEach((uuid, generators) -> {

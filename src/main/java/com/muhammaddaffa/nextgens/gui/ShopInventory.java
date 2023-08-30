@@ -1,13 +1,14 @@
 package com.muhammaddaffa.nextgens.gui;
 
+import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.ItemBuilder;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.ItemBuilder;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
-import com.muhammaddaffa.nextgens.utils.gui.SimpleInventory;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,7 +27,8 @@ public class ShopInventory extends SimpleInventory {
     private final GeneratorManager generatorManager;
 
     public ShopInventory(Player player, GeneratorManager generatorManager) {
-        super(Config.SHOP.getInt("size"), Common.color(Config.SHOP.getString("title")));
+        super(Config.getFileConfiguration("shop.yml").getInt("size"),
+                Common.color(Config.getFileConfiguration("shop.yml").getString("title")));
         this.player = player;
         this.generatorManager = generatorManager;
 
@@ -34,7 +36,7 @@ public class ShopInventory extends SimpleInventory {
     }
 
     private void setAllItems() {
-        FileConfiguration config = Config.SHOP.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("shop.yml");
         // loop the items
         for (String key : config.getConfigurationSection("items").getKeys(false)) {
             // get the data
@@ -64,14 +66,14 @@ public class ShopInventory extends SimpleInventory {
             this.setItems(slots, stack, event -> {
                 // money check
                 if (VaultEconomy.getBalance(this.player) <= cost) {
-                    Common.config(this.player, "messages.not-enough-money", new Placeholder()
+                    Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
                             .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                             .add("{upgradecost}", Common.digits(cost))
                             .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - cost)));
                     // play bass sound
-                    Common.playBassSound(this.player);
+                    Utils.bassSound(this.player);
                     // close on no money
-                    if (Config.CONFIG.getBoolean("close-on-no-money")) {
+                    if (Config.getFileConfiguration("config.yml").getBoolean("close-on-no-money")) {
                         this.player.closeInventory();
                     }
                     return;
@@ -81,11 +83,11 @@ public class ShopInventory extends SimpleInventory {
                 // give the generator
                 Common.addInventoryItem(this.player, generator.createItem(1));
                 // send message
-                Common.config(this.player, "messages.gen-purchase", new Placeholder()
+                Common.configMessage("config.yml", this.player, "messages.gen-purchase", new Placeholder()
                         .add("{gen}", generator.displayName())
                         .add("{cost}", Common.digits(cost)));
                 // close on purchase
-                if (Config.CONFIG.getBoolean("close-on-purchase")) {
+                if (Config.getFileConfiguration("config.yml").getBoolean("close-on-purchase")) {
                     this.player.closeInventory();
                 }
             });

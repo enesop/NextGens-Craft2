@@ -1,19 +1,16 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
-import com.muhammaddaffa.nextgens.utils.TimeFormat;
-import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class CorruptionTask extends BukkitRunnable {
 
@@ -47,7 +44,7 @@ public class CorruptionTask extends BukkitRunnable {
     @Override
     public void run() {
         // if corruption is disabled, skip this
-        if (!Config.CONFIG.getBoolean("corruption.enabled")) {
+        if (!Config.getFileConfiguration("config.yml").getBoolean("corruption.enabled")) {
             return;
         }
         // increase the timer
@@ -69,7 +66,7 @@ public class CorruptionTask extends BukkitRunnable {
             }
             // broadcast the corrupt event
             if (actuallyCorrupted > 0) {
-                Common.configBroadcast("corruption.broadcast", new Placeholder()
+                Common.configBroadcast("config.yml", "corruption.broadcast", new Placeholder()
                         .add("{amount}", actuallyCorrupted));
             }
         }
@@ -77,7 +74,7 @@ public class CorruptionTask extends BukkitRunnable {
 
     private List<ActiveGenerator> getPossiblyInfectedGenerators() {
         // get the percentage
-        int percentage = Config.CONFIG.getInt("corruption.percentage");
+        int percentage = Config.getFileConfiguration("config.yml").getInt("corruption.percentage");
         // get total generators that will be infected
         List<ActiveGenerator> activeGenerators = this.generatorManager.getActiveGenerator()
                 .stream()
@@ -86,7 +83,7 @@ public class CorruptionTask extends BukkitRunnable {
         int total = activeGenerators.size();
         int totalInfected = (total * percentage) / 100;
         // get random active generator
-        List<String> blacklisted = Config.CONFIG.getStringList("corruption.blacklisted-generators");
+        List<String> blacklisted = Config.getFileConfiguration("config.yml").getStringList("corruption.blacklisted-generators");
         Set<Integer> checked = new HashSet<>();
         List<ActiveGenerator> corrupted = new ArrayList<>();
 
@@ -115,7 +112,7 @@ public class CorruptionTask extends BukkitRunnable {
     }
 
     public int getCorruptionTime() {
-        return (int) TimeUnit.MINUTES.toSeconds(Config.CONFIG.getInt("corruption.interval"));
+        return (int) TimeUnit.MINUTES.toSeconds(Config.getFileConfiguration("config.yml").getInt("corruption.interval"));
     }
 
 }

@@ -4,11 +4,11 @@ import com.bgsoftware.superiorskyblock.api.events.IslandDisbandEvent;
 import com.bgsoftware.superiorskyblock.api.events.IslandKickEvent;
 import com.bgsoftware.superiorskyblock.api.events.IslandQuitEvent;
 import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -49,7 +49,7 @@ public record SSB2Listener(
             // set the block to air
             active.getLocation().getBlock().setType(Material.AIR);
             // check for island pickup option
-            if (Config.CONFIG.getBoolean("island-pickup")) {
+            if (Config.getFileConfiguration("config.yml").getBoolean("island-pickup")) {
                 // give the generator back
                 if (player == null) {
                     // if player not online, register it to item join

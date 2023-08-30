@@ -1,7 +1,10 @@
 package com.muhammaddaffa.nextgens.events.managers;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.events.Event;
-import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,7 +76,7 @@ public class EventManager {
         // clear the event list first
         this.eventList.clear();
         // get all variables we want
-        FileConfiguration config = Config.EVENTS.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("events.yml");
         // check if there are any events or not
         if (!config.isConfigurationSection("events.events")) {
             return;
@@ -189,7 +192,7 @@ public class EventManager {
 
     public void load() {
         // get the config
-        FileConfiguration config = Config.DATA.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("data.yml");
         // get the saved data
         String eventId = config.getString("events.id");
         if (eventId != null && this.getEvent(eventId) != null) {
@@ -206,7 +209,7 @@ public class EventManager {
     }
     public void save() {
         // get variables
-        Config data = Config.DATA;
+        Config data = Config.getConfig("data.yml");
         FileConfiguration config = data.getConfig();
         // save it
         if (this.activeEvent == null) {
@@ -226,11 +229,11 @@ public class EventManager {
     }
 
     public boolean isEnabled() {
-        return Config.EVENTS.getBoolean("events.enabled");
+        return Config.getFileConfiguration("events.yml").getBoolean("events.enabled");
     }
 
     public boolean isRandom() {
-        return Config.EVENTS.getBoolean("events.random");
+        return Config.getFileConfiguration("events.yml").getBoolean("events.random");
     }
 
     public double getWaitTime() {
@@ -238,7 +241,7 @@ public class EventManager {
     }
 
     public double getDefaultWaitTime() {
-        return Config.EVENTS.getDouble("events.wait-time");
+        return Config.getFileConfiguration("events.yml").getDouble("events.wait-time");
     }
 
 }

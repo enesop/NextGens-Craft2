@@ -1,7 +1,7 @@
 package com.muhammaddaffa.nextgens.generators;
 
+import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.utils.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;

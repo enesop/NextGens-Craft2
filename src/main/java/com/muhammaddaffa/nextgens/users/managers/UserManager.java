@@ -1,12 +1,10 @@
 package com.muhammaddaffa.nextgens.users.managers;
 
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
-import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.users.User;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.LocationSerializer;
-import com.muhammaddaffa.nextgens.utils.Logger;
-import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +42,9 @@ public class UserManager {
 
     public int getMaxSlot(Player player) {
         int max = 0;
-        if (Config.CONFIG.getBoolean("default-max-generator.enabled")) {
-            max += Config.CONFIG.getInt("default-max-generator.amount");
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        if (config.getBoolean("default-max-generator.enabled")) {
+            max += config.getInt("default-max-generator.amount");
         }
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();

@@ -1,5 +1,8 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
@@ -7,11 +10,9 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Executor;
-import com.muhammaddaffa.nextgens.utils.LocationSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -66,24 +67,25 @@ public class GeneratorTask extends BukkitRunnable {
             Generator generator = active.getGenerator();
             Player player = Bukkit.getPlayer(active.getOwner());
             Event event = this.eventManager.getActiveEvent();
+            FileConfiguration config = Config.getFileConfiguration("config.yml");
             // if generator is invalid or chunk is not loaded, skip it
             if (generator == null || !active.isChunkLoaded()) {
                 continue;
             }
-            if (Config.CONFIG.getStringList("blacklisted-worlds").contains(active.getLocation().getWorld().getName())) {
+            if (config.getStringList("blacklisted-worlds").contains(active.getLocation().getWorld().getName())) {
                 continue;
             }
             // check for online-only option
-            if (Config.CONFIG.getBoolean("online-only")) {
+            if (config.getBoolean("online-only")) {
                 if (player == null || !player.isOnline()) {
                     continue;
                 }
             }
             String serialized = LocationSerializer.serialize(active.getLocation());
             // check for corruption option
-            if (Config.CONFIG.getBoolean("corruption.enabled") && active.isCorrupted()) {
+            if (config.getBoolean("corruption.enabled") && active.isCorrupted()) {
                 // check if hologram is enabled
-                if (Config.CONFIG.getBoolean("corruption.hologram.enabled") && !this.hologramMap.containsKey(serialized)) {
+                if (config.getBoolean("corruption.hologram.enabled") && !this.hologramMap.containsKey(serialized)) {
                     CorruptedHologram hologram = new CorruptedHologram(active);
                     // show the hologram
                     hologram.spawn();

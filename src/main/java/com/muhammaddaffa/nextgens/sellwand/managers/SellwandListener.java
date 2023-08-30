@@ -1,9 +1,10 @@
 package com.muhammaddaffa.nextgens.sellwand.managers;
 
 import com.griefcraft.lwc.LWC;
+import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.sellwand.Sellwand;
-import com.muhammaddaffa.nextgens.utils.Common;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
@@ -35,11 +36,11 @@ public record SellwandListener(
             // LWC check
             if (Bukkit.getPluginManager().getPlugin("LWC") != null && !LWC.getInstance().canAccessProtection(player, block)) {
                 // send a message and do nothing
-                Common.config(player, "messages.sellwand-failed");
+                Common.configMessage("config.yml", player, "messages.sellwand-failed");
                 // cancel the event
                 event.setCancelled(true);
                 // bass sound
-                Common.playBassSound(player);
+                Utils.bassSound(player);
                 return;
             }
             // try to sell the content of the chest

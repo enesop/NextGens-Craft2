@@ -1,20 +1,15 @@
 package com.muhammaddaffa.nextgens.commands;
 
-import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.mdlib.commandapi.CommandAPIBukkit;
+import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
+import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
-import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
-import dev.jorel.commandapi.CommandAPIBukkit;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.PlayerArgument;
-import net.brcdev.shopgui.ShopGuiPlusApi;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
@@ -23,7 +18,7 @@ public class SellCommand {
     public static void register(EventManager eventManager) {
         SellCommand command = new SellCommand(eventManager);
         // check if sell command is enabled
-        if (!Config.CONFIG.getBoolean("sell-command")) {
+        if (!Config.getFileConfiguration("config.yml").getBoolean("sell-command")) {
             return;
         }
         Executor.sync(() -> {
@@ -39,13 +34,13 @@ public class SellCommand {
     private final CommandAPICommand command;
     public SellCommand(EventManager eventManager) {
         this.eventManager = eventManager;
-        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.sell.command"))
+        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.sell.command"))
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
                     if (target == null) {
                         if (!sender.hasPermission("nextgens.sell")) {
-                            Common.config(sender, "messages.no-permission");
+                            Common.configMessage("config.yml", sender, "messages.no-permission");
                             return;
                         }
                         if (!(sender instanceof Player player)) {
@@ -56,14 +51,14 @@ public class SellCommand {
                         this.sell(player);
                     } else {
                         if (!sender.hasPermission("nextgens.sell.others")) {
-                            Common.config(sender, "messages.no-permission");
+                            Common.configMessage("config.yml", sender, "messages.no-permission");
                             return;
                         }
                         // sell the items
                         this.sell(target);
                     }
                 });
-        List<String> aliases = Config.CONFIG.getStringList("commands.sell.aliases");
+        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.sell.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 
@@ -89,9 +84,9 @@ public class SellCommand {
         // check if player has anything to sell
         if (totalItems == 0) {
             // send message
-            Common.config(player, "messages.no-sell");
+            Common.configMessage("config.yml", player, "messages.no-sell");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
         /**
@@ -105,7 +100,7 @@ public class SellCommand {
         // deposit the money
         VaultEconomy.deposit(player, totalValue);
         // send the visual action
-        VisualAction.send(player, Config.CONFIG.getConfig(), "sell-options", new Placeholder()
+        VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
                 .add("{amount}", Common.digits(totalItems))
                 .add("{value}", Common.digits(totalValue)));
     }

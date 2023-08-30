@@ -1,11 +1,16 @@
 package com.muhammaddaffa.nextgens.sellwand;
 
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.ItemBuilder;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -46,9 +51,9 @@ public class Sellwand {
         // check if player has anything to sell
         if (totalItems == 0) {
             // send message
-            Common.config(player, "messages.no-sell");
+            Common.configMessage("config.yml", player, "messages.no-sell");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return true;
         }
         /**
@@ -66,7 +71,7 @@ public class Sellwand {
         // deposit the money
         VaultEconomy.deposit(player, afterMultiplier);
         // send the visual action
-        VisualAction.send(player, Config.CONFIG.getConfig(), "sell-options", new Placeholder()
+        VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
                 .add("{amount}", Common.digits(totalItems))
                 .add("{value}", Common.digits(afterMultiplier)));
         // final uses
@@ -76,7 +81,7 @@ public class Sellwand {
             // destroy the item
             stack.setAmount(0);
             // send message
-            Common.config(player, "messages.sellwand-broke");
+            Common.configMessage("config.yml", player, "messages.sellwand-broke");
             // play break sound
             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
             return true;
@@ -94,6 +99,7 @@ public class Sellwand {
 
     public static void update(ItemStack stack) {
         // update the item
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         ItemBuilder builder = new ItemBuilder(stack);
         // get the multiplier and uses
         ItemMeta meta = builder.getItemMeta();
@@ -106,8 +112,8 @@ public class Sellwand {
             return;
         }
         // set the display name and lore back
-        builder.name(Config.CONFIG.getString("sellwand.item.display-name"));
-        builder.lore(Config.CONFIG.getStringList("sellwand.item.lore"));
+        builder.name(config.getString("sellwand.item.display-name"));
+        builder.lore(config.getStringList("sellwand.item.lore"));
         builder.placeholder(new Placeholder()
                 .add("{multiplier}", Common.digits(multiplier))
                 .add("{uses}", getUsesPlaceholder(uses))
@@ -119,7 +125,7 @@ public class Sellwand {
 
     public static ItemStack create(double multiplier, int uses) {
         // create the item
-        ItemBuilder builder = ItemBuilder.fromConfig(Config.CONFIG.getConfig(), "sellwand.item");
+        ItemBuilder builder = ItemBuilder.fromConfig(Config.getFileConfiguration("config.yml"), "sellwand.item");
         builder.pdc(NextGens.sellwand_global, UUID.randomUUID().toString());
         builder.pdc(NextGens.sellwand_multiplier, multiplier);
         builder.pdc(NextGens.sellwand_uses, uses);
@@ -136,7 +142,7 @@ public class Sellwand {
 
     public static String getUsesPlaceholder(int uses) {
         if (uses == -1) {
-            return Config.CONFIG.getString("sellwand.unlimited-placeholder");
+            return Config.getFileConfiguration("config.yml").getString("sellwand.unlimited-placeholder");
         }
         return Common.digits(uses);
     }

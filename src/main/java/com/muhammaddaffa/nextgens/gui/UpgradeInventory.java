@@ -1,11 +1,12 @@
 package com.muhammaddaffa.nextgens.gui;
 
+import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
+import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.hooks.vault.VaultEconomy;
 import com.muhammaddaffa.nextgens.utils.*;
-import com.muhammaddaffa.nextgens.utils.gui.SimpleInventory;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -24,7 +25,8 @@ public class UpgradeInventory extends SimpleInventory {
     private final GeneratorManager generatorManager;
 
     public UpgradeInventory(Player player, ActiveGenerator active, Generator generator, Generator nextGenerator, GeneratorManager generatorManager) {
-        super(Config.UPGRADE_GUI.getInt("size"), Common.color(Config.UPGRADE_GUI.getString("title")));
+        super(Config.getFileConfiguration("upgrade_gui.yml").getInt("size"),
+                Common.color(Config.getFileConfiguration("upgrade_gui.yml").getString("title")));
         this.player = player;
         this.active = active;
         this.generator = generator;
@@ -38,7 +40,7 @@ public class UpgradeInventory extends SimpleInventory {
 
     private void setDisplayButton() {
         // get the slots
-        List<Integer> slots = Config.UPGRADE_GUI.getIntegerList("display-slots");
+        List<Integer> slots = Config.getFileConfiguration("upgrade_gui.yml").getIntegerList("display-slots");
         // set the item
         if (this.nextGenerator == null) {
             this.setNoUpgradeButton(slots);
@@ -53,7 +55,7 @@ public class UpgradeInventory extends SimpleInventory {
     }
 
     private void setUpgradeButton(List<Integer> slots) {
-        FileConfiguration config = Config.UPGRADE_GUI.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("upgrade_gui.yml");
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
                 .name(config.getString("display-enough-money.display-name"))
@@ -81,12 +83,12 @@ public class UpgradeInventory extends SimpleInventory {
             Block block = this.active.getLocation().getBlock();
             // money check
             if (VaultEconomy.getBalance(this.player) < this.generator.cost()) {
-                Common.config(this.player, "messages.not-enough-money", new Placeholder()
+                Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                         .add("{upgradecost}", Common.digits(this.generator.cost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.cost())));
                 // play bass sound
-                Common.playBassSound(this.player);
+                Utils.bassSound(this.player);
                 // close the gui
                 this.player.closeInventory();
                 return;
@@ -96,13 +98,13 @@ public class UpgradeInventory extends SimpleInventory {
             // register the generator again
             this.generatorManager.registerGenerator(this.player, this.nextGenerator, block);
             // visual actions
-            VisualAction.send(this.player, Config.CONFIG.getConfig(), "generator-upgrade-options", new Placeholder()
+            VisualAction.send(this.player, Config.getFileConfiguration("config.yml"), "generator-upgrade-options", new Placeholder()
                     .add("{previous}", this.generator.displayName())
                     .add("{current}", this.nextGenerator.displayName())
                     .add("{cost}", Common.digits(this.generator.cost())));
             // play particle
             Executor.async(() -> {
-                if (Config.CONFIG.getBoolean("generator-upgrade-options.particles")) {
+                if (Config.getFileConfiguration("config.yml").getBoolean("generator-upgrade-options.particles")) {
                     // block crack particle
                     block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.nextGenerator.item().getType().createBlockData());
                     // happy villager particle
@@ -115,7 +117,7 @@ public class UpgradeInventory extends SimpleInventory {
     }
 
     private void setNoMoneyButton(List<Integer> slots) {
-        FileConfiguration config = Config.UPGRADE_GUI.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("upgrade_gui.yml");
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
                 .name(config.getString("display-no-money.display-name"))
@@ -140,19 +142,19 @@ public class UpgradeInventory extends SimpleInventory {
 
         // set the item
         this.setItems(slots, builder.build(), event -> {
-            Common.config(this.player, "messages.not-enough-money", new Placeholder()
+            Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
                     .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                     .add("{upgradecost}", Common.digits(this.generator.cost()))
                     .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.cost())));
             // play bass sound
-            Common.playBassSound(this.player);
+            Utils.bassSound(this.player);
             // close the gui
             this.player.closeInventory();
         });
     }
 
     private void setNoUpgradeButton(List<Integer> slots) {
-        ItemBuilder builder = ItemBuilder.fromConfig(Config.UPGRADE_GUI.getConfig(), "no-upgrade-button");
+        ItemBuilder builder = ItemBuilder.fromConfig(Config.getFileConfiguration("upgrade_gui.yml"), "no-upgrade-button");
         if (builder == null) {
             return;
         }
@@ -160,7 +162,7 @@ public class UpgradeInventory extends SimpleInventory {
     }
 
     private void setAcceptButton() {
-        FileConfiguration config = Config.UPGRADE_GUI.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("upgrade_gui.yml");
         // get the slots
         List<Integer> slots = config.getIntegerList("confirm-slots");
         // create the item
@@ -177,12 +179,12 @@ public class UpgradeInventory extends SimpleInventory {
             Block block = active.getLocation().getBlock();
             // money check
             if (VaultEconomy.getBalance(this.player) < this.generator.cost()) {
-                Common.config(this.player, "messages.not-enough-money", new Placeholder()
+                Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                         .add("{upgradecost}", Common.digits(this.generator.cost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.cost())));
                 // play bass sound
-                Common.playBassSound(this.player);
+                Utils.bassSound(this.player);
                 // close the gui
                 this.player.closeInventory();
                 return;
@@ -192,13 +194,13 @@ public class UpgradeInventory extends SimpleInventory {
             // register the generator again
             this.generatorManager.registerGenerator(this.player, this.nextGenerator, block);
             // visual actions
-            VisualAction.send(this.player, Config.CONFIG.getConfig(), "generator-upgrade-options", new Placeholder()
+            VisualAction.send(this.player, Config.getFileConfiguration("config.yml"), "generator-upgrade-options", new Placeholder()
                     .add("{previous}", this.generator.displayName())
                     .add("{current}", this.nextGenerator.displayName())
                     .add("{cost}", Common.digits(this.generator.cost())));
             // play particle
             Executor.async(() -> {
-                if (Config.CONFIG.getBoolean("generator-upgrade-options.particles")) {
+                if (Config.getFileConfiguration("config.yml").getBoolean("generator-upgrade-options.particles")) {
                     // block crack particle
                     block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.nextGenerator.item().getType().createBlockData());
                     // happy villager particle
@@ -211,7 +213,7 @@ public class UpgradeInventory extends SimpleInventory {
     }
 
     private void setCancelButton() {
-        FileConfiguration config = Config.UPGRADE_GUI.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("upgrade_gui.yml");
         // get the slots
         List<Integer> slots = config.getIntegerList("cancel-slots");
         // create the item

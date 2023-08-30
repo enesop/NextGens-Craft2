@@ -1,5 +1,6 @@
 package com.muhammaddaffa.nextgens.generators.managers;
 
+import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
@@ -199,7 +200,14 @@ public class GeneratorManager {
         String query = "SELECT * FROM " + DatabaseManager.GENERATOR_TABLE;
         this.dbm.executeQuery(query, result -> {
             while (result.next()) {
-                UUID owner = UUID.fromString(result.getString(1));
+                // get the uuid string
+                String uuidString = result.getString(1);
+                // if the uuid string is null, skip the iteration
+                if (uuidString == null) {
+                    continue;
+                }
+                // otherwise, continue to load
+                UUID owner = UUID.fromString(uuidString);
                 String serialized = result.getString(2);
                 Location location = LocationSerializer.deserialize(serialized);
                 String generatorId = result.getString(3);
@@ -233,7 +241,7 @@ public class GeneratorManager {
                 }
             }
             // load generator from 'generators.yml'
-            this.loadGenerators(Config.GENERATORS.getConfig());
+            this.loadGenerators(Config.getFileConfiguration("generators.yml"));
             // send log message
             Logger.info("Successfully loaded " + this.generatorMap.size() + " generators!");
         } else {
@@ -309,9 +317,9 @@ public class GeneratorManager {
             this.saveTask = null;
         }
         // check for auto save enabled
-        if (Config.CONFIG.getBoolean("auto-save.enabled")) {
+        if (Config.getFileConfiguration("config.yml").getBoolean("auto-save.enabled")) {
             // get the interval
-            int interval = Config.CONFIG.getInt("auto-save.interval");
+            int interval = Config.getFileConfiguration("config.yml").getInt("auto-save.interval");
             long timer = 20L * interval;
             // start the auto-save task
             this.saveTask = Executor.asyncTimer(timer, timer, this::saveActiveGenerator);

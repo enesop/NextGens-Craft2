@@ -1,11 +1,11 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -28,7 +28,7 @@ public class NotifyTask extends BukkitRunnable {
         // set back the runnable
         runnable = new NotifyTask(generatorManager);
         // get the interval
-        long interval = 20L * TimeUnit.MINUTES.toSeconds(Config.CONFIG.getInt("corruption.notify.interval"));
+        long interval = 20L * TimeUnit.MINUTES.toSeconds(Config.getFileConfiguration("config.yml").getInt("corruption.notify.interval"));
         // run the task
         runnable.runTaskTimerAsynchronously(NextGens.getInstance(), interval, interval);
     }
@@ -41,7 +41,7 @@ public class NotifyTask extends BukkitRunnable {
     @Override
     public void run() {
         // if corruption is not enabled, skip this
-        if (!Config.CONFIG.getBoolean("corruption.enabled")) {
+        if (!Config.getFileConfiguration("config.yml").getBoolean("corruption.enabled")) {
             return;
         }
         // create the map to store data
@@ -61,7 +61,7 @@ public class NotifyTask extends BukkitRunnable {
                 return;
             }
             // send the message
-            Common.config(player, "corruption.notify.messages", new Placeholder()
+            Common.configMessage("config.yml", player, "corruption.notify.messages", new Placeholder()
                     .add("{amount}", Common.digits(amount)));
             // play note pling sound
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);

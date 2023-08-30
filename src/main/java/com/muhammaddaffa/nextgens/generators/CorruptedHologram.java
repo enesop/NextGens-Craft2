@@ -1,10 +1,10 @@
 package com.muhammaddaffa.nextgens.generators;
 
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Executor;
-import com.muhammaddaffa.nextgens.utils.LocationSerializer;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
@@ -21,13 +21,13 @@ public class CorruptedHologram {
     private final String name;
     public CorruptedHologram(ActiveGenerator active) {
         this.active = active;
-        this.hologramLocation = active.getLocation().clone().add(0.5, Config.CONFIG.getDouble("corruption.hologram.height"), 0.5);
+        this.hologramLocation = active.getLocation().clone().add(0.5, Config.getFileConfiguration("config.yml").getDouble("corruption.hologram.height"), 0.5);
         this.name = this.getCleanNames(LocationSerializer.serialize(this.hologramLocation));
     }
 
     public void spawn() {
         // get the hologram lines
-        List<String> lines = Common.color(Config.CONFIG.getStringList("corruption.hologram.lines"));
+        List<String> lines = Common.color(Config.getFileConfiguration("config.yml").getStringList("corruption.hologram.lines"));
         // Holographic Displays
         if (Bukkit.getPluginManager().getPlugin("HolographicDisplays") != null) {
             // execute it in sync task

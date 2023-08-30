@@ -1,12 +1,12 @@
 package com.muhammaddaffa.nextgens.commands;
 
+import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
+import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
+import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.utils.Common;
-import com.muhammaddaffa.nextgens.utils.Config;
-import com.muhammaddaffa.nextgens.utils.Placeholder;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.PlayerArgument;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -25,14 +25,14 @@ public class PickupCommand {
     private final CommandAPICommand command;
     public PickupCommand(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
-        this.command = new CommandAPICommand(Config.CONFIG.getString("commands.pickup.command"))
+        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.pickup.command"))
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
                     Player actualTarget;
                     if (target == null) {
                         if (!sender.hasPermission("nextgens.pickup")) {
-                            Common.config(sender, "messages.no-permission");
+                            Common.configMessage("config.yml", sender, "messages.no-permission");
                             return;
                         }
                         if (!(sender instanceof Player player)) {
@@ -42,7 +42,7 @@ public class PickupCommand {
                         actualTarget = player;
                     } else {
                         if (!sender.hasPermission("nextgens.pickup.others")) {
-                            Common.config(sender, "messages.no-permission");
+                            Common.configMessage("config.yml", sender, "messages.no-permission");
                             return;
                         }
                         actualTarget = target;
@@ -53,7 +53,7 @@ public class PickupCommand {
                     // loop generators
                     for (ActiveGenerator active : generators) {
                         // check if broken pickup option is enabled
-                        if (Config.CONFIG.getBoolean("broken-pickup") && active.isCorrupted()) {
+                        if (Config.getFileConfiguration("config.yml").getBoolean("broken-pickup") && active.isCorrupted()) {
                             total--;
                             continue;
                         }
@@ -65,15 +65,15 @@ public class PickupCommand {
                         Common.addInventoryItem(actualTarget, active.getGenerator().createItem(1));
                     }
                     // send message
-                    Common.config(sender, "messages.force-pickup", new Placeholder()
+                    Common.configMessage("config.yml", sender, "messages.force-pickup", new Placeholder()
                             .add("{player}", actualTarget.getName())
                             .add("{amount}", Common.digits(total)));
-                    Common.config(actualTarget, "messages.pickup-gens", new Placeholder()
+                    Common.configMessage("config.yml", actualTarget, "messages.pickup-gens", new Placeholder()
                             .add("{amount}", Common.digits(total)));
                     // send sound
                     actualTarget.playSound(actualTarget.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
                 });
-        List<String> aliases = Config.CONFIG.getStringList("commands.pickup.aliases");
+        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.pickup.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 
