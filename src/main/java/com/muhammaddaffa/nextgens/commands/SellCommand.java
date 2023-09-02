@@ -7,6 +7,7 @@ import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
+import com.muhammaddaffa.nextgens.multiplier.Multiplier;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -68,6 +69,7 @@ public class SellCommand {
 
     private void sell(Player player) {
         double totalValue = 0.0;
+        double bonus = 0.0;
         int totalItems = 0;
         // loop through inventory contents
         for (ItemStack stack : player.getInventory()) {
@@ -95,14 +97,17 @@ public class SellCommand {
         Event event = this.eventManager.getActiveEvent();
         if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
             // set the total value
-            totalValue = totalValue * Math.max(1.0, event.getSellMultiplier());
+            bonus += totalValue * Math.max(1.0, event.getSellMultiplier());
         }
+        int sellMultiplier = Multiplier.getSellMultiplier(player);
+        bonus += ((totalValue * sellMultiplier) / 100);
         // deposit the money
-        VaultEconomy.deposit(player, totalValue);
+        final double finalAmount = totalValue + bonus;
+        VaultEconomy.deposit(player, finalAmount);
         // send the visual action
         VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
                 .add("{amount}", Common.digits(totalItems))
-                .add("{value}", Common.digits(totalValue)));
+                .add("{value}", Common.digits(finalAmount)));
     }
 
 }

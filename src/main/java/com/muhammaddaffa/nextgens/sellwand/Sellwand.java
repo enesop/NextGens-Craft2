@@ -8,6 +8,7 @@ import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
+import com.muhammaddaffa.nextgens.multiplier.Multiplier;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -66,6 +67,9 @@ public class Sellwand {
         }
         // apply the multiplier
         bonus += totalValue * multiplier;
+        // apply the sell permission multiplier
+        int sellMultiplier = Multiplier.getSellMultiplier(player);
+        bonus += ((totalValue * sellMultiplier) / 100);
         // apply the bonuses
         final double afterMultiplier = totalValue + bonus;
         // deposit the money
