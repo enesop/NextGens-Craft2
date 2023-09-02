@@ -101,6 +101,7 @@ public final class NextGens extends JavaPlugin {
         // initialize stuff
         Config.registerConfig(new Config("config.yml", null, true));
         Config.registerConfig(new Config("generators.yml", null, true));
+        Config.registerConfig(new Config("shop.yml", null, true));
         Config.registerConfig(new Config("upgrade_gui.yml", "gui", true));
         Config.registerConfig(new Config("corrupt_gui.yml", "gui", true));
         Config.registerConfig(new Config("events.yml", null, true));
