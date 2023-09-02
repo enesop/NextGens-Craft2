@@ -23,6 +23,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -134,12 +135,13 @@ public record GeneratorListener(
     private void generatorBreak(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         if (event.getHand() != EquipmentSlot.HAND ||
                 block == null) {
             return;
         }
         InteractAction action = InteractAction.find(event, InteractAction.LEFT);
-        InteractAction required = InteractAction.find(Config.CONFIG.getString("interaction.gens-pickup"), InteractAction.LEFT);
+        InteractAction required = InteractAction.find(config.getString("interaction.gens-pickup"), InteractAction.LEFT);
         ActiveGenerator active = this.generatorManager.getActiveGenerator(block);
         // skip if not active generator
         if (active == null || action != required) {
@@ -150,16 +152,16 @@ public record GeneratorListener(
         event.setCancelled(true);
         // pickup broken check
         if (active.isCorrupted()) {
-            Common.config(player, "messages.pickup-broken");
+            Common.configMessage("config.yml", player, "messages.pickup-broken");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
         // disable breaking others gens
         if (!player.hasPermission("nextgens.break.others") && !player.getUniqueId().equals(active.getOwner())) {
-            Common.config(player, "messages.not-owner");
+            Common.configMessage("config.yml", player, "messages.not-owner");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
         // check if player is eligible
@@ -169,7 +171,7 @@ public record GeneratorListener(
             // remove block
             block.setType(Material.AIR);
             // give back the item
-            if (Config.CONFIG.getBoolean("drop-on-break")) {
+            if (config.getBoolean("drop-on-break")) {
                 block.getWorld().dropItemNaturally(block.getLocation(), generator.createItem(1));
             } else {
                 Common.addInventoryItem(player, generator.createItem(1));
@@ -177,14 +179,14 @@ public record GeneratorListener(
             // visual action
             Player owner = Bukkit.getPlayer(active.getOwner());
             if (owner != null) {
-                VisualAction.send(owner, Config.CONFIG.getConfig(), "generator-break-options", new Placeholder()
+                VisualAction.send(owner, config, "generator-break-options", new Placeholder()
                         .add("{gen}", generator.displayName())
                         .add("{current}", this.generatorManager.getGeneratorCount(owner))
                         .add("{max}", this.userManager.getMaxSlot(owner)));
             }
             // play particle
             Executor.async(() -> {
-                if (Config.CONFIG.getBoolean("generator-break-options.particles")) {
+                if (config.getBoolean("generator-break-options.particles")) {
                     // cloud particles
                     block.getWorld().spawnParticle(Particle.CLOUD, block.getLocation().add(0.5, 0, 0.5), 30, 0.25, 0.25, 0.25, 3);
                 }
@@ -199,6 +201,7 @@ public record GeneratorListener(
         Block block = event.getBlockPlaced();
         ItemStack stack = event.getItemInHand();
         Generator generator = this.generatorManager.getGenerator(stack);
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         // skip if the item is not generator
         if (generator == null) {
             return;
@@ -209,30 +212,30 @@ public record GeneratorListener(
         if (current >= max) {
             event.setCancelled(true);
             // send message
-            Common.config(player, "messages.max-gen");
+            Common.configMessage("config.yml", player, "messages.max-gen");
             // play bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
-        if (Config.CONFIG.getBoolean("place-permission") && !player.hasPermission("nextgens.generator." + generator.id()) && !player.hasPermission("nextgens.generator.*")) {
+        if (config.getBoolean("place-permission") && !player.hasPermission("nextgens.generator." + generator.id()) && !player.hasPermission("nextgens.generator.*")) {
             event.setCancelled(true);
             // send message
-            Common.config(player, "messages.no-permission-gen");
+            Common.configMessage("config.yml", player, "messages.no-permission-gen");
             // bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
-        if (Config.CONFIG.getStringList("blacklisted-worlds").contains(player.getWorld().getName())) {
+        if (config.getStringList("blacklisted-worlds").contains(player.getWorld().getName())) {
             event.setCancelled(true);
             // send message
-            Common.config(player, "messages.invalid-world");
+            Common.configMessage("config.yml", player, "messages.invalid-world");
             // bass sound
-            Common.playBassSound(player);
+            Utils.bassSound(player);
             return;
         }
         // generator distance
-        if (Config.CONFIG.getBoolean("generator-place-distance.enabled")) {
-            double distance = Config.CONFIG.getInt("generator-place-distance.distance");
+        if (config.getBoolean("generator-place-distance.enabled")) {
+            double distance = config.getInt("generator-place-distance.distance");
             // loop through all generators
             for (ActiveGenerator active : this.generatorManager.getActiveGenerator()) {
                 if (!active.getLocation().getWorld().equals(block.getWorld())) {
@@ -241,9 +244,9 @@ public record GeneratorListener(
                 if (active.getLocation().distance(block.getLocation()) < distance) {
                     event.setCancelled(true);
                     // send message
-                    Common.config(player, "messages.too-close");
+                    Common.configMessage("config.yml", player, "messages.too-close");
                     // bass sound
-                    Common.playBassSound(player);
+                    Utils.bassSound(player);
                     return;
                 }
             }
@@ -251,13 +254,13 @@ public record GeneratorListener(
         // register active gen
         this.generatorManager.registerGenerator(player, generator, block);
         // visual action
-        VisualAction.send(player, Config.CONFIG.getConfig(), "generator-place-options", new Placeholder()
+        VisualAction.send(player, config, "generator-place-options", new Placeholder()
                 .add("{gen}", generator.displayName())
                 .add("{current}", this.generatorManager.getGeneratorCount(player))
                 .add("{max}", max));
         // play particle on the block
         Executor.async(() -> {
-            if (Config.CONFIG.getBoolean("generator-place-options.particles")) {
+            if (config.getBoolean("generator-place-options.particles")) {
                 // block crack particle
                 block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
                 // happy villager particle
@@ -269,7 +272,7 @@ public record GeneratorListener(
     @EventHandler(priority = EventPriority.MONITOR)
     private void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        FileConfiguration config = Config.CONFIG.getConfig();
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         // check if option is enabled
         if (config.getBoolean("first-join-generator.enabled")) {
             // if it's not first join, skip it
@@ -290,7 +293,24 @@ public record GeneratorListener(
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    private void prevention(CraftItemEvent event) {
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        // if it's not enabled, skip it
+        if (!config.getBoolean("disable-crafting.enabled")) {
+            return;
+        }
+        for (ItemStack stack : event.getInventory()) {
+            if (this.generatorManager.isGeneratorItem(stack) || this.generatorManager.isDropItem(stack)) {
+                event.setCancelled(true);
+                // send message
+                Common.configMessage("config.yml", event.getWhoClicked(), "disable-crafting.message");
+                return;
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void prevention(BlockBreakEvent event) {
         // get all variables we want
         Block block = event.getBlock();
@@ -299,7 +319,7 @@ public record GeneratorListener(
         if (active != null) {
             event.setCancelled(true);
             // play bass sound
-            Common.playBassSound(event.getPlayer());
+            Utils.bassSound(event.getPlayer());
         }
     }
 
@@ -317,7 +337,7 @@ public record GeneratorListener(
     private void prevention(BlockPlaceEvent event) {
         ItemStack hand = event.getItemInHand();
         // check if requirements are correct
-        if (Config.CONFIG.getBoolean("disable-drop-place") && this.generatorManager.isDropItem(hand)) {
+        if (Config.getFileConfiguration("config.yml").getBoolean("disable-drop-place") && this.generatorManager.isDropItem(hand)) {
             event.setCancelled(true);
         }
     }
@@ -362,7 +382,7 @@ public record GeneratorListener(
     }
 
     private void checkExplosion(List<Block> blocks) {
-        if (Config.CONFIG.getBoolean("anti-explosion")) {
+        if (Config.getFileConfiguration("config.yml").getBoolean("anti-explosion")) {
             // remove generator blocks
             blocks.removeIf(block -> this.generatorManager.getActiveGenerator(block) != null);
         } else {

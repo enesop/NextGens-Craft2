@@ -75,6 +75,8 @@ public final class NextGens extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        MDLib.onEnable(this);
+        // --------------------------------------------
         instance = this;
         generator_id = new NamespacedKey(this, "nextgens_generator_id");
         drop_value = new NamespacedKey(this, "nextgens_drop_value");
@@ -97,8 +99,6 @@ public final class NextGens extends JavaPlugin {
                 """);
 
         // initialize stuff
-        MDLib.onEnable(this);
-
         Config.registerConfig(new Config("config.yml", null, true));
         Config.registerConfig(new Config("generators.yml", null, true));
         Config.registerConfig(new Config("upgrade_gui.yml", "gui", true));
@@ -213,6 +213,11 @@ public final class NextGens extends JavaPlugin {
     }
 
     private void updateConfig() {
+        // check for auto config update
+        if (!Config.getFileConfiguration("config.yml").getBoolean("auto-config-update")) {
+            return;
+        }
+
         File configFile = new File(this.getDataFolder(), "config.yml");
         File eventsFile = new File(this.getDataFolder(), "events.yml");
 

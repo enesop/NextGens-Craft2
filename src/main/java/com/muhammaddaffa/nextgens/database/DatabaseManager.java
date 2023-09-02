@@ -1,5 +1,6 @@
 package com.muhammaddaffa.nextgens.database;
 
+import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -7,6 +8,7 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.util.Consumer;
 
 import java.io.File;
@@ -24,34 +26,64 @@ public class DatabaseManager {
 
     private HikariDataSource dataSource;
     private Connection connection;
+    private boolean mysql;
 
     public void connect() {
-        // database path
+        // get all variables we want
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
         String path = "plugins/NextGens/generators.db";
         // create the hikari config
-        HikariConfig config = new HikariConfig();
-        config.setConnectionTestQuery("SELECT 1");
-        config.setDriverClassName("org.sqlite.JDBC");
-        config.setJdbcUrl("jdbc:sqlite:" + path);
-        config.setPoolName("NextGens Generators Pool");
-        config.setMaximumPoolSize(1);
-        config.setConnectionTimeout(60000);
-        config.setIdleTimeout(600000);
-        config.setLeakDetectionThreshold(60000);
+        HikariConfig hikari = new HikariConfig();
+        hikari.setConnectionTestQuery("SELECT 1");
+        hikari.setPoolName("NextGens Database Pool");
+        hikari.setConnectionTimeout(60000);
+        hikari.setIdleTimeout(600000);
+        hikari.setLeakDetectionThreshold(60000);
+        hikari.addDataSourceProperty("characterEncoding", "utf8");
+        hikari.addDataSourceProperty("useUnicode", true);
 
-        Logger.info("Trying to connect to the SQLite database...");
-        // create the file if it's not exist
-        try {
-            File file = new File(path);
-            if (!file.exists()) {
-                file.createNewFile();
+        if (config.getBoolean("mysql.enabled")) {
+            this.mysql = true;
+            String host = config.getString("mysql.host");
+            int port = config.getInt("mysql.port");
+            String database = config.getString("mysql.database");
+            String user = config.getString("mysql.user");
+            String password = config.getString("mysql.password");
+            boolean useSSL = config.getBoolean("mysql.useSSL");
+            Logger.info("Trying to connect to the MySQL database...");
+
+            hikari.setDriverClassName("com.mysql.jdbc.Driver");
+            hikari.setJdbcUrl(String.format("jdbc:mysql://%s:%d/%s?useSSL=%b",
+                    host, port, database, useSSL));
+            hikari.setUsername(user);
+            hikari.setPassword(password);
+            hikari.setMinimumIdle(5);
+            hikari.setMaximumPoolSize(50);
+
+            this.dataSource = new HikariDataSource(hikari);
+            Logger.info("Successfully established connection with MySQL database!");
+
+        } else {
+            this.mysql = false;
+            hikari.setConnectionTestQuery("SELECT 1");
+            hikari.setDriverClassName("org.sqlite.JDBC");
+            hikari.setJdbcUrl("jdbc:sqlite:" + path);
+            hikari.setMaximumPoolSize(1);
+
+            Logger.info("Trying to connect to the SQLite database...");
+            // create the file if it's not exist
+            try {
+                File file = new File(path);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                this.dataSource = new HikariDataSource(hikari);
+                Logger.info("Successfully established connection with SQLite database!");
+            } catch (IOException ex) {
+                Logger.severe("Failed to create the database file, stopping the server!");
+                Bukkit.getPluginManager().disablePlugin(NextGens.getInstance());
+                throw new RuntimeException(ex);
             }
-            this.dataSource = new HikariDataSource(config);
-            Logger.info("Successfully established connection with SQLite database!");
-        } catch (IOException ex) {
-            Logger.severe("Failed to create the database file, stopping the server!");
-            Bukkit.getPluginManager().disablePlugin(NextGens.getInstance());
-            throw new RuntimeException(ex);
         }
     }
 
@@ -182,6 +214,9 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
+        if (this.mysql) {
+            return this.dataSource.getConnection();
+        }
         if (this.connection == null || this.connection.isClosed()) {
             this.connection = this.dataSource.getConnection();
         }
