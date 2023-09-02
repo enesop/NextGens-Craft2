@@ -107,7 +107,8 @@ public class SellCommand {
         // send the visual action
         VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
                 .add("{amount}", Common.digits(totalItems))
-                .add("{value}", Common.digits(finalAmount)));
+                .add("{value}", Common.digits(finalAmount))
+                .add("{value_formatted}", Utils.formatBalance((long) finalAmount)));
     }
 
 }

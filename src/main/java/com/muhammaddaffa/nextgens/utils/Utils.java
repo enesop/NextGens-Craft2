@@ -12,6 +12,12 @@ import org.bukkit.persistence.PersistentDataType;
 
 public class Utils {
 
+    private static final FormatBalance formatBalance = new FormatBalance();
+
+    public static String formatBalance(long value) {
+        return formatBalance.format(value);
+    }
+
     public static double getPriceValue(Player player, ItemStack stack) {
         if (stack == null || stack.getItemMeta() == null) {
             return 0;

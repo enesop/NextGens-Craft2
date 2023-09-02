@@ -77,7 +77,8 @@ public class Sellwand {
         // send the visual action
         VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
                 .add("{amount}", Common.digits(totalItems))
-                .add("{value}", Common.digits(afterMultiplier)));
+                .add("{value}", Common.digits(afterMultiplier))
+                .add("{value_formatted}", Utils.formatBalance((long) afterMultiplier)));
         // final uses
         int finalUses = uses - 1;
         // if the final uses is 0

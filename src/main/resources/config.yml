@@ -205,12 +205,12 @@ sell-options:
   titles:
     enabled: true
     title: '&cSold {amount} Items'
-    sub-title: '&a${value}'
+    sub-title: '&a${value_formatted}'
   # Chat messages
   messages:
     enabled: true
     message:
-      - '&6[NextGens] &fYou have sold &e{amount} &fitems and receive &a${value}'
+      - '&6[NextGens] &fYou have sold &e{amount} &fitems and receive &a${value_formatted}'
   # Action bar
   action-bar:
     enabled: true
