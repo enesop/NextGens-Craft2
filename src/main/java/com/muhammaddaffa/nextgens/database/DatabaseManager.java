@@ -25,7 +25,6 @@ public class DatabaseManager {
     public static final String USER_TABLE = "nextgens_user";
 
     private HikariDataSource dataSource;
-    private Connection connection;
     private boolean mysql;
 
     public void connect() {
@@ -38,7 +37,7 @@ public class DatabaseManager {
         hikari.setPoolName("NextGens Database Pool");
         hikari.setConnectionTimeout(60000);
         hikari.setIdleTimeout(600000);
-        hikari.setLeakDetectionThreshold(60000);
+        hikari.setLeakDetectionThreshold(180000);
         hikari.addDataSourceProperty("characterEncoding", "utf8");
         hikari.addDataSourceProperty("useUnicode", true);
 
@@ -214,13 +213,7 @@ public class DatabaseManager {
     }
 
     public Connection getConnection() throws SQLException {
-        if (this.mysql) {
-            return this.dataSource.getConnection();
-        }
-        if (this.connection == null || this.connection.isClosed()) {
-            this.connection = this.dataSource.getConnection();
-        }
-        return this.connection;
+        return this.dataSource.getConnection();
     }
 
     public void close() {
