@@ -6,6 +6,7 @@ import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -23,8 +24,10 @@ public class UpgradeInventory extends SimpleInventory {
     private final Generator generator;
     private final Generator nextGenerator;
     private final GeneratorManager generatorManager;
+    private final UserManager userManager;
 
-    public UpgradeInventory(Player player, ActiveGenerator active, Generator generator, Generator nextGenerator, GeneratorManager generatorManager) {
+    public UpgradeInventory(Player player, ActiveGenerator active, Generator generator, Generator nextGenerator,
+                            GeneratorManager generatorManager, UserManager userManager) {
         super(Config.getFileConfiguration("upgrade_gui.yml").getInt("size"),
                 Common.color(Config.getFileConfiguration("upgrade_gui.yml").getString("title")));
         this.player = player;
@@ -32,6 +35,7 @@ public class UpgradeInventory extends SimpleInventory {
         this.generator = generator;
         this.nextGenerator = nextGenerator;
         this.generatorManager = generatorManager;
+        this.userManager = userManager;
 
         this.setAcceptButton();
         this.setCancelButton();
@@ -111,6 +115,8 @@ public class UpgradeInventory extends SimpleInventory {
                     block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
             });
+            // give cashback to the player
+            Utils.performCashback(player, this.userManager, this.generator.cost());
             // close the inventory
             this.player.closeInventory();
         });
@@ -207,6 +213,8 @@ public class UpgradeInventory extends SimpleInventory {
                     block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
             });
+            // give cashback to the player
+            Utils.performCashback(player, this.userManager, this.generator.cost());
             // close the inventory
             this.player.closeInventory();
         });

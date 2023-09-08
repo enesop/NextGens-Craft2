@@ -262,6 +262,7 @@ public final class NextGens extends JavaPlugin {
         ShopCommand.register(this.generatorManager);
         PickupCommand.register(this.generatorManager);
         WorthCommand.registerThis();
+        ToggleCashbackCommand.register(this.userManager);
     }
 
     private void connectMetrics() {

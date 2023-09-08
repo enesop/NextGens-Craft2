@@ -91,8 +91,7 @@ commands:
     enabled: true
     command: pickupgens
     aliases: [pickupgen, pickgens, pickgen]
-  sell:
-    enabled: true
+  sell: # If you want to disable this command, check below
     command: sell
     aliases: []
   shop:
@@ -103,6 +102,10 @@ commands:
     enabled: true
     command: worth
     aliases: [genworth, gensworth, itemworth, itemsworth]
+  cashback:
+    enabled: true
+    command: togglecashback
+    aliases: [cashback, togglecash]
 
 # What is the default max generator for every player
 default-max-generator:
@@ -341,11 +344,15 @@ messages:
   decreased-multiplier: '&6[NextGens] &cYur multiplier has been decreased by &e{multiplier}x &7(total: {total}x)'
   item-worthless: '&6[NextGens] &cThis item is worthless!'
   item-worth: '&6[NextGens] &aThis item is worth ${worth}'
+  cashback-on: '&6[NextGens] &aYour cashback notification has been turned on.'
+  cashback-off: '&6[NextGens] &cYour cashback notification has been turned off.'
+  cashback: '&6[NextGens] &aYou have received ${amount} in {percentage}% cashback from your last transaction.'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
     - '&6/pickupgens [player] &7- pickup all of specific player generators'
     - '&6/sell [player] &7- sell player''s inventory contents'
+    - '&6/itemworth &7- get the worth of the item that you holding'
     - "&7"
     - '&6/gens give <player> <generator> <amount> &7- give generator to player'
     - '&6/gens addmax/removemax <player> <amount> &7- add/remove bonus max generator'

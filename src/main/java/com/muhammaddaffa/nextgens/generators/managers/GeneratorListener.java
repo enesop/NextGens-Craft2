@@ -68,7 +68,7 @@ public record GeneratorListener(
                 }
                 if (config.getBoolean("corruption.gui-fix")) {
                     // create gui
-                    FixInventory gui = new FixInventory(player, active, generator);
+                    FixInventory gui = new FixInventory(player, active, generator, this.userManager);
                     // open the gui
                     gui.open(player);
                 } else {
@@ -99,6 +99,8 @@ public record GeneratorListener(
                             block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                         }
                     });
+                    // give cashback to the player
+                    Utils.performCashback(player, this.userManager, generator.fixCost());
                 }
                 return;
             }
@@ -126,7 +128,7 @@ public record GeneratorListener(
                 return;
             }
             // create the gui object
-            UpgradeInventory gui = new UpgradeInventory(player, active, generator, nextGenerator, this.generatorManager);
+            UpgradeInventory gui = new UpgradeInventory(player, active, generator, nextGenerator, this.generatorManager, this.userManager);
             // open the gui for player
             gui.open(player);
         } else {
@@ -170,6 +172,8 @@ public record GeneratorListener(
                     block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
             });
+            // give cashback to the player
+            Utils.performCashback(player, this.userManager, generator.cost());
         }
     }
 

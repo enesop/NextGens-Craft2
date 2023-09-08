@@ -4,8 +4,10 @@ import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.ShopInventory;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -26,7 +28,13 @@ public class ShopCommand {
     private final CommandAPICommand command;
     public ShopCommand(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
-        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.shop.command"))
+
+        // get variables we need
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        String mainCommand = config.getString("commands.shop.command");
+        List<String> aliases = config.getStringList("commands.shop.aliases");
+
+        this.command = new CommandAPICommand(mainCommand)
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -37,7 +45,8 @@ public class ShopCommand {
                             return;
                         }
                         if (!(sender instanceof Player player)) {
-                            Common.sendMessage(sender, "&cUsage: /genshop <player>");
+                            Common.sendMessage(sender, "&cUsage: /{command} <player>", new Placeholder()
+                                    .add("{command}", mainCommand));
                             return;
                         }
                         actualTarget = player;
@@ -52,7 +61,6 @@ public class ShopCommand {
                     // open the gui for the target
                     ShopInventory.openInventory(actualTarget, this.generatorManager);
                 });
-        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.shop.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 

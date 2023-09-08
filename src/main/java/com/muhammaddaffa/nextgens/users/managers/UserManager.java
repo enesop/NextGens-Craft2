@@ -14,6 +14,7 @@ import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.multiplier.Multiplier;
+import com.muhammaddaffa.nextgens.sellwand.SellwandData;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.utils.SellData;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -59,7 +60,7 @@ public class UserManager {
         return this.userMap.values();
     }
 
-    public SellData performSell(Player player, Inventory inventory, boolean sellwand) {
+    public SellData performSell(Player player, Inventory inventory, SellwandData sellwand) {
         GeneratorAPI api = NextGens.getApi();
         double totalValue = 0.0;
         int totalItems = 0;
@@ -93,12 +94,16 @@ public class UserManager {
             // accumulate the multiplier
             multiplier += event.getSellMultiplier();
         }
+        // add the multiplier from sellwand
+        if (sellwand != null) {
+            multiplier += sellwand.multiplier();
+        }
         // set the final amount
         final double finalAmount = totalValue * multiplier;
         // create the sell data
         SellData sellData = new SellData(finalAmount, totalItems, multiplier, sellwand);
         SellEvent sellEvent = new SellCommandUseEvent(player, user, sellData);
-        if (sellwand) sellEvent = new SellwandUseEvent(player, user, sellData);
+        if (sellwand != null) sellEvent = new SellwandUseEvent(player, user, sellData);
         // call the event
         Bukkit.getPluginManager().callEvent(sellEvent);
         // if event is cancelled, skip this
@@ -119,7 +124,7 @@ public class UserManager {
         // set the statistics
         user.addEarnings(data.totalValue());
         user.addItemsSold(data.totalItems());
-        if (data.sellwand()) {
+        if (sellwand != null) {
             user.addSellwandSell(1);
         } else {
             user.addNormalSell(1);
@@ -158,10 +163,11 @@ public class UserManager {
                 int itemsSold = result.getInt(5);
                 int normalSell = result.getInt(6);
                 int sellwandSell = result.getInt(7);
+                boolean toggleCashback = result.getBoolean(8);
 
                 // store it on the map
                 this.userMap.put(uuid, new User(
-                        uuid, bonus, multiplier, earnings, itemsSold, normalSell, sellwandSell
+                        uuid, bonus, multiplier, earnings, itemsSold, normalSell, sellwandSell, toggleCashback
                 ));
             }
             // send log message
@@ -171,7 +177,7 @@ public class UserManager {
 
     public void saveUser() {
         try (Connection connection = this.dbm.getConnection()) {
-            String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?);";
+            String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
 
             for (User user : this.userMap.values()) {
                 try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -182,6 +188,7 @@ public class UserManager {
                     statement.setInt(5, user.getItemsSold());
                     statement.setInt(6, user.getNormalSell());
                     statement.setInt(7, user.getSellwandSell());
+                    statement.setBoolean(8, user.isToggleCashback());
 
                     statement.executeUpdate();
                 }

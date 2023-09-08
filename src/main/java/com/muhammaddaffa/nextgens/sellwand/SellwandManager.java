@@ -47,7 +47,7 @@ public record SellwandManager(
             return false;
         }
         // perform the sell
-        SellData data = this.userManager.performSell(player, inventory, true);
+        SellData data = this.userManager.performSell(player, inventory, new SellwandData(stack, multiplier));
         if (data == null) return true;
         // final uses
         int finalUses = uses - 1;

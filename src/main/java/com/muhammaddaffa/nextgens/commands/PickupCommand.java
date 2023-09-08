@@ -9,6 +9,7 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -29,7 +30,13 @@ public class PickupCommand {
     private final CommandAPICommand command;
     public PickupCommand(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
-        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.pickup.command"))
+
+        // get variables we need
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        String mainCommand = config.getString("commands.pickup.command");
+        List<String> aliases = config.getStringList("commands.pickup.aliases");
+
+        this.command = new CommandAPICommand(mainCommand)
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -40,7 +47,8 @@ public class PickupCommand {
                             return;
                         }
                         if (!(sender instanceof Player player)) {
-                            Common.sendMessage(sender, "&cUsage: /pickupgens <player>");
+                            Common.sendMessage(sender, "&cUsage: /{command} <player>", new Placeholder()
+                                    .add("{command}", mainCommand));
                             return;
                         }
                         actualTarget = player;
@@ -77,7 +85,6 @@ public class PickupCommand {
                     // send sound
                     actualTarget.playSound(actualTarget.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
                 });
-        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.pickup.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 

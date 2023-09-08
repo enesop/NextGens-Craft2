@@ -14,12 +14,15 @@ public class User {
     private double earnings;
     private int itemsSold;
     private int normalSell, sellwandSell;
+    // settings
+    private boolean toggleCashback = true;
 
     public User(UUID uuid) {
         this.uuid = uuid;
     }
 
-    public User(UUID uuid, int bonus, double multiplier, double earnings, int itemsSold, int normalSell, int sellwandSell) {
+    public User(UUID uuid, int bonus, double multiplier, double earnings, int itemsSold, int normalSell, int sellwandSell,
+                boolean toggleCashback) {
         this.uuid = uuid;
         this.bonus = bonus;
         this.multiplier = multiplier;
@@ -27,6 +30,7 @@ public class User {
         this.itemsSold = itemsSold;
         this.normalSell = normalSell;
         this.sellwandSell = sellwandSell;
+        this.toggleCashback = toggleCashback;
     }
 
     public UUID getUniqueId() {
@@ -141,4 +145,13 @@ public class User {
     public int getTotalSell() {
         return this.normalSell + this.sellwandSell;
     }
+
+    public boolean isToggleCashback() {
+        return toggleCashback;
+    }
+
+    public void setToggleCashback(boolean toggleCashback) {
+        this.toggleCashback = toggleCashback;
+    }
+
 }

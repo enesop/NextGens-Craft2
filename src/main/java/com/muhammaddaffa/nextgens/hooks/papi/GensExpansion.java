@@ -58,6 +58,9 @@ public class GensExpansion extends PlaceholderExpansion {
         final User user = this.userManager.getUser(player);
 
 
+        if (params.equalsIgnoreCase("cashback")) {
+            return Common.digits(Utils.getCashback(player));
+        }
         if (params.equalsIgnoreCase("statistics_totalsell_formatted")) {
             return Utils.formatBalance(user.getTotalSell());
         }

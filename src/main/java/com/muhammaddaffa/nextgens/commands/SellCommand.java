@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -12,10 +13,6 @@ import java.util.List;
 public class SellCommand {
 
     public static void register(UserManager userManager) {
-        // check if the command is enabled
-        if (!Config.getFileConfiguration("config.yml").getBoolean("commands.sell.enabled")) {
-            return;
-        }
         SellCommand command = new SellCommand(userManager);
         // check if sell command is enabled
         if (!Config.getFileConfiguration("config.yml").getBoolean("sell-command")) {
@@ -34,7 +31,13 @@ public class SellCommand {
     private final CommandAPICommand command;
     public SellCommand(UserManager userManager) {
         this.userManager = userManager;
-        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.sell.command"))
+
+        // get variables we need
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        String mainCommand = config.getString("commands.sell.command");
+        List<String> aliases = config.getStringList("commands.sell.aliases");
+
+        this.command = new CommandAPICommand(mainCommand)
                 .withOptionalArguments(new PlayerArgument("target"))
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
@@ -45,7 +48,8 @@ public class SellCommand {
                             return;
                         }
                         if (!(sender instanceof Player player)) {
-                            Common.sendMessage(sender, "&cUsage: /sell <player>");
+                            Common.sendMessage(sender, "&cUsage: /{command} <player>", new Placeholder()
+                                    .add("{command}", mainCommand));
                             return;
                         }
                         // sell the item to the player
@@ -58,9 +62,8 @@ public class SellCommand {
                         finalTarget = target;
                     }
                     // perform the sell
-                    this.userManager.performSell(finalTarget, finalTarget.getInventory(), false);
+                    this.userManager.performSell(finalTarget, finalTarget.getInventory(), null);
                 });
-        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.sell.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 

@@ -105,7 +105,8 @@ public class DatabaseManager {
                 "earnings DOUBLE, " +
                 "items_sold INTEGER, " +
                 "normal_sell INTEGER, " +
-                "sellwand_sell INTEGER" +
+                "sellwand_sell INTEGER, " +
+                "toggle_cashback BOOL" +
                 ");");
         // add column if not exists
         // directly add the table and ignore the error
@@ -114,6 +115,7 @@ public class DatabaseManager {
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN items_sold INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN normal_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN sellwand_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_cashback BOOL NOT NULL DEFAULT 1;");
     }
 
     private void addColumnSafely(String table, String column, String dataType) {

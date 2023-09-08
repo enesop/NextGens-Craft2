@@ -10,6 +10,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
+
 public class WorthCommand {
 
     public static void registerThis() {
@@ -24,9 +26,12 @@ public class WorthCommand {
 
     private final CommandAPICommand command;
     public WorthCommand() {
-        // get the file configuration
+        // get the variables
         FileConfiguration config = Config.getFileConfiguration("config.yml");
-        this.command = new CommandAPICommand(config.getString("commands.worth.command"))
+        String mainCommand = config.getString("commands.worth.command");
+        List<String> aliases = config.getStringList("commands.worth.aliases");
+
+        this.command = new CommandAPICommand(mainCommand)
                 .withPermission("nextgens.worth")
                 .executes((sender, args) -> {
                     if (!(sender instanceof Player player)) {
@@ -47,7 +52,7 @@ public class WorthCommand {
                             .add("{worth}", Common.digits(worth)));
                 });
         // set the aliases
-        this.command.setAliases(config.getStringList("commands.worth.aliases").toArray(new String[0]));
+        this.command.setAliases(aliases.toArray(new String[0]));
     }
 
     public void register() {
