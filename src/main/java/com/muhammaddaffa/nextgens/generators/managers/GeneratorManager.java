@@ -2,12 +2,14 @@ package com.muhammaddaffa.nextgens.generators.managers;
 
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorLoadEvent;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.utils.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -304,9 +306,17 @@ public class GeneratorManager {
             }
         }
 
+        Generator generator = new Generator(id, displayName, interval, item, drops, nextTier, upgradeCost,
+                corrupted, fixCost, corruptChance);
+
+        // call the custom event
+        GeneratorLoadEvent loadEvent = new GeneratorLoadEvent(generator);
+        Bukkit.getPluginManager().callEvent(loadEvent);
+        if (loadEvent.isCancelled()) {
+            return;
+        }
         // store it on the map
-        this.generatorMap.put(id, new Generator(id, displayName, interval, item, drops, nextTier, upgradeCost,
-                corrupted, fixCost, corruptChance));
+        this.generatorMap.put(id, generator);
         // send log message
         Logger.info("Loaded generator '" + id + "'");
     }

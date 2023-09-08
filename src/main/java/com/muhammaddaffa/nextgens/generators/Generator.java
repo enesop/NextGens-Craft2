@@ -2,12 +2,10 @@ package com.muhammaddaffa.nextgens.generators;
 
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.nextgens.NextGens;
-import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.UUID;
 
 public record Generator(
         String id,
@@ -22,19 +20,20 @@ public record Generator(
         double corruptChance
 ) {
 
-    public void drop(Block block, UUID uuid) {
+    @NotNull
+    public Drop getRandomDrop() {
         // drop algorithm
-        boolean check = false;
+        Drop drop = null;
 
-        while (!check) {
-            for (Drop drop : this.drops()) {
-                if (drop.tryDrop(block, Bukkit.getOfflinePlayer(uuid))) {
-                    check = true;
+        while (drop == null) {
+            for (Drop potential : this.drops()) {
+                if (potential.shouldUse()) {
+                    drop = potential;
                     break;
                 }
             }
         }
-
+        return drop;
     }
 
     public ItemStack createItem(int amount) {
@@ -46,6 +45,10 @@ public record Generator(
         stack.setAmount(Math.max(1, amount));
 
         return stack;
+    }
+
+    public void addDrop(Drop drop) {
+        this.drops.add(drop);
     }
 
 }

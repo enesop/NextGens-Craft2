@@ -21,7 +21,7 @@ events:
       # The display name of the event
       display-name: '&a&l2x Sell Multiplier'
       # The multiplier of the sell
-      multiplier: 2.0
+      multiplier: 1.0
       # The duration of the event (in seconds)
       duration: 120
       # The start message
@@ -176,7 +176,7 @@ events:
       # The display name of the event
       display-name: '&a&l1.5x Sell Multiplier'
       # The multiplier of the sell
-      multiplier: 1.5
+      multiplier: 0.5
       # The duration of the event (in seconds)
       duration: 180
       # The start message

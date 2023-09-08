@@ -53,7 +53,7 @@ public record SSB2Listener(
                 // give the generator back
                 if (player == null) {
                     // if player not online, register it to item join
-                    this.refundManager.registerItem(superiorPlayer.getUniqueId(), active.getGenerator().id());
+                    this.refundManager.delayedGiveGeneratorItem(superiorPlayer.getUniqueId(), active.getGenerator().id());
                 } else {
                     // if player is online, give them the generators
                     Common.addInventoryItem(player, active.getGenerator().createItem(1));

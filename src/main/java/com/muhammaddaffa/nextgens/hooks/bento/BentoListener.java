@@ -59,7 +59,7 @@ public record BentoListener(
                 // give the generator back
                 if (player == null) {
                     // if player not online, register it to item join
-                    this.refundManager.registerItem(uuid, active.getGenerator().id());
+                    this.refundManager.delayedGiveGeneratorItem(uuid, active.getGenerator().id());
                 } else {
                     // if player is online, give them the generators
                     Common.addInventoryItem(player, active.getGenerator().createItem(1));

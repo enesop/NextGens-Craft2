@@ -50,6 +50,8 @@ corruption:
   # How many generators can possibly corrupt
   # Default: 10 (If there are 100 generators, 10 of them will be randomly chosen and tested for corruption)
   percentage: 10
+  # Should we use gui to fix the corrupted generator?
+  gui-fix: true
   # Broadcast when the corruption wave happen, leave empty to disable it
   broadcast:
     - '&7'
@@ -86,14 +88,21 @@ commands:
     command: nextgens
     aliases: [nextgen, ngens, ngen, gens, gen, generator, generators]
   pickup:
+    enabled: true
     command: pickupgens
     aliases: [pickupgen, pickgens, pickgen]
   sell:
+    enabled: true
     command: sell
     aliases: []
   shop:
+    enabled: true
     command: genshop
     aliases: [gensshop]
+  worth:
+    enabled: true
+    command: worth
+    aliases: [genworth, gensworth, itemworth, itemsworth]
 
 # What is the default max generator for every player
 default-max-generator:
@@ -204,17 +213,17 @@ sell-options:
   # The title bar that will be sent upon selling
   titles:
     enabled: true
-    title: '&cSold {amount} Items'
-    sub-title: '&a${value_formatted}'
+    title: '&cSold {amount_formatted} Items'
+    sub-title: '&a${value_formatted} &7(&e{multiplier}x&7)'
   # Chat messages
   messages:
     enabled: true
     message:
-      - '&6[NextGens] &fYou have sold &e{amount} &fitems and receive &a${value_formatted}'
+      - '&6[NextGens] &fYou have sold &e{amount_formatted} &fitems and receive &a${value_formatted} &7(&e{multiplier}x&7)'
   # Action bar
   action-bar:
     enabled: true
-    message: '&6[NextGens] &aSold {amount} items for ${value}'
+    message: '&6[NextGens] &aSold {amount_formatted} items for ${value_formatted} &7(&e{multiplier}x&7)'
   # Sound
   sound:
     enabled: true
@@ -326,6 +335,12 @@ messages:
   event-is-running: '&6[NextGens] &cThere is an event currently running, stop it first with /gens stopevent'
   event-start: '&6[NextGens] &aYou have started {event} &aevent!'
   event-stop: '&6[NextGens] &aYou have forced stop the event'
+  multiplier-increase: '&6[NextGens] &aYou have increased &e{player} &amultiplier by &e{multiplier}x &7(total: {total}x)'
+  increased-multiplier: '&6[NextGens] &aYour multiplier has been increased by &e{multiplier}x &7(total: {total}x)'
+  multiplier-decrase: '&6[NextGens] &aYou have decreased &e{player} &amultiplier by &e{multiplier}x &7(total: {total}x)'
+  decreased-multiplier: '&6[NextGens] &cYur multiplier has been decreased by &e{multiplier}x &7(total: {total}x)'
+  item-worthless: '&6[NextGens] &cThis item is worthless!'
+  item-worth: '&6[NextGens] &aThis item is worth ${worth}'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
@@ -339,4 +354,6 @@ messages:
     - '&6/gens startevent <event> &7- force to start an event'
     - '&6/gens stopevent &7- force stop the running event'
     - '&6/gens sellwand <player> <multiplier> <uses> &7- give player a sellwand'
+    - '&6/gens addmultiplier <player> <amount> &7- add multiplier amount'
+    - '&6/gens removemultiplier <player> <amount> &7- decrease multiplier amount'
     - '&6/gens reload &7- reload the configuration'

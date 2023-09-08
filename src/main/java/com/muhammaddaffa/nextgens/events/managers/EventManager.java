@@ -27,9 +27,7 @@ public class EventManager {
     }
 
     public List<String> getEventName() {
-        List<String> list = this.eventList.stream().map(Event::getId).collect(Collectors.toList());
-        list.add("random");
-        return list;
+        return this.eventList.stream().map(Event::getId).collect(Collectors.toList());
     }
 
     @Nullable

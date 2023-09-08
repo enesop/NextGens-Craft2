@@ -3,16 +3,13 @@ package com.muhammaddaffa.nextgens;
 import com.bgsoftware.wildtools.api.WildToolsAPI;
 import com.muhammaddaffa.mdlib.MDLib;
 import com.muhammaddaffa.mdlib.configupdater.ConfigUpdater;
-import com.muhammaddaffa.mdlib.gui.SimpleInventoryManager;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.mdlib.utils.SpigotUpdateChecker;
-import com.muhammaddaffa.nextgens.commands.MainCommand;
-import com.muhammaddaffa.nextgens.commands.PickupCommand;
-import com.muhammaddaffa.nextgens.commands.SellCommand;
-import com.muhammaddaffa.nextgens.commands.ShopCommand;
+import com.muhammaddaffa.nextgens.api.GeneratorAPI;
+import com.muhammaddaffa.nextgens.commands.*;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorListener;
@@ -24,9 +21,10 @@ import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
-import com.muhammaddaffa.nextgens.sellwand.managers.SellwandListener;
+import com.muhammaddaffa.nextgens.sellwand.SellwandListener;
+import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
-import com.muhammaddaffa.nextgens.utils.*;
+import com.muhammaddaffa.nextgens.worth.WorthManager;
 import dev.norska.dsw.DeluxeSellwands;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
@@ -39,7 +37,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class NextGens extends JavaPlugin {
 
@@ -48,6 +48,7 @@ public final class NextGens extends JavaPlugin {
     private static final int BUILTBYBIT_ID = 30903;
 
     private static NextGens instance;
+    private static GeneratorAPI api;
 
     // -----------------------------
     // NamespacedKey Section
@@ -63,10 +64,12 @@ public final class NextGens extends JavaPlugin {
     // ------------------------------
 
     private final DatabaseManager dbm = new DatabaseManager();
-    private final GeneratorManager generatorManager = new GeneratorManager(this.dbm);
-    private final UserManager userManager = new UserManager(this.dbm);
-    private final RefundManager refundManager = new RefundManager(this.generatorManager);
     private final EventManager eventManager = new EventManager();
+    private final WorthManager worthManager = new WorthManager();
+    private final GeneratorManager generatorManager = new GeneratorManager(this.dbm);
+    private final UserManager userManager = new UserManager(this.dbm, this.eventManager);
+    private final RefundManager refundManager = new RefundManager(this.generatorManager);
+    private final SellwandManager sellwandManager = new SellwandManager(this.userManager);
 
     @Override
     public void onLoad() {
@@ -106,6 +109,7 @@ public final class NextGens extends JavaPlugin {
         Config.registerConfig(new Config("corrupt_gui.yml", "gui", true));
         Config.registerConfig(new Config("events.yml", null, true));
         Config.registerConfig(new Config("data.yml", null, false));
+        Config.registerConfig(new Config("worth.yml", null, true));
 
         VaultEconomy.init();
 
@@ -117,32 +121,41 @@ public final class NextGens extends JavaPlugin {
         this.dbm.createGeneratorTable();
         this.dbm.createUserTable();
 
-        // load all generators
-        this.generatorManager.loadGenerators();
-        // delayed active generator load
-        Executor.asyncLater(3L, this.generatorManager::loadActiveGenerator);
+        Executor.sync(() -> {
+            // register commands & listeners
+            this.registerCommands();
+            this.registerListeners();
 
-        // load users
-        this.userManager.loadUser();
+            // load all generators
+            this.generatorManager.loadGenerators();
+            // delayed active generator load
+            Executor.asyncLater(3L, this.generatorManager::loadActiveGenerator);
 
-        // load the refund
-        this.refundManager.load();
+            // load users
+            this.userManager.loadUser();
 
-        // load events
-        this.eventManager.loadEvents();
-        this.eventManager.load();
-        this.eventManager.startTask();
+            // load the refund
+            this.refundManager.load();
+            this.refundManager.startTask();
 
-        // register commands & listeners
-        this.registerCommands();
-        this.registerListeners();
+            // load events
+            this.eventManager.loadEvents();
+            this.eventManager.load();
+            this.eventManager.startTask();
 
-        // register task
-        this.registerTask();
-        // register hook
-        this.registerHook();
-        // update checker
-        this.updateCheck();
+            // worth system
+            this.worthManager.load();
+
+            // initialize the api
+            api = new GeneratorAPI(this.generatorManager, this.refundManager, this.userManager, this.worthManager, this.sellwandManager);
+
+            // register task
+            this.registerTask();
+            // register hook
+            this.registerHook();
+            // update checker
+            this.updateCheck();
+        });
     }
 
     @Override
@@ -197,12 +210,12 @@ public final class NextGens extends JavaPlugin {
         }
         if (pm.getPlugin("WildTools") != null && Config.getFileConfiguration("config.yml").getBoolean("sellwand.hooks.wildtools")) {
             Logger.info("Found WildTools! Registering hook...");
-            WildToolsAPI.getWildTools().getProviders().setPricesProvider(Utils::getPriceValue);
+            WildToolsAPI.getWildTools().getProviders().setPricesProvider((player, stack) -> api.getWorth(stack));
         }
         if (pm.getPlugin("DeluxeSellwands") != null) {
             Logger.info("Found DeluxeSellwands! Registering hook...");
             DeluxeSellwands.getInstance().getPriceHandler().registerNewPriceHandler("NEXTGENS", (player, itemStack, i) -> {
-                double value = Utils.getPriceValue(player, itemStack);
+                double value = api.getWorth(itemStack);
                 return value <= 0 ? null :value;
             });
         }
@@ -215,7 +228,7 @@ public final class NextGens extends JavaPlugin {
 
     private void updateConfig() {
         // check for auto config update
-        if (!Config.getFileConfiguration("config.yml").getBoolean("auto-config-update")) {
+        if (!Config.getFileConfiguration("config.yml").getBoolean("auto-config-update", true)) {
             return;
         }
 
@@ -230,7 +243,7 @@ public final class NextGens extends JavaPlugin {
             ex.printStackTrace();
         }
 
-        // reload the config afterwards
+        // reload the config afterward
         Config.reload();
     }
 
@@ -239,37 +252,46 @@ public final class NextGens extends JavaPlugin {
 
         // register events
         pm.registerEvents(new GeneratorListener(this.generatorManager, this.userManager), this);
-        pm.registerEvents(this.refundManager, this);
-        pm.registerEvents(new SellwandListener(this.eventManager), this);
+        pm.registerEvents(new SellwandListener(this.sellwandManager), this);
     }
 
     private void registerCommands() {
         // register commands
-        MainCommand.register(this.generatorManager, this.userManager, this.eventManager);
-        SellCommand.register(this.eventManager);
+        MainCommand.register(this.generatorManager, this.userManager, this.eventManager, this.worthManager, this.sellwandManager);
+        SellCommand.register(this.userManager);
         ShopCommand.register(this.generatorManager);
         PickupCommand.register(this.generatorManager);
+        WorthCommand.registerThis();
     }
 
     private void connectMetrics() {
         // connect to bstats metrics
         Metrics metrics = new Metrics(this, BSTATS_ID);
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
         // add custom charts
-        metrics.addCustomChart(new SimplePie("corruption", () -> this.yesOrNo(config.getBoolean("corruption.enabled"))));
-        metrics.addCustomChart(new SimplePie("auto_save", () -> this.yesOrNo(config.getBoolean("auto-save.enabled"))));
-        metrics.addCustomChart(new SimplePie("place_permission", () -> this.yesOrNo(config.getBoolean("place-permission"))));
-        metrics.addCustomChart(new SimplePie("online_only", () -> this.yesOrNo(config.getBoolean("online-only"))));
-        metrics.addCustomChart(new SimplePie("anti_explosion", () -> this.yesOrNo(config.getBoolean("anti-explosion"))));
-        metrics.addCustomChart(new SimplePie("disable_drop_place", () -> this.yesOrNo(config.getBoolean("disable-drop-place"))));
-        metrics.addCustomChart(new SimplePie("shift_pickup", () -> this.yesOrNo(config.getBoolean("shift-pickup"))));
-        metrics.addCustomChart(new SimplePie("island_pickup", () -> this.yesOrNo(config.getBoolean("island-pickup"))));
-        metrics.addCustomChart(new SimplePie("upgrade_gui", () -> this.yesOrNo(config.getBoolean("upgrade-gui"))));
-        metrics.addCustomChart(new SimplePie("close_on_purchase", () -> this.yesOrNo(config.getBoolean("close-on-purchase"))));
-        metrics.addCustomChart(new SimplePie("close_on_no_money", () -> this.yesOrNo(config.getBoolean("close-on-no-money"))));
-        metrics.addCustomChart(new SimplePie("hook_shopguiplus", () -> this.yesOrNo(config.getBoolean("sell-options.hook_shopguiplus"))));
-        metrics.addCustomChart(new SimplePie("drop_on_break", () -> this.yesOrNo(config.getBoolean("drop-on-break"))));
-        metrics.addCustomChart(new SimplePie("broken_pickup", () -> this.yesOrNo(config.getBoolean("broken-pickup"))));
+        Map<String, String> data = new HashMap<>();
+        data.put("corruption", "corruption.enabled");
+        data.put("auto_save", "auto-save.enabled");
+        data.put("place_permission", "place-permission");
+        data.put("online_only", "online-only");
+        data.put("anti_explosion", "anti-explosion");
+        data.put("disable_drop_place", "disable-drop-place");
+        data.put("shift_pickup", "shift-pickup");
+        data.put("island_pickup", "island-pickup");
+        data.put("upgrade_gui", "upgrade-gui");
+        data.put("close_on_purchase", "close-on-purchase");
+        data.put("close_on_no_money", "close-on-no-money");
+        data.put("hook_shopguiplus", "sell-options.hook_shopguiplus");
+        data.put("drop_on_break", "drop-on-break");
+        data.put("broken_pickup", "broken-pickup");
+        // create a custom charts
+        data.forEach((id, path) -> {
+            metrics.addCustomChart(this.createSimplePie(id, path));
+        });
+    }
+
+    private SimplePie createSimplePie(String id, String path) {
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        return new SimplePie(id, () -> this.yesOrNo(config.getBoolean(path)));
     }
 
     private void updateCheck(){
@@ -312,6 +334,10 @@ public final class NextGens extends JavaPlugin {
         } else {
             return "no";
         }
+    }
+
+    public static GeneratorAPI getApi() {
+        return api;
     }
 
     public static NextGens getInstance() {

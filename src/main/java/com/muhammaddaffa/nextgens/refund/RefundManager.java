@@ -5,16 +5,13 @@ import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
 
-public class RefundManager implements Listener {
+public class RefundManager {
 
     private final Map<UUID, List<String>> itemMap = new HashMap<>();
 
@@ -23,7 +20,7 @@ public class RefundManager implements Listener {
         this.generatorManager = generatorManager;
     }
 
-    public void registerItem(UUID uuid, String id) {
+    public void delayedGiveGeneratorItem(UUID uuid, String id) {
         List<String> generators = this.itemMap.computeIfAbsent(uuid, k -> new ArrayList<>());
         generators.add(id);
     }
@@ -75,10 +72,10 @@ public class RefundManager implements Listener {
         data.saveConfig();
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onJoin(PlayerJoinEvent event) {
-        // execute code a task later
-        Executor.syncLater(3L, () -> this.giveItemJoin(event.getPlayer()));
+    public void startTask() {
+        Executor.syncTimer(0L, 5L, () -> {
+            Bukkit.getOnlinePlayers().forEach(this::giveItemJoin);
+        });
     }
 
 }

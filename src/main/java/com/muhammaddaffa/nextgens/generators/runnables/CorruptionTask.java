@@ -2,15 +2,19 @@ package com.muhammaddaffa.nextgens.generators.runnables;
 
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorCorruptedEvent;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CorruptionTask extends BukkitRunnable {
 
@@ -54,20 +58,28 @@ public class CorruptionTask extends BukkitRunnable {
             // set the timer back to 0
             this.timer = 0;
             // get possibly infected generators
-            int actuallyCorrupted = 0;
+            AtomicInteger actuallyCorrupted = new AtomicInteger();
             for (ActiveGenerator active : this.getPossiblyInfectedGenerators()) {
                 // check for chances
                 if (ThreadLocalRandom.current().nextDouble(101) <= active.getGenerator().corruptChance()) {
-                    // actually set the generator to be corrupted
-                    active.setCorrupted(true);
-                    // increment the counter
-                    actuallyCorrupted++;
+                    // must run in a sync task
+                    Executor.sync(() -> {
+                        // call the event, and check for cancelled
+                        GeneratorCorruptedEvent corruptedEvent = new GeneratorCorruptedEvent(active.getGenerator(), active);
+                        Bukkit.getPluginManager().callEvent(corruptedEvent);
+                        if (!corruptedEvent.isCancelled()) {
+                            // actually set the generator to be corrupted
+                            active.setCorrupted(true);
+                            // increment the counter
+                            actuallyCorrupted.getAndIncrement();
+                        }
+                    });
                 }
             }
             // broadcast the corrupt event
-            if (actuallyCorrupted > 0) {
+            if (actuallyCorrupted.get() > 0) {
                 Common.configBroadcast("config.yml", "corruption.broadcast", new Placeholder()
-                        .add("{amount}", actuallyCorrupted));
+                        .add("{amount}", actuallyCorrupted.get()));
             }
         }
     }

@@ -44,15 +44,11 @@ public record Drop(
         return new Drop(chance, stack, sellValue, commands);
     }
 
-    public boolean tryDrop(ActiveGenerator active) {
-        return this.tryDrop(active.getLocation().getBlock(), Bukkit.getOfflinePlayer(active.getOwner()));
+    public boolean shouldUse() {
+        return ThreadLocalRandom.current().nextDouble(101) <= this.chance();
     }
 
-    public boolean tryDrop(Block block, @Nullable OfflinePlayer player) {
-        // return false if the chance is failed
-        if (ThreadLocalRandom.current().nextDouble(101) > this.chance()) {
-            return false;
-        }
+    public boolean spawn(Block block, @Nullable OfflinePlayer player) {
         // get the drop location
         Location dropLocation = block.getLocation().add(0.5, 1, 0.5);
         // drop the item if it's exist

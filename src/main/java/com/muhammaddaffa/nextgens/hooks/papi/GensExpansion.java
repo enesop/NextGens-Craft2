@@ -7,7 +7,10 @@ import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
+import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.FormatBalance;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -52,22 +55,54 @@ public class GensExpansion extends PlaceholderExpansion {
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
 
+        final User user = this.userManager.getUser(player);
+
+
+        if (params.equalsIgnoreCase("statistics_totalsell_formatted")) {
+            return Utils.formatBalance(user.getTotalSell());
+        }
+        if (params.equalsIgnoreCase("statistics_totalsell")) {
+            return Common.digits(user.getTotalSell());
+        }
+        if (params.equalsIgnoreCase("statistics_sellwandsell_formatted")) {
+            return Utils.formatBalance(user.getSellwandSell());
+        }
+        if (params.equalsIgnoreCase("statistics_sellwandsell")) {
+            return Common.digits(user.getSellwandSell());
+        }
+        if (params.equalsIgnoreCase("statistics_commandsell_formatted")) {
+            return Utils.formatBalance(user.getNormalSell());
+        }
+        if (params.equalsIgnoreCase("statistics_commandsell")) {
+            return Common.digits(user.getNormalSell());
+        }
+        if (params.equalsIgnoreCase("statistics_itemsold_formatted")) {
+            return Utils.formatBalance(user.getItemsSold());
+        }
+        if (params.equalsIgnoreCase("statistics_itemsold")) {
+            return Common.digits(user.getItemsSold());
+        }
+        if (params.equalsIgnoreCase("statistics_earnings_formatted")) {
+            return Utils.formatBalance((long) user.getEarnings());
+        }
+        if (params.equalsIgnoreCase("statistics_earnings")) {
+            return Common.digits(user.getEarnings());
+        }
+        if (params.equalsIgnoreCase("multiplier")) {
+            return Common.digits(user.getMultiplier());
+        }
         if (params.equalsIgnoreCase("currentplaced")) {
             return Common.digits(this.generatorManager.getGeneratorCount(player));
         }
-
         if (params.equalsIgnoreCase("max")) {
             return Common.digits(this.userManager.getMaxSlot(player));
         }
-
         if (params.equalsIgnoreCase("total_generator")) {
             return Common.digits(this.generatorManager.getActiveGenerator().size());
         }
-
         if (params.equalsIgnoreCase("corrupt_time")) {
             return TimeFormat.parse(CorruptionTask.getTimeLeft());
         }
-
         if (params.equalsIgnoreCase("event_name")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {
@@ -76,7 +111,6 @@ public class GensExpansion extends PlaceholderExpansion {
             return Config.getFileConfiguration("events.yml").getString("events.placeholders.active-event")
                     .replace("{display_name}", event.getDisplayName());
         }
-
         if (params.equalsIgnoreCase("event_time")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {

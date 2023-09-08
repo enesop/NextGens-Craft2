@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.database;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.mdlib.utils.Logger;
+import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.zaxxer.hikari.HikariConfig;
@@ -99,8 +100,32 @@ public class DatabaseManager {
     public void createUserTable() {
         this.executeUpdate("CREATE TABLE IF NOT EXISTS " + USER_TABLE + " (" +
                 "uuid VARCHAR(255) UNIQUE, " +
-                "bonus INT" +
+                "bonus INT, " +
+                "multiplier DOUBLE, " +
+                "earnings DOUBLE, " +
+                "items_sold INTEGER, " +
+                "normal_sell INTEGER, " +
+                "sellwand_sell INTEGER" +
                 ");");
+        // add column if not exists
+        // directly add the table and ignore the error
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN multiplier DOUBLE NOT NULL DEFAULT 1.00;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN earnings DOUBLE NOT NULL DEFAULT 0;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN items_sold INTEGER NOT NULL DEFAULT 0;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN normal_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN sellwand_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
+    }
+
+    private void addColumnSafely(String table, String column, String dataType) {
+        String query = "IF NOT EXISTS( (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE()" +
+                " AND COLUMN_NAME=`{column}` AND TABLE_NAME=`{table}`) ) THEN" +
+                " ALTER TABLE {table} ADD {column} {dataType};";
+        // replace the placeholders
+        query = query.replace("{table}", table);
+        query = query.replace("{column}", column);
+        query = query.replace("{dataType}", dataType);
+
+        this.executeUpdate(query);
     }
 
     public void deleteGenerator(ActiveGenerator active) {

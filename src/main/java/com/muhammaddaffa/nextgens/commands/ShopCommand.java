@@ -13,6 +13,10 @@ import java.util.List;
 public class ShopCommand {
 
     public static void register(GeneratorManager generatorManager) {
+        // check if the command is enabled
+        if (!Config.getFileConfiguration("config.yml").getBoolean("commands.shop.enabled")) {
+            return;
+        }
         ShopCommand command = new ShopCommand(generatorManager);
         // register the command
         command.register();

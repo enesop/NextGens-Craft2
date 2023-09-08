@@ -4,10 +4,12 @@ import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorGenerateItemEvent;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
+import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import org.bukkit.Bukkit;
@@ -147,21 +149,30 @@ public class GeneratorTask extends BukkitRunnable {
             active.addTimer(0.1);
             // check if the generator should drop
             if (active.getTimer() >= interval) {
-                // set the timer back to 0
-                active.setTimer(0);
+                // execute drop mechanics
+                Block block = active.getLocation().getBlock();
                 // get the final variable
                 Generator finalGenerator = chosenGenerator;
                 int finalDropAmount = dropAmount;
-                // execute drop mechanics
-                Block block = active.getLocation().getBlock();
                 Executor.sync(() -> {
-                    for (int i = 0; i < finalDropAmount; i++) {
-                        finalGenerator.drop(block, active.getOwner());
-                    }
-                    // set the block to desired type
+                    // set the block to the desired type
                     block.setType(generator.item().getType());
+                    // create the event
+                    GeneratorGenerateItemEvent generatorEvent = new GeneratorGenerateItemEvent(finalGenerator, active, finalDropAmount);
+                    Bukkit.getPluginManager().callEvent(generatorEvent);
+                    if (generatorEvent.isCancelled()) {
+                        active.setTimer(0);
+                        return;
+                    }
+                    // get the drop amount
+                    for (int i = 0; i < generatorEvent.getDropAmount(); i++) {
+                        Drop drop = generatorEvent.getGenerator().getRandomDrop();
+                        // spawn the random drop
+                        drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwner()));
+                    }
+                    // set the timer to 0
+                    active.setTimer(0);
                 });
-
             }
         }
     }

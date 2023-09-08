@@ -1,15 +1,13 @@
 package com.muhammaddaffa.nextgens.sellwand;
 
-import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
-import com.muhammaddaffa.nextgens.multiplier.Multiplier;
-import com.muhammaddaffa.nextgens.utils.*;
+import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.SellData;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -20,9 +18,23 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.util.UUID;
 
-public class Sellwand {
+public record SellwandManager(
+        UserManager userManager
+) {
 
-    public static boolean action(Player player, ItemStack stack, Inventory inventory, EventManager eventManager) {
+    public String getUsesPlaceholder(int uses) {
+        if (uses == -1) {
+            return Config.getFileConfiguration("config.yml").getString("sellwand.unlimited-placeholder");
+        }
+        return Common.digits(uses);
+    }
+
+    public boolean isSellwand(ItemStack stack) {
+        if (stack == null || stack.getItemMeta() == null) return false;
+        return stack.getItemMeta().getPersistentDataContainer().has(NextGens.sellwand_global, PersistentDataType.STRING);
+    }
+
+    public boolean action(Player player, ItemStack stack, Inventory inventory) {
         // scrap the data from the item
         ItemBuilder builder = new ItemBuilder(stack);
         ItemMeta meta = builder.getItemMeta();
@@ -34,55 +46,13 @@ public class Sellwand {
         if (multiplier == null || uses == null || totalSold == null || totalItemsSold == null) {
             return false;
         }
-        double totalValue = 0.0;
-        double bonus = 0.0;
-        int totalItems = 0;
-        // loop through inventory contents
-        for (ItemStack item : inventory) {
-            // get value
-            double value = Utils.getPriceValue(player, item);
-            // if the item has value, register it
-            if (value > 0) {
-                totalItems += item.getAmount();
-                totalValue += value;
-                // remove the item
-                item.setAmount(0);
-            }
-        }
-        // check if player has anything to sell
-        if (totalItems == 0) {
-            // send message
-            Common.configMessage("config.yml", player, "messages.no-sell");
-            // play bass sound
-            Utils.bassSound(player);
-            return true;
-        }
-        /**
-         * Event-related code
-         */
-        Event event = eventManager.getActiveEvent();
-        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
-            // set the total value
-            bonus += totalValue * Math.max(1.0, event.getSellMultiplier());
-        }
-        // apply the multiplier
-        bonus += totalValue * multiplier;
-        // apply the sell permission multiplier
-        int sellMultiplier = Multiplier.getSellMultiplier(player);
-        bonus += ((totalValue * sellMultiplier) / 100);
-        // apply the bonuses
-        final double afterMultiplier = totalValue + bonus;
-        // deposit the money
-        VaultEconomy.deposit(player, afterMultiplier);
-        // send the visual action
-        VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
-                .add("{amount}", Common.digits(totalItems))
-                .add("{value}", Common.digits(afterMultiplier))
-                .add("{value_formatted}", Utils.formatBalance((long) afterMultiplier)));
+        // perform the sell
+        SellData data = this.userManager.performSell(player, inventory, true);
+        if (data == null) return true;
         // final uses
         int finalUses = uses - 1;
         // if the final uses is 0
-        if (finalUses == 0) {
+        if (finalUses <= 0) {
             // destroy the item
             stack.setAmount(0);
             // send message
@@ -95,14 +65,15 @@ public class Sellwand {
         if (uses > 0) {
             builder.pdc(NextGens.sellwand_uses, finalUses);
         }
-        builder.pdc(NextGens.sellwand_total_sold, totalSold + afterMultiplier);
-        builder.pdc(NextGens.sellwand_total_items, totalItemsSold + totalItems);
+        builder.pdc(NextGens.sellwand_total_sold, totalSold + data.totalValue());
+        builder.pdc(NextGens.sellwand_total_items, totalItemsSold + data.totalItems());
         // update the item
         update(builder.build());
         return true;
     }
 
-    public static void update(ItemStack stack) {
+    public void update(ItemStack stack) {
+        if (stack == null) return;
         // update the item
         FileConfiguration config = Config.getFileConfiguration("config.yml");
         ItemBuilder builder = new ItemBuilder(stack);
@@ -128,7 +99,7 @@ public class Sellwand {
         builder.build();
     }
 
-    public static ItemStack create(double multiplier, int uses) {
+    public ItemStack create(double multiplier, int uses) {
         // create the item
         ItemBuilder builder = ItemBuilder.fromConfig(Config.getFileConfiguration("config.yml"), "sellwand.item");
         builder.pdc(NextGens.sellwand_global, UUID.randomUUID().toString());
@@ -143,18 +114,6 @@ public class Sellwand {
                 .add("{total_items}", Common.digits(0)));
 
         return builder.build();
-    }
-
-    public static String getUsesPlaceholder(int uses) {
-        if (uses == -1) {
-            return Config.getFileConfiguration("config.yml").getString("sellwand.unlimited-placeholder");
-        }
-        return Common.digits(uses);
-    }
-
-    public static boolean isSellwand(ItemStack stack) {
-        if (stack == null || stack.getItemMeta() == null) return false;
-        return stack.getItemMeta().getPersistentDataContainer().has(NextGens.sellwand_global, PersistentDataType.STRING);
     }
 
 }

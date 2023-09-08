@@ -1,10 +1,11 @@
 package com.muhammaddaffa.nextgens.generators.managers;
 
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
-import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
-import com.muhammaddaffa.mdlib.utils.Executor;
-import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.utils.*;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorBreakEvent;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorLoadEvent;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorPlaceEvent;
+import com.muhammaddaffa.nextgens.api.events.generators.GeneratorUpgradeEvent;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.action.InteractAction;
@@ -65,10 +66,40 @@ public record GeneratorListener(
                     Utils.bassSound(player);
                     return;
                 }
-                // create gui
-                FixInventory gui = new FixInventory(player, active, generator);
-                // open the gui
-                gui.open(player);
+                if (config.getBoolean("corruption.gui-fix")) {
+                    // create gui
+                    FixInventory gui = new FixInventory(player, active, generator);
+                    // open the gui
+                    gui.open(player);
+                } else {
+                    // money check
+                    if (VaultEconomy.getBalance(player) < generator.fixCost()) {
+                        Common.configMessage("config.yml", player, "messages.not-enough-money", new Placeholder()
+                                .add("{money}", Common.digits(VaultEconomy.getBalance(player)))
+                                .add("{upgradecost}", Common.digits(generator.fixCost()))
+                                .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.fixCost())));
+                        // play bass sound
+                        Utils.bassSound(player);
+                        return;
+                    }
+                    // take the money from player
+                    VaultEconomy.withdraw(player, generator.fixCost());
+                    // fix the generator
+                    active.setCorrupted(false);
+                    // visual actions
+                    VisualAction.send(player, Config.getFileConfiguration("config.yml"), "corrupt-fix-options", new Placeholder()
+                            .add("{gen}", generator.displayName())
+                            .add("{cost}", Common.digits(generator.fixCost())));
+                    // play particle
+                    Executor.async(() -> {
+                        if (Config.getFileConfiguration("config.yml").getBoolean("corrupt-fix-options.particles")) {
+                            // block crack particle
+                            block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+                            // happy villager particle
+                            block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                        }
+                    });
+                }
                 return;
             }
             return;
@@ -89,6 +120,11 @@ public record GeneratorListener(
         Generator nextGenerator = this.generatorManager.getGenerator(generator.nextTier());
         // upgrade gui option
         if (config.getBoolean("upgrade-gui")) {
+            GeneratorUpgradeEvent upgradeEvent = new GeneratorUpgradeEvent(generator, player, nextGenerator);
+            Bukkit.getPluginManager().callEvent(upgradeEvent);
+            if (upgradeEvent.isCancelled()) {
+                return;
+            }
             // create the gui object
             UpgradeInventory gui = new UpgradeInventory(player, active, generator, nextGenerator, this.generatorManager);
             // open the gui for player
@@ -108,6 +144,12 @@ public record GeneratorListener(
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.cost())));
                 // play bass sound
                 Utils.bassSound(player);
+                return;
+            }
+            // call the custom events
+            GeneratorUpgradeEvent upgradeEvent = new GeneratorUpgradeEvent(generator, player, nextGenerator);
+            Bukkit.getPluginManager().callEvent(upgradeEvent);
+            if (upgradeEvent.isCancelled()) {
                 return;
             }
             // take the money from player
@@ -166,6 +208,13 @@ public record GeneratorListener(
         }
         // check if player is eligible
         if (player.hasPermission("nextgens.break.others") || player.getUniqueId().equals(active.getOwner())) {
+            // call the custom events
+            GeneratorBreakEvent breakEvent = new GeneratorBreakEvent(generator, player);
+            Bukkit.getPluginManager().callEvent(breakEvent);
+            if (breakEvent.isCancelled()) {
+                event.setCancelled(true);
+                return;
+            }
             // unregister generator
             this.generatorManager.unregisterGenerator(block);
             // remove block
@@ -250,6 +299,13 @@ public record GeneratorListener(
                     return;
                 }
             }
+        }
+        // call the custom events
+        GeneratorPlaceEvent placeEvent = new GeneratorPlaceEvent(generator, player);
+        Bukkit.getPluginManager().callEvent(placeEvent);
+        if (placeEvent.isCancelled()) {
+            event.setCancelled(true);
+            return;
         }
         // register active gen
         this.generatorManager.registerGenerator(player, generator, block);

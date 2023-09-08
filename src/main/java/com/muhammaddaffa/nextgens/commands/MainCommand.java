@@ -12,16 +12,19 @@ import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
-import com.muhammaddaffa.nextgens.sellwand.Sellwand;
+import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
+import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.worth.WorthManager;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
 public class MainCommand {
 
-    public static void register(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
-        MainCommand command = new MainCommand(generatorManager, userManager, eventManager);
+    public static void register(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager,
+                                WorthManager worthManager, SellwandManager sellwandManager) {
+        MainCommand command = new MainCommand(generatorManager, userManager, eventManager, worthManager, sellwandManager);
         // register the command
         command.register();
     }
@@ -29,11 +32,16 @@ public class MainCommand {
     private final GeneratorManager generatorManager;
     private final UserManager userManager;
     private final EventManager eventManager;
+    private final WorthManager worthManager;
+    private final SellwandManager sellwandManager;
     private final CommandAPICommand command;
-    public MainCommand(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
+    public MainCommand(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager,
+                       WorthManager worthManager, SellwandManager sellwandManager) {
         this.generatorManager = generatorManager;
         this.userManager = userManager;
         this.eventManager = eventManager;
+        this.worthManager = worthManager;
+        this.sellwandManager = sellwandManager;
         this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.nextgens.command"))
                 .withSubcommand(this.getGiveSubcommand())
                 .withSubcommand(this.getAddMaxSubCommand())
@@ -44,6 +52,8 @@ public class MainCommand {
                 .withSubcommand(this.getSellwandSubcommand())
                 .withSubcommand(this.getStartEventCommand())
                 .withSubcommand(this.getStopEventCommand())
+                .withSubcommand(this.getAddMultiplierSubCommand())
+                .withSubcommand(this.getRemoveMultiplierSubCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.configMessage("config.yml", sender, "messages.help");
@@ -55,6 +65,62 @@ public class MainCommand {
 
     public void register() {
         this.command.register();
+    }
+
+    private CommandAPICommand getAddMultiplierSubCommand() {
+        return new CommandAPICommand("addmultiplier")
+                .withAliases("addmulti")
+                .withArguments(new PlayerArgument("target"))
+                .withArguments(new DoubleArgument("amount"))
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        return;
+                    }
+                    // get all variables
+                    Player player = (Player) args.get("target");
+                    double amount = (double) args.get("amount");
+                    // get the user object and modify the multiplier
+                    User user = this.userManager.getUser(player);
+                    user.addMultiplier(amount);
+                    // send message
+                    Common.configMessage("config.yml", sender, "messages.multiplier-increase", new Placeholder()
+                            .add("{player}", player.getName())
+                            .add("{multiplier}", Common.digits(amount))
+                            .add("{total}", Common.digits(user.getMultiplier())));
+                    Common.configMessage("config.yml", player, "messages.increased-multiplier", new Placeholder()
+                            .add("{multiplier}", Common.digits(amount))
+                            .add("{total}", Common.digits(user.getMultiplier())));
+                });
+    }
+
+    private CommandAPICommand getRemoveMultiplierSubCommand() {
+        return new CommandAPICommand("removemultiplier")
+                .withAliases("removemulti")
+                .withArguments(new PlayerArgument("target"))
+                .withArguments(new DoubleArgument("amount"))
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        return;
+                    }
+                    // get all variables
+                    Player player = (Player) args.get("target");
+                    double amount = (double) args.get("amount");
+                    // get the user object and modify the multiplier
+                    User user = this.userManager.getUser(player);
+                    user.removeMultiplier(amount);
+                    // send message
+                    Common.configMessage("config.yml", sender, "messages.multiplier-decrease", new Placeholder()
+                            .add("{player}", player.getName())
+                            .add("{multiplier}", Common.digits(amount))
+                            .add("{total}", Common.digits(user.getMultiplier())));
+                    Common.configMessage("config.yml", player, "messages.decreased-multiplier", new Placeholder()
+                            .add("{multiplier}", Common.digits(amount))
+                            .add("{total}", Common.digits(user.getMultiplier())));
+                });
     }
 
     private CommandAPICommand getGiveSubcommand() {
@@ -219,6 +285,8 @@ public class MainCommand {
                     // events stuff
                     this.eventManager.loadEvents();
                     this.eventManager.refresh();
+                    // worth reload
+                    this.worthManager.load();
                     // send message to the sender
                     Common.configMessage("config.yml", sender, "messages.reload");
                     // close all gui
@@ -245,23 +313,26 @@ public class MainCommand {
                     double multiplier = (double) args.get("multiplier");
                     int uses = (int) args.get("uses");
                     // give player the sellwand
-                    Common.addInventoryItem(target, Sellwand.create(multiplier, uses));
+                    Common.addInventoryItem(target, this.sellwandManager.create(multiplier, uses));
                     // send message
                     Common.configMessage("config.yml", sender, "messages.sellwand-give", new Placeholder()
                             .add("{player}", target.getName())
                             .add("{multiplier}", Common.digits(multiplier))
-                            .add("{uses}", Sellwand.getUsesPlaceholder(uses)));
+                            .add("{uses}", this.sellwandManager.getUsesPlaceholder(uses)));
                     Common.configMessage("config.yml", target, "messages.sellwand-receive", new Placeholder()
                             .add("{multiplier}", Common.digits(multiplier))
-                            .add("{uses}", Sellwand.getUsesPlaceholder(uses)));
+                            .add("{uses}", this.sellwandManager.getUsesPlaceholder(uses)));
                 });
     }
 
     private CommandAPICommand getStartEventCommand() {
+        List<String> suggestions = this.eventManager.getEventName();
+        suggestions.add("random");
+
         // gens startevent <event>
         return new CommandAPICommand("startevent")
                 .withArguments(new StringArgument("event")
-                        .replaceSuggestions(ArgumentSuggestions.strings(this.eventManager.getEventName())))
+                        .replaceSuggestions(ArgumentSuggestions.strings(suggestions)))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
