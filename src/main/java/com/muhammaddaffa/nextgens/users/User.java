@@ -9,7 +9,7 @@ public class User {
     private final UUID uuid;
     private int bonus;
     // multiplier system
-    private double multiplier = 1.0;
+    private double multiplier;
     // statistics
     private double earnings;
     private int itemsSold;

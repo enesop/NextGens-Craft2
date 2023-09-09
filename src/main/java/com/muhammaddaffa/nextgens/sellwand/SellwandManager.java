@@ -52,7 +52,7 @@ public record SellwandManager(
         // final uses
         int finalUses = uses - 1;
         // if the final uses is 0
-        if (finalUses <= 0) {
+        if (finalUses == 0) {
             // destroy the item
             stack.setAmount(0);
             // send message

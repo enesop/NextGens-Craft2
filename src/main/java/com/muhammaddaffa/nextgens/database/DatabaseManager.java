@@ -110,7 +110,7 @@ public class DatabaseManager {
                 ");");
         // add column if not exists
         // directly add the table and ignore the error
-        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN multiplier DOUBLE NOT NULL DEFAULT 1.00;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN multiplier DOUBLE NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN earnings DOUBLE NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN items_sold INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN normal_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});

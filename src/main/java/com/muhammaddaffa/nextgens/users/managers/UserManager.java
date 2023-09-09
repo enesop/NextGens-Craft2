@@ -87,19 +87,10 @@ public class UserManager {
         }
         // get all variables needed
         User user = this.getUser(player);
-        double multiplier = user.getMultiplier();
-        Event event = this.eventManager.getActiveEvent();
-        // check if there is sell multiplier event
-        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
-            // accumulate the multiplier
-            multiplier += event.getSellMultiplier();
-        }
-        // add the multiplier from sellwand
-        if (sellwand != null) {
-            multiplier += sellwand.multiplier();
-        }
+        double multiplier = this.getMultiplier(sellwand, user);
+        double bonus = totalValue * multiplier;
         // set the final amount
-        final double finalAmount = totalValue * multiplier;
+        final double finalAmount = totalValue + bonus;
         // create the sell data
         SellData sellData = new SellData(finalAmount, totalItems, multiplier, sellwand);
         SellEvent sellEvent = new SellCommandUseEvent(player, user, sellData);
@@ -130,6 +121,21 @@ public class UserManager {
             user.addNormalSell(1);
         }
         return data;
+    }
+
+    private double getMultiplier(SellwandData sellwand, User user) {
+        double multiplier = user.getMultiplier();
+        Event event = this.eventManager.getActiveEvent();
+        // check if there is sell multiplier event
+        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
+            // accumulate the multiplier
+            multiplier += event.getSellMultiplier();
+        }
+        // add the multiplier from sellwand
+        if (sellwand != null) {
+            multiplier += sellwand.multiplier();
+        }
+        return multiplier;
     }
 
     public int getMaxSlot(Player player) {

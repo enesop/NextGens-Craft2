@@ -338,12 +338,28 @@ public class GeneratorManager {
 
     public void refreshActiveGenerator() {
         for (ActiveGenerator active : this.activeGenerators.values()) {
+            if (active.getGenerator() == null) {
+                this.fixGenerator(active);
+                continue;
+            }
             // get the new generator
             Generator refreshed = this.getGenerator(active.getGenerator().id());
             // if the refreshed is not null
             if (refreshed != null) {
                 // refresh it
                 active.setGenerator(refreshed);
+            }
+        }
+    }
+
+    private void fixGenerator(ActiveGenerator active) {
+        if (active.getGenerator() != null) {
+            return;
+        }
+        for (Generator generator : this.generatorMap.values()) {
+            if (active.getLocation().getBlock().getType() == generator.item().getType()) {
+                active.setGenerator(generator);
+                break;
             }
         }
     }
