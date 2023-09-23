@@ -60,10 +60,13 @@ public class User {
     }
 
     public double getMultiplier() {
-        if (this.multiplier < 1) {
-            this.multiplier = 1;
-        }
         return multiplier;
+    }
+
+    public double getVisualMultiplier() {
+        double visual = multiplier - 1;
+        if (visual < 0) visual = 0;
+        return visual;
     }
 
     public void setMultiplier(double multiplier) {

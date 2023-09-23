@@ -115,19 +115,7 @@ public class DatabaseManager {
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN items_sold INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN normal_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN sellwand_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
-        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_cashback BOOL NOT NULL DEFAULT 1;");
-    }
-
-    private void addColumnSafely(String table, String column, String dataType) {
-        String query = "IF NOT EXISTS( (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE()" +
-                " AND COLUMN_NAME=`{column}` AND TABLE_NAME=`{table}`) ) THEN" +
-                " ALTER TABLE {table} ADD {column} {dataType};";
-        // replace the placeholders
-        query = query.replace("{table}", table);
-        query = query.replace("{column}", column);
-        query = query.replace("{dataType}", dataType);
-
-        this.executeUpdate(query);
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_cashback BOOL NOT NULL DEFAULT 1;", ex -> {});
     }
 
     public void deleteGenerator(ActiveGenerator active) {

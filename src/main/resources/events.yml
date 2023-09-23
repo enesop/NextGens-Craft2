@@ -19,9 +19,9 @@ events:
     2x_sell:
       type: sell_multiplier
       # The display name of the event
-      display-name: '&a&l+1.0x Sell Multiplier'
+      display-name: '&a&l2x Sell Multiplier'
       # The multiplier of the sell
-      multiplier: 1.0
+      multiplier: 2.0
       # The duration of the event (in seconds)
       duration: 120
       # The start message
@@ -32,7 +32,8 @@ events:
         - '  #f69220Type: &f{name}'
         - '  #f69220Duration: &f{duration}'
         - '&7'
-        - '  &7Your multiplier has been increased by 1.0x &7(( /sell ))'
+        - '  &7The value of every Generator drop'
+        - '  &7has been increased by 2x &7(( /sell ))'
         - '&7'
       # The end message
       end-message:
@@ -42,7 +43,7 @@ events:
         - '  #f69220Type: &f{name}'
         - '  #f69220Next Event In: &f{next_duration}'
         - '&7'
-        - '  &7Your multiplier goes back to normal.'
+        - '  &7The value of all drops are back to normal.'
         - '&7'
       # Blacklisted generator that will not affected by this event
       blacklisted_generators:
@@ -173,9 +174,9 @@ events:
     1_5x_sell:
       type: sell_multiplier
       # The display name of the event
-      display-name: '&a&l+0.5x Sell Multiplier'
+      display-name: '&a&l1.5x Sell Multiplier'
       # The multiplier of the sell
-      multiplier: 0.5
+      multiplier: 1.5
       # The duration of the event (in seconds)
       duration: 180
       # The start message
@@ -186,7 +187,8 @@ events:
         - '  #f69220Type: &f{name}'
         - '  #f69220Duration: &f{duration}'
         - '&7'
-        - '  &7Your multiplier has been increased by 0.5x &7(( /sell ))'
+        - '  &7The value of every items that are sellable now'
+        - '  &7has been increased by 1.5x &7(( /sell ))'
         - '&7'
       # The end message
       end-message:
@@ -196,7 +198,7 @@ events:
         - '  #f69220Type: &f{name}'
         - '  #f69220Next Event In: &f{next_duration}'
         - '&7'
-        - '  &7Your multiplier goes back to normal'
+        - '  &7Now the value of sellable items go back to normal.'
         - '&7'
       # Blacklisted generator that will not affected by this event
       blacklisted_generators:

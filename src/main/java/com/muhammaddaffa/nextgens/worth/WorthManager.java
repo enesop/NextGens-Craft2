@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.worth;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Logger;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,7 +29,7 @@ public class WorthManager {
     public Double getItemWorth(ItemStack stack) {
         Double price = null;
         for (ItemStack item : this.itemWorth.keySet()) {
-            if (!item.isSimilar(stack)) continue;
+            if (!Utils.isSimilar(stack, item)) continue;
             price = this.itemWorth.get(item);
             break;
         }

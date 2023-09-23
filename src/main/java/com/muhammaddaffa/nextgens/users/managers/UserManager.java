@@ -13,7 +13,6 @@ import com.muhammaddaffa.nextgens.api.events.sell.SellwandUseEvent;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
-import com.muhammaddaffa.nextgens.multiplier.Multiplier;
 import com.muhammaddaffa.nextgens.sellwand.SellwandData;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.utils.SellData;
@@ -87,12 +86,8 @@ public class UserManager {
         }
         // get all variables needed
         User user = this.getUser(player);
-        double multiplier = this.getMultiplier(sellwand, user);
-        double bonus = totalValue * multiplier;
-        // set the final amount
-        final double finalAmount = totalValue + bonus;
         // create the sell data
-        SellData sellData = new SellData(finalAmount, totalItems, multiplier, sellwand);
+        final SellData sellData = this.getSellData(sellwand, totalValue, totalItems, user);
         SellEvent sellEvent = new SellCommandUseEvent(player, user, sellData);
         if (sellwand != null) sellEvent = new SellwandUseEvent(player, user, sellData);
         // call the event
@@ -123,19 +118,20 @@ public class UserManager {
         return data;
     }
 
-    private double getMultiplier(SellwandData sellwand, User user) {
-        double multiplier = user.getMultiplier();
+    private SellData getSellData(SellwandData sellwand, double totalValue, int totalItems, User user) {
         Event event = this.eventManager.getActiveEvent();
-        // check if there is sell multiplier event
-        if (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) {
-            // accumulate the multiplier
-            multiplier += event.getSellMultiplier();
-        }
-        // add the multiplier from sellwand
-        if (sellwand != null) {
-            multiplier += sellwand.multiplier();
-        }
-        return multiplier;
+        double playerMultiplier = user.getMultiplier();
+        double sellwandMultiplier = sellwand != null ? sellwand.multiplier() : 0;
+        double eventMultiplier = (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) ? event.getSellMultiplier() : 0;
+        // get the final amount
+        double playerBonus = totalValue * playerMultiplier;
+        double sellwandBonus = totalValue * Math.max(0, sellwandMultiplier - 1);
+        double eventBonus = totalValue * Math.max(0, eventMultiplier - 1);
+        double finalAmount = totalValue + playerBonus + sellwandBonus + eventBonus;
+        // get the total multiplier
+        double totalMultiplier = playerMultiplier + sellwandMultiplier + eventMultiplier;
+        // return the sell data
+        return new SellData(user, finalAmount, totalItems, totalMultiplier, sellwand);
     }
 
     public int getMaxSlot(Player player) {

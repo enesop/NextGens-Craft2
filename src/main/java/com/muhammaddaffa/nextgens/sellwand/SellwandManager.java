@@ -8,6 +8,7 @@ import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.SellData;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -94,7 +95,9 @@ public record SellwandManager(
                 .add("{multiplier}", Common.digits(multiplier))
                 .add("{uses}", getUsesPlaceholder(uses))
                 .add("{total_sold}", Common.digits(totalSold))
-                .add("{total_items}", Common.digits(totalItemsSold)));
+                .add("{total_sold_formatted}", Utils.formatBalance(totalSold.longValue()))
+                .add("{total_items}", Common.digits(totalItemsSold))
+                .add("{total_items_formatted}", Utils.formatBalance(totalItemsSold)));
         // set the item meta
         builder.build();
     }

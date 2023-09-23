@@ -1,5 +1,6 @@
 package com.muhammaddaffa.nextgens.commands;
 
+import com.muhammaddaffa.mdlib.commandapi.CommandAPI;
 import com.muhammaddaffa.mdlib.commandapi.CommandAPIBukkit;
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
@@ -21,7 +22,9 @@ public class SellCommand {
         Executor.sync(() -> {
             Logger.info("Sell command is enabled, overriding and registering sell command...");
             // unregister the command
-            CommandAPIBukkit.unregister("sell", true, true);
+            try {
+                CommandAPIBukkit.unregister("sell", true, true);
+            } catch (Exception ignored) { }
             // register back the command
             command.register();
         });

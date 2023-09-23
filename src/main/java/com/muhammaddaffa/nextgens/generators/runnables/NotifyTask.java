@@ -6,6 +6,7 @@ import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -28,7 +29,7 @@ public class NotifyTask extends BukkitRunnable {
         // set back the runnable
         runnable = new NotifyTask(generatorManager);
         // get the interval
-        long interval = 20L * TimeUnit.MINUTES.toSeconds(Config.getFileConfiguration("config.yml").getInt("corruption.notify.interval"));
+        long interval = 20L * TimeUnit.MINUTES.toSeconds(Settings.CORRUPTION_NOTIFY_INTERVAL);
         // run the task
         runnable.runTaskTimerAsynchronously(NextGens.getInstance(), interval, interval);
     }
@@ -41,7 +42,7 @@ public class NotifyTask extends BukkitRunnable {
     @Override
     public void run() {
         // if corruption is not enabled, skip this
-        if (!Config.getFileConfiguration("config.yml").getBoolean("corruption.enabled")) {
+        if (!Settings.CORRUPTION_ENABLED) {
             return;
         }
         // create the map to store data
@@ -61,7 +62,7 @@ public class NotifyTask extends BukkitRunnable {
                 return;
             }
             // send the message
-            Common.configMessage("config.yml", player, "corruption.notify.messages", new Placeholder()
+            Settings.CORRUPTION_NOTIFY_MESSAGE.send(player, new Placeholder()
                     .add("{amount}", Common.digits(amount)));
             // play note pling sound
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);

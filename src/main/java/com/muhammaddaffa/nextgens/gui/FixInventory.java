@@ -24,8 +24,8 @@ public class FixInventory extends SimpleInventory {
     private final UserManager userManager;
 
     public FixInventory(Player player, ActiveGenerator active, Generator generator, UserManager userManager) {
-        super(Config.getFileConfiguration("corrupt_gui.yml").getInt("size"),
-                Common.color(Config.getFileConfiguration("corrupt_gui.yml").getString("title")));
+        super(Settings.CORRUPT_GUI_SIZE,
+                Common.color(Settings.CORRUPT_GUI_TITLE));
         this.player = player;
         this.active = active;
         this.generator = generator;
@@ -38,7 +38,7 @@ public class FixInventory extends SimpleInventory {
 
     private void setDisplayButton() {
         // get the slots
-        List<Integer> slots = Config.getFileConfiguration("corrupt_gui.yml").getIntegerList("display-slots");
+        List<Integer> slots = Settings.CORRUPT_GUI_DISPLAY_SLOTS;
         // if player has enough money
         if (VaultEconomy.getBalance(this.player) >= this.generator.fixCost()) {
             this.setFixButton(slots);

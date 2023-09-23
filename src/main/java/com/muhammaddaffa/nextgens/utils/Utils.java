@@ -8,11 +8,25 @@ import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class Utils {
 
     private static final FormatBalance formatBalance = new FormatBalance();
+
+    public static boolean isSimilar(ItemStack one, ItemStack two) {
+        if (one == null || two == null) return false;
+        ItemMeta oneMeta = one.getItemMeta();
+        ItemMeta twoMeta = two.getItemMeta();
+
+        return one.getType() == two.getType() &&
+                (oneMeta != null && twoMeta != null) &&
+                oneMeta.getDisplayName().equals(twoMeta.getDisplayName()) &&
+                (oneMeta.getLore() != null && twoMeta.getLore() != null) &&
+                oneMeta.getLore().equals(twoMeta.getLore());
+    }
 
     public static void performCashback(Player player, UserManager userManager, double amount) {
         // get the cashback for player

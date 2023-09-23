@@ -12,6 +12,7 @@ import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,7 +35,7 @@ public class GeneratorTask extends BukkitRunnable {
         // set back the runnable
         runnable = new GeneratorTask(generatorManager, eventManager);
         // run the task
-        runnable.runTaskTimerAsynchronously(NextGens.getInstance(), 20L, 2L);
+        runnable.runTaskTimerAsynchronously(NextGens.getInstance(), 20L, 5L);
     }
 
     public static void flush() {
@@ -69,25 +70,24 @@ public class GeneratorTask extends BukkitRunnable {
             Generator generator = active.getGenerator();
             Player player = Bukkit.getPlayer(active.getOwner());
             Event event = this.eventManager.getActiveEvent();
-            FileConfiguration config = Config.getFileConfiguration("config.yml");
             // if generator is invalid or chunk is not loaded, skip it
             if (generator == null || !active.isChunkLoaded()) {
                 continue;
             }
-            if (config.getStringList("blacklisted-worlds").contains(active.getLocation().getWorld().getName())) {
+            if (Settings.BLACKLISTED_WORLDS.contains(active.getLocation().getWorld().getName())) {
                 continue;
             }
             // check for online-only option
-            if (config.getBoolean("online-only")) {
+            if (Settings.ONLINE_ONLY) {
                 if (player == null || !player.isOnline()) {
                     continue;
                 }
             }
             String serialized = LocationSerializer.serialize(active.getLocation());
             // check for corruption option
-            if (config.getBoolean("corruption.enabled") && active.isCorrupted()) {
+            if (Settings.CORRUPTION_ENABLED && active.isCorrupted()) {
                 // check if hologram is enabled
-                if (config.getBoolean("corruption.hologram.enabled") && !this.hologramMap.containsKey(serialized)) {
+                if (Settings.CORRUPTION_HOLOGRAM && !this.hologramMap.containsKey(serialized)) {
                     CorruptedHologram hologram = new CorruptedHologram(active);
                     // show the hologram
                     hologram.spawn();
@@ -103,7 +103,7 @@ public class GeneratorTask extends BukkitRunnable {
             }
             Generator chosenGenerator = generator;
             double interval = generator.interval();
-            int dropAmount = 1;
+            int dropAmount;
             /**
              * Event-related code
              */
@@ -143,22 +143,27 @@ public class GeneratorTask extends BukkitRunnable {
                         !event.getBlacklistedGenerators().contains(generator.id())) {
                     // get the drop multiplier and set the drop amount
                     dropAmount = Math.max(1, event.getDropMultiplier());
+                } else {
+                    dropAmount = 1;
                 }
+            } else {
+                dropAmount = 1;
             }
             // add timer
-            active.addTimer(0.1);
+            active.addTimer(0.25);
             // check if the generator should drop
             if (active.getTimer() >= interval) {
                 // execute drop mechanics
                 Block block = active.getLocation().getBlock();
-                // get the final variable
-                Generator finalGenerator = chosenGenerator;
-                int finalDropAmount = dropAmount;
+                // execute it in sync task
+                Generator finalChosenGenerator = chosenGenerator;
                 Executor.sync(() -> {
                     // set the block to the desired type
-                    block.setType(generator.item().getType());
+                    if (Settings.FORCE_UPDATE_BLOCKS) {
+                        block.setType(generator.item().getType());
+                    }
                     // create the event
-                    GeneratorGenerateItemEvent generatorEvent = new GeneratorGenerateItemEvent(finalGenerator, active, finalDropAmount);
+                    GeneratorGenerateItemEvent generatorEvent = new GeneratorGenerateItemEvent(finalChosenGenerator, active, dropAmount);
                     Bukkit.getPluginManager().callEvent(generatorEvent);
                     if (generatorEvent.isCancelled()) {
                         active.setTimer(0);
@@ -173,6 +178,7 @@ public class GeneratorTask extends BukkitRunnable {
                     // set the timer to 0
                     active.setTimer(0);
                 });
+
             }
         }
     }

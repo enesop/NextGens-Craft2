@@ -9,11 +9,15 @@ import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ShopInventory extends SimpleInventory {
 
@@ -23,8 +27,12 @@ public class ShopInventory extends SimpleInventory {
         gui.open(player);
     }
 
+    private final Map<Integer, List<String>> paginationMap = new HashMap<>();
+
     private final Player player;
     private final GeneratorManager generatorManager;
+
+    private int guiPage = 1;
 
     public ShopInventory(Player player, GeneratorManager generatorManager) {
         super(Config.getFileConfiguration("shop.yml").getInt("size"),
@@ -32,67 +40,115 @@ public class ShopInventory extends SimpleInventory {
         this.player = player;
         this.generatorManager = generatorManager;
 
+        this.loadItems();
         this.setAllItems();
     }
 
-    private void setAllItems() {
+    private void loadItems() {
+        // clear the items first
+        this.paginationMap.clear();
+        // load the config
         FileConfiguration config = Config.getFileConfiguration("shop.yml");
-        // loop the items
+        // load the items first
         for (String key : config.getConfigurationSection("items").getKeys(false)) {
+            int page = config.getInt("items." + key + ".page", 1);
+            // add the item into the page
+            List<String> pageItems = this.paginationMap.computeIfAbsent(page, k -> new ArrayList<>());
+            pageItems.add("items." + key);
+        }
+    }
+
+    private void setAllItems() {
+        // clear the gui first
+        for (int i = 0; i < this.getInventory().getSize(); i++) {
+            this.setItem(i, new ItemStack(Material.AIR));
+        }
+        // proceed to set all items
+        FileConfiguration config = Config.getFileConfiguration("shop.yml");
+        // get the items according to the page
+        List<String> pageItems = this.paginationMap.get(this.guiPage);
+        if (pageItems == null) {
+            return;
+        }
+        // loop through the items
+        for (String key : pageItems) {
             // get the data
-            String type = config.getString("items." + key + ".type");
-            List<Integer> slots = config.getIntegerList("items." + key + ".slots");
-            // build the item
-            ItemBuilder builder = ItemBuilder.fromConfig(config, "items." + key);
-            if (builder == null) {
-                continue;
-            }
+            String type = config.getString(key + ".type");
+            List<Integer> slots = config.getIntegerList(key + ".slots");
+            ItemBuilder builder = ItemBuilder.fromConfig(config, key);
+            if (builder == null) continue;
             ItemStack stack = builder.build();
 
-            if (type == null || !type.equalsIgnoreCase("GENERATOR")) {
+            if (type == null) {
                 this.setItems(slots, stack);
                 continue;
             }
 
-            String id = config.getString("items." + key + ".generator");
-            Generator generator = this.generatorManager.getGenerator(id);
-            double cost = config.getDouble("items." + key + ".cost");
+            if (type.equalsIgnoreCase("GENERATOR")) {
+                String id = config.getString(key + ".generator");
+                Generator generator = this.generatorManager.getGenerator(id);
+                double cost = config.getDouble(key + ".cost");
 
-            // skip if the generator is invalid
-            if (generator == null) {
+                // skip if the generator is invalid
+                if (generator == null) {
+                    continue;
+                }
+
+                this.setItems(slots, stack, event -> {
+                    // money check
+                    if (VaultEconomy.getBalance(this.player) <= cost) {
+                        Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
+                                .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
+                                .add("{upgradecost}", Common.digits(cost))
+                                .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - cost)));
+                        // play bass sound
+                        Utils.bassSound(this.player);
+                        // close on no money
+                        if (Config.getFileConfiguration("config.yml").getBoolean("close-on-no-money")) {
+                            this.player.closeInventory();
+                        }
+                        return;
+                    }
+                    // reduce the amount
+                    VaultEconomy.withdraw(this.player, cost);
+                    // give the generator
+                    Common.addInventoryItem(this.player, generator.createItem(1));
+                    // send message
+                    Common.configMessage("config.yml", this.player, "messages.gen-purchase", new Placeholder()
+                            .add("{gen}", generator.displayName())
+                            .add("{cost}", Common.digits(cost)));
+                    // close on purchase
+                    if (Config.getFileConfiguration("config.yml").getBoolean("close-on-purchase")) {
+                        this.player.closeInventory();
+                    }
+                });
                 continue;
             }
 
-            this.setItems(slots, stack, event -> {
-                // money check
-                if (VaultEconomy.getBalance(this.player) <= cost) {
-                    Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
-                            .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
-                            .add("{upgradecost}", Common.digits(cost))
-                            .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - cost)));
-                    // play bass sound
-                    Utils.bassSound(this.player);
-                    // close on no money
-                    if (Config.getFileConfiguration("config.yml").getBoolean("close-on-no-money")) {
-                        this.player.closeInventory();
+            if (type.equalsIgnoreCase("NEXT_PAGE")) {
+                this.setItems(slots, stack, event -> {
+                    if (this.paginationMap.containsKey(this.guiPage + 1)) {
+                        this.guiPage += 1;
+                        this.setAllItems();
                     }
-                    return;
-                }
-                // reduce the amount
-                VaultEconomy.withdraw(this.player, cost);
-                // give the generator
-                Common.addInventoryItem(this.player, generator.createItem(1));
-                // send message
-                Common.configMessage("config.yml", this.player, "messages.gen-purchase", new Placeholder()
-                        .add("{gen}", generator.displayName())
-                        .add("{cost}", Common.digits(cost)));
-                // close on purchase
-                if (Config.getFileConfiguration("config.yml").getBoolean("close-on-purchase")) {
-                    this.player.closeInventory();
-                }
-            });
+                });
+                continue;
+            }
 
+            if (type.equalsIgnoreCase("PREVIOUS_PAGE")) {
+                this.setItems(slots, stack, event -> {
+                    if (this.paginationMap.containsKey(this.guiPage - 1)) {
+                        this.guiPage -= 1;
+                        this.setAllItems();
+                    }
+                });
+                continue;
+            }
+
+            // set the normal items
+            this.setItems(slots, stack);
         }
+
     }
 
 }

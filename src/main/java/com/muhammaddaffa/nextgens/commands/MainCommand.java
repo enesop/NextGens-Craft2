@@ -15,6 +15,7 @@ import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.Settings;
 import com.muhammaddaffa.nextgens.worth.WorthManager;
 import org.bukkit.entity.Player;
 
@@ -54,6 +55,7 @@ public class MainCommand {
                 .withSubcommand(this.getStopEventCommand())
                 .withSubcommand(this.getAddMultiplierSubCommand())
                 .withSubcommand(this.getRemoveMultiplierSubCommand())
+                .withSubcommand(this.getSetMultiplierSubCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.configMessage("config.yml", sender, "messages.help");
@@ -120,6 +122,32 @@ public class MainCommand {
                     Common.configMessage("config.yml", player, "messages.decreased-multiplier", new Placeholder()
                             .add("{multiplier}", Common.digits(amount))
                             .add("{total}", Common.digits(user.getMultiplier())));
+                });
+    }
+
+    private CommandAPICommand getSetMultiplierSubCommand() {
+        return new CommandAPICommand("setmultiplier")
+                .withAliases("setmulti")
+                .withArguments(new PlayerArgument("target"))
+                .withArguments(new DoubleArgument("amount"))
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        return;
+                    }
+                    // get all variables
+                    Player player = (Player) args.get("target");
+                    double amount = (double) args.get("amount");
+                    // get the user object and modify the multiplier
+                    User user = this.userManager.getUser(player);
+                    user.setMultiplier(amount);
+                    // send message
+                    Common.configMessage("config.yml", sender, "messages.set-multiplier", new Placeholder()
+                            .add("{player}", player.getName())
+                            .add("{multiplier}", Common.digits(amount)));
+                    Common.configMessage("config.yml", player, "messages.multiplier-set", new Placeholder()
+                            .add("{multiplier}", Common.digits(amount)));
                 });
     }
 
@@ -274,6 +302,7 @@ public class MainCommand {
                     }
                     // actually reload the config
                     Config.reload();
+                    Settings.init();
                     // remove all holograms
                     GeneratorTask.flush();
                     // load back the generator

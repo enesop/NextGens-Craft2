@@ -48,7 +48,7 @@ public record Drop(
         return ThreadLocalRandom.current().nextDouble(101) <= this.chance();
     }
 
-    public boolean spawn(Block block, @Nullable OfflinePlayer player) {
+    public void spawn(Block block, @Nullable OfflinePlayer player) {
         // get the drop location
         Location dropLocation = block.getLocation().add(0.5, 1, 0.5);
         // drop the item if it's exist
@@ -74,7 +74,6 @@ public record Drop(
             placeholder.add("{player}", player.getName());
         }
         this.commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), placeholder.translate(command)));
-        return true;
     }
 
 }

@@ -24,10 +24,12 @@ import com.muhammaddaffa.nextgens.refund.RefundManager;
 import com.muhammaddaffa.nextgens.sellwand.SellwandListener;
 import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.Settings;
 import com.muhammaddaffa.nextgens.worth.WorthManager;
 import dev.norska.dsw.DeluxeSellwands;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
+import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -115,6 +117,7 @@ public final class NextGens extends JavaPlugin {
 
         // update config
         this.updateConfig();
+        Settings.init();
 
         // connect to database and create the table
         this.dbm.connect();
@@ -288,6 +291,8 @@ public final class NextGens extends JavaPlugin {
         data.forEach((id, path) -> {
             metrics.addCustomChart(this.createSimplePie(id, path));
         });
+        // single line chart
+        metrics.addCustomChart(new SingleLineChart("total_generators", () -> this.generatorManager.getActiveGenerator().size()));
     }
 
     private SimplePie createSimplePie(String id, String path) {
