@@ -97,6 +97,11 @@ public class UpgradeInventory extends SimpleInventory {
                 this.player.closeInventory();
                 return;
             }
+            // if the block is no longer a generator, skip it
+            if (this.generatorManager.getActiveGenerator(this.active.getLocation()) == null) {
+                this.player.closeInventory();
+                return;
+            }
             // take the money from player
             VaultEconomy.withdraw(this.player, this.generator.cost());
             // register the generator again
@@ -192,6 +197,11 @@ public class UpgradeInventory extends SimpleInventory {
                 // play bass sound
                 Utils.bassSound(this.player);
                 // close the gui
+                this.player.closeInventory();
+                return;
+            }
+            // if the block is no longer a generator, skip it
+            if (this.generatorManager.getActiveGenerator(this.active.getLocation()) == null) {
                 this.player.closeInventory();
                 return;
             }

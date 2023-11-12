@@ -86,6 +86,8 @@ public class MainCommand {
                     // get the user object and modify the multiplier
                     User user = this.userManager.getUser(player);
                     user.addMultiplier(amount);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
                     // send message
                     Common.configMessage("config.yml", sender, "messages.multiplier-increase", new Placeholder()
                             .add("{player}", player.getName())
@@ -114,6 +116,8 @@ public class MainCommand {
                     // get the user object and modify the multiplier
                     User user = this.userManager.getUser(player);
                     user.removeMultiplier(amount);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
                     // send message
                     Common.configMessage("config.yml", sender, "messages.multiplier-decrease", new Placeholder()
                             .add("{player}", player.getName())
@@ -142,6 +146,8 @@ public class MainCommand {
                     // get the user object and modify the multiplier
                     User user = this.userManager.getUser(player);
                     user.setMultiplier(amount);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
                     // send message
                     Common.configMessage("config.yml", sender, "messages.set-multiplier", new Placeholder()
                             .add("{player}", player.getName())
@@ -155,9 +161,11 @@ public class MainCommand {
         return new CommandAPICommand("give")
                 .withArguments(new PlayerArgument("target"))
                 .withArguments(new StringArgument("generator_id")
-                        .replaceSuggestions(ArgumentSuggestions.strings(this.generatorManager.getGeneratorIDs())))
-                .withOptionalArguments(new IntegerArgument("generator_amount")
-                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
+                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                            return this.generatorManager.getGeneratorIDs()
+                                    .toArray(String[]::new);
+                        })))
+                .withOptionalArguments(new IntegerArgument("generator_amount"))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -195,8 +203,7 @@ public class MainCommand {
     private CommandAPICommand getAddMaxSubCommand() {
         return new CommandAPICommand("addmax")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new IntegerArgument("amount")
-                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
+                .withArguments(new IntegerArgument("amount"))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -207,7 +214,10 @@ public class MainCommand {
                     Player target = (Player) args.get("target");
                     int amount = (int) args.get("amount");
                     // actually set the bonus generator place
-                    this.userManager.getUser(target).addBonus(amount);
+                    User user = this.userManager.getUser(target);
+                    user.addBonus(amount);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
                     // send message to the command sender
                     Common.configMessage("config.yml", sender, "messages.add-max", new Placeholder()
                             .add("{amount}", amount)
@@ -223,8 +233,7 @@ public class MainCommand {
     private CommandAPICommand getRemoveMaxSubcommand() {
         return new CommandAPICommand("removemax")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new IntegerArgument("amount")
-                        .replaceSuggestions(ArgumentSuggestions.strings("[<amount>]")))
+                .withArguments(new IntegerArgument("amount"))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -235,7 +244,10 @@ public class MainCommand {
                     Player target = (Player) args.get("target");
                     int amount = (int) args.get("amount");
                     // actually set the bonus generator place
-                    this.userManager.getUser(target).removeBonus(amount);
+                    User user = this.userManager.getUser(target);
+                    user.removeBonus(amount);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
                     // send message to the command sender
                     Common.configMessage("config.yml", sender, "messages.remove-max", new Placeholder()
                             .add("{amount}", amount)
@@ -259,7 +271,11 @@ public class MainCommand {
                     }
                     Player target = (Player) args.get("target");
                     // reset the bonus
-                    this.userManager.getUser(target).setBonus(0);
+                    User user = this.userManager.getUser(target);
+                    user.setBonus(0);
+                    // save the user data afterward
+                    Executor.async(() -> this.userManager.saveUser(user));
+                    this.userManager.saveUser();
                     // send message to the command sender
                     Common.configMessage("config.yml", sender, "messages.reset-max", new Placeholder()
                             .add("{player}", target.getName()));
@@ -328,10 +344,8 @@ public class MainCommand {
         return new CommandAPICommand("sellwand")
                 .withAliases("sellwands")
                 .withArguments(new PlayerArgument("target"))
-                .withArguments(new DoubleArgument("multiplier")
-                        .replaceSuggestions(ArgumentSuggestions.strings("[<multiplier>]")))
-                .withArguments(new IntegerArgument("uses")
-                        .replaceSuggestions(ArgumentSuggestions.strings("[<uses>]")))
+                .withArguments(new DoubleArgument("multiplier"))
+                .withArguments(new IntegerArgument("uses"))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
@@ -355,13 +369,14 @@ public class MainCommand {
     }
 
     private CommandAPICommand getStartEventCommand() {
-        List<String> suggestions = this.eventManager.getEventName();
-        suggestions.add("random");
-
         // gens startevent <event>
         return new CommandAPICommand("startevent")
                 .withArguments(new StringArgument("event")
-                        .replaceSuggestions(ArgumentSuggestions.strings(suggestions)))
+                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                            List<String> suggestions = this.eventManager.getEventName();
+                            suggestions.add("random");
+                            return suggestions.toArray(String[]::new);
+                        })))
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {

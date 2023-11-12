@@ -6,7 +6,7 @@
 
     <groupId>com.muhammaddaffa</groupId>
     <artifactId>NextGens</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <packaging>jar</packaging>
 
     <name>NextGens</name>
@@ -191,6 +191,12 @@
             <artifactId>lwc</artifactId>
             <version>2.2.9-dev</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Advanced Chests -->
+        <dependency>
+            <groupId>com.github.DeadSilenceIV</groupId>
+            <artifactId>AdvancedChestsAPI</artifactId>
+            <version>3.2-BETA</version>
         </dependency>
 
         <!-- MDLib -->

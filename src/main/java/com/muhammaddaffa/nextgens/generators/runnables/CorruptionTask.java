@@ -49,7 +49,7 @@ public class CorruptionTask extends BukkitRunnable {
     @Override
     public void run() {
         // if corruption is disabled, skip this
-        if (Settings.CORRUPTION_ENABLED) {
+        if (!Settings.CORRUPTION_ENABLED) {
             return;
         }
         // increase the timer

@@ -36,9 +36,10 @@ public class DatabaseManager {
         HikariConfig hikari = new HikariConfig();
         hikari.setConnectionTestQuery("SELECT 1");
         hikari.setPoolName("NextGens Database Pool");
+        hikari.setMaxLifetime(480000);
         hikari.setConnectionTimeout(60000);
         hikari.setIdleTimeout(600000);
-        hikari.setLeakDetectionThreshold(180000);
+        hikari.setLeakDetectionThreshold(360000);
         hikari.addDataSourceProperty("characterEncoding", "utf8");
         hikari.addDataSourceProperty("useUnicode", true);
 
@@ -120,11 +121,14 @@ public class DatabaseManager {
 
     public void deleteGenerator(ActiveGenerator active) {
         String query = "DELETE FROM " + GENERATOR_TABLE + " WHERE location=?;";
-        this.buildStatement(query, statement -> {
+        try (Connection connection = this.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, LocationSerializer.serialize(active.getLocation()));
 
             statement.executeUpdate();
-        });
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void saveGenerator(ActiveGenerator active) {
@@ -134,7 +138,8 @@ public class DatabaseManager {
         }
 
         String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
-        this.buildStatement(query, statement -> {
+        try (Connection connection = this.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, active.getOwner().toString());
             statement.setString(2, LocationSerializer.serialize(active.getLocation()));
             statement.setString(3, active.getGenerator().id());
@@ -142,13 +147,38 @@ public class DatabaseManager {
             statement.setBoolean(5, active.isCorrupted());
 
             statement.executeUpdate();
-        });
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public void saveGenerator(Collection<ActiveGenerator> activeGenerators) {
-        try (Connection connection = this.getConnection()) {
-            String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
+        String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
+        try (Connection connection = this.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
+            for (ActiveGenerator active : activeGenerators) {
+                if (active.getLocation().getWorld() == null) continue;
+                statement.setString(1, active.getOwner().toString());
+                statement.setString(2, LocationSerializer.serialize(active.getLocation()));
+                statement.setString(3, active.getGenerator().id());
+                statement.setDouble(4, active.getTimer());
+                statement.setBoolean(5, active.isCorrupted());
+                // add the batch
+                statement.addBatch();
+            }
+
+            // execute the batch
+            statement.executeBatch();
+            // send log message
+            Logger.info("Successfully saved " + activeGenerators.size() + " active generators!");
+
+        } catch (SQLException ex) {
+            Logger.severe("Failed to save all generators!");
+            ex.printStackTrace();
+        }
+
+        /*try (Connection connection = this.getConnection()) {
             for (ActiveGenerator active : activeGenerators) {
                 // if the world is null, skip it
                 if (active.getLocation().getWorld() == null) {
@@ -172,7 +202,7 @@ public class DatabaseManager {
         } catch (SQLException ex) {
             Logger.severe("Failed to save all generators!");
             ex.printStackTrace();
-        }
+        }*/
     }
 
     public void executeUpdate(String statement) {

@@ -2,6 +2,7 @@ package com.muhammaddaffa.nextgens.generators.managers;
 
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorBreakEvent;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorLoadEvent;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorPlaceEvent;
@@ -43,7 +44,8 @@ public record GeneratorListener(
         Block block = event.getClickedBlock();
         FileConfiguration config = Config.getFileConfiguration("config.yml");
         if (event.getHand() != EquipmentSlot.HAND ||
-                block == null) {
+                block == null ||
+                NextGens.STOPPING) {
             return;
         }
         // get variables
@@ -183,7 +185,8 @@ public record GeneratorListener(
         Block block = event.getClickedBlock();
         FileConfiguration config = Config.getFileConfiguration("config.yml");
         if (event.getHand() != EquipmentSlot.HAND ||
-                block == null) {
+                block == null ||
+                NextGens.STOPPING) {
             return;
         }
         InteractAction action = InteractAction.find(event, InteractAction.LEFT);
@@ -256,7 +259,7 @@ public record GeneratorListener(
         Generator generator = this.generatorManager.getGenerator(stack);
         FileConfiguration config = Config.getFileConfiguration("config.yml");
         // skip if the item is not generator
-        if (generator == null) {
+        if (generator == null || NextGens.STOPPING) {
             return;
         }
         int current = this.generatorManager.getGeneratorCount(player);

@@ -21,11 +21,16 @@ public class Utils {
         ItemMeta oneMeta = one.getItemMeta();
         ItemMeta twoMeta = two.getItemMeta();
 
-        return one.getType() == two.getType() &&
+        if (one.getType() == two.getType() &&
                 (oneMeta != null && twoMeta != null) &&
-                oneMeta.getDisplayName().equals(twoMeta.getDisplayName()) &&
-                (oneMeta.getLore() != null && twoMeta.getLore() != null) &&
-                oneMeta.getLore().equals(twoMeta.getLore());
+                oneMeta.getDisplayName().equals(twoMeta.getDisplayName())) {
+
+            if (oneMeta.getLore() == null && twoMeta.getLore() == null) {
+                return true;
+            }
+            return oneMeta.getLore().equals(twoMeta.getLore());
+        }
+        return false;
     }
 
     public static void performCashback(Player player, UserManager userManager, double amount) {

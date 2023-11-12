@@ -96,7 +96,7 @@ public class ShopInventory extends SimpleInventory {
 
                 this.setItems(slots, stack, event -> {
                     // money check
-                    if (VaultEconomy.getBalance(this.player) <= cost) {
+                    if (VaultEconomy.getBalance(this.player) < cost) {
                         Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
                                 .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                                 .add("{upgradecost}", Common.digits(cost))

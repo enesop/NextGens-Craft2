@@ -14,6 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
+import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 
 public record SellwandListener(
         SellwandManager sellwandManager
@@ -28,9 +30,17 @@ public record SellwandListener(
         Block block = event.getClickedBlock();
         ItemStack stack = event.getItem();
         // if item is not a sellwand, skip
-        if (!this.sellwandManager.isSellwand(stack)) {
+        if (block == null || !this.sellwandManager.isSellwand(stack)) {
             return;
         }
+        /**
+         * Advanced Chests API Hook
+         *
+         */
+        // AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
+        /**
+         * Normal Container
+         */
         if (block.getState() instanceof Container container) {
             // LWC check
             if (Bukkit.getPluginManager().getPlugin("LWC") != null && !LWC.getInstance().canAccessProtection(player, block)) {

@@ -41,10 +41,8 @@ public class EventManager {
     @NotNull
     public Event getRandomEvent() {
         Event event = this.eventList.get(ThreadLocalRandom.current().nextInt(this.eventList.size()));
-        if (this.activeEvent != null) {
-            while (event.getId().equals(this.activeEvent.getId())) {
-                event = this.eventList.get(ThreadLocalRandom.current().nextInt(this.eventList.size()));
-            }
+        if (this.activeEvent != null && event.getId().equals(this.activeEvent.getId())) {
+            return this.getRandomEvent();
         }
         return event;
     }

@@ -77,7 +77,7 @@ public class UserManager {
             }
         }
         // check if player has anything to sell
-        if (totalItems == 0 || totalValue <= 0) {
+        if (totalItems == 0) {
             // send message
             Common.configMessage("config.yml", player, "messages.no-sell");
             // play bass sound
@@ -121,7 +121,7 @@ public class UserManager {
     private SellData getSellData(SellwandData sellwand, double totalValue, int totalItems, User user) {
         Event event = this.eventManager.getActiveEvent();
         double playerMultiplier = user.getMultiplier();
-        double sellwandMultiplier = sellwand != null ? sellwand.multiplier() : 0;
+        double sellwandMultiplier = sellwand != null ? (sellwand.multiplier() - 1.0) : 0;
         double eventMultiplier = (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) ? event.getSellMultiplier() : 0;
         // get the final amount
         double playerBonus = totalValue * playerMultiplier;
@@ -177,24 +177,49 @@ public class UserManager {
         });
     }
 
+    public void saveUser(User user) {
+        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
+        try (Connection connection = this.dbm.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, user.getUniqueId().toString());
+            statement.setInt(2, user.getBonus());
+            statement.setDouble(3, user.getMultiplier());
+            statement.setDouble(4, user.getEarnings());
+            statement.setInt(5, user.getItemsSold());
+            statement.setInt(6, user.getNormalSell());
+            statement.setInt(7, user.getSellwandSell());
+            statement.setBoolean(8, user.isToggleCashback());
+
+            statement.executeUpdate();
+
+        } catch (SQLException ex) {
+            Logger.severe("Failed to save all users data!");
+            ex.printStackTrace();
+        }
+    }
+
     public void saveUser() {
-        try (Connection connection = this.dbm.getConnection()) {
-            String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
+        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
+        try (Connection connection = this.dbm.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
 
             for (User user : this.userMap.values()) {
-                try (PreparedStatement statement = connection.prepareStatement(query)) {
-                    statement.setString(1, user.getUniqueId().toString());
-                    statement.setInt(2, user.getBonus());
-                    statement.setDouble(3, user.getMultiplier());
-                    statement.setDouble(4, user.getEarnings());
-                    statement.setInt(5, user.getItemsSold());
-                    statement.setInt(6, user.getNormalSell());
-                    statement.setInt(7, user.getSellwandSell());
-                    statement.setBoolean(8, user.isToggleCashback());
+                statement.setString(1, user.getUniqueId().toString());
+                statement.setInt(2, user.getBonus());
+                statement.setDouble(3, user.getMultiplier());
+                statement.setDouble(4, user.getEarnings());
+                statement.setInt(5, user.getItemsSold());
+                statement.setInt(6, user.getNormalSell());
+                statement.setInt(7, user.getSellwandSell());
+                statement.setBoolean(8, user.isToggleCashback());
 
-                    statement.executeUpdate();
-                }
+                // add batch
+                statement.addBatch();
             }
+
+            // execute the batch
+            statement.executeBatch();
 
             // send log message
             Logger.info("Successfully saved " + this.userMap.size() + " users data!");

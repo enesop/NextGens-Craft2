@@ -73,6 +73,8 @@ public final class NextGens extends JavaPlugin {
     private final RefundManager refundManager = new RefundManager(this.generatorManager);
     private final SellwandManager sellwandManager = new SellwandManager(this.userManager);
 
+    public static boolean STOPPING = false;
+
     @Override
     public void onLoad() {
         MDLib.inject(this);
@@ -163,18 +165,19 @@ public final class NextGens extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        STOPPING = true;
         // shutdown the lib
         MDLib.shutdown();
         // remove all holograms
         GeneratorTask.flush();
         // save refunds
         this.refundManager.save();
-        // save the generators
-        this.generatorManager.saveActiveGenerator();
         // save the users
         this.userManager.saveUser();
         // save the events
         this.eventManager.save();
+        // save the generators
+        this.generatorManager.saveActiveGenerator();
         // close the database
         this.dbm.close();
     }
