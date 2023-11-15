@@ -187,7 +187,7 @@ melon_generator:
           - "&7"
           - "&7Use &a/sell &7to sell this for &a&n$20"
           - "&7"
-          - "&e&lCONDENSED DROP!"[]
+          - "&e&lCONDENSED DROP!"
 
 pumpkin_generator:
   # The display name of the generator that will be used across messages
