@@ -9,6 +9,7 @@ import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.mdlib.utils.SpigotUpdateChecker;
 import com.muhammaddaffa.nextgens.api.GeneratorAPI;
+import com.muhammaddaffa.nextgens.autosell.AutosellManager;
 import com.muhammaddaffa.nextgens.commands.*;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
@@ -72,6 +73,7 @@ public final class NextGens extends JavaPlugin {
     private final UserManager userManager = new UserManager(this.dbm, this.eventManager);
     private final RefundManager refundManager = new RefundManager(this.generatorManager);
     private final SellwandManager sellwandManager = new SellwandManager(this.userManager);
+    private final AutosellManager autosellManager = new AutosellManager(this.userManager);
 
     public static boolean STOPPING = false;
 
@@ -184,13 +186,15 @@ public final class NextGens extends JavaPlugin {
 
     private void registerTask() {
         // start generator task
-        GeneratorTask.start(this.generatorManager, this.eventManager);
+        GeneratorTask.start(this.generatorManager, this.eventManager, this.userManager);
         // start auto-save task
         this.generatorManager.startAutosaveTask();
         // corruption task
         CorruptionTask.start(this.generatorManager);
         // notify task
         NotifyTask.start(this.generatorManager);
+        // autosell task
+        this.autosellManager.startTask();
     }
 
     private void registerHook() {

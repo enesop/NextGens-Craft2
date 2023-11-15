@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.LocationSerializer;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorGenerateItemEvent;
+import com.muhammaddaffa.nextgens.autosell.Autosell;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
@@ -12,6 +13,8 @@ import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.users.User;
+import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -27,13 +30,13 @@ public class GeneratorTask extends BukkitRunnable {
 
     private static GeneratorTask runnable;
 
-    public static void start(GeneratorManager generatorManager, EventManager eventManager) {
+    public static void start(GeneratorManager generatorManager, EventManager eventManager, UserManager userManager) {
         if (runnable != null) {
             runnable.cancel();
             runnable = null;
         }
         // set back the runnable
-        runnable = new GeneratorTask(generatorManager, eventManager);
+        runnable = new GeneratorTask(generatorManager, eventManager, userManager);
         // run the task
         runnable.runTaskTimerAsynchronously(NextGens.getInstance(), 20L, 5L);
     }
@@ -56,10 +59,12 @@ public class GeneratorTask extends BukkitRunnable {
 
     private final GeneratorManager generatorManager;
     private final EventManager eventManager;
+    private final UserManager userManager;
 
-    public GeneratorTask(GeneratorManager generatorManager, EventManager eventManager) {
+    public GeneratorTask(GeneratorManager generatorManager, EventManager eventManager, UserManager userManager) {
         this.generatorManager = generatorManager;
         this.eventManager = eventManager;
+        this.userManager = userManager;
     }
 
     @Override
@@ -70,6 +75,7 @@ public class GeneratorTask extends BukkitRunnable {
             Generator generator = active.getGenerator();
             Player player = Bukkit.getPlayer(active.getOwner());
             Event event = this.eventManager.getActiveEvent();
+            User user = this.userManager.getUser(active.getOwner());
             // if generator is invalid or chunk is not loaded, skip it
             if (generator == null || !active.isChunkLoaded()) {
                 continue;
@@ -172,8 +178,18 @@ public class GeneratorTask extends BukkitRunnable {
                     // get the drop amount
                     for (int i = 0; i < generatorEvent.getDropAmount(); i++) {
                         Drop drop = generatorEvent.getGenerator().getRandomDrop();
+                        // check if player has autosell
+                        if (player != null && Autosell.hasAutosellGensPermission(player) &&
+                                user.isToggleGensAutoSell()) {
+                            // check if item is sellable
+                            if (this.userManager.sell(player, drop.getItem())) {
+                                // spawn the random drop without dropping the item
+                                drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwnerName()), false);
+                                continue;
+                            }
+                        }
                         // spawn the random drop
-                        drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwner()));
+                        drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwner()), true);
                     }
                     // set the timer to 0
                     active.setTimer(0);

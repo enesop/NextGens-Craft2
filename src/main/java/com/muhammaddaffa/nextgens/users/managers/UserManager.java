@@ -59,7 +59,26 @@ public class UserManager {
         return this.userMap.values();
     }
 
+    public boolean sell(Player player, ItemStack stack) {
+        GeneratorAPI api = NextGens.getApi();
+        User user = this.getUser(player);
+        Double value = api.getWorth(stack);
+        if (value == null) return false;
+        // sell the item
+        VaultEconomy.deposit(player, value);
+        // set the statistics
+        user.addEarnings(value);
+        user.addItemsSold(stack.getAmount());
+        // remove the item
+        stack.setAmount(0);
+        return true;
+    }
+
     public SellData performSell(Player player, Inventory inventory, SellwandData sellwand) {
+        return this.performSell(player, inventory, sellwand, false);
+    }
+
+    public SellData performSell(Player player, Inventory inventory, SellwandData sellwand, boolean silent) {
         GeneratorAPI api = NextGens.getApi();
         double totalValue = 0.0;
         int totalItems = 0;
@@ -100,13 +119,14 @@ public class UserManager {
         SellData data = sellEvent.getSellData();
         VaultEconomy.deposit(player, data.totalValue());
         // send the visual action
-        VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
-                .add("{amount}", Common.digits(data.totalItems()))
-                .add("{amount_formatted}", Utils.formatBalance(data.totalItems()))
-                .add("{value}", Common.digits(data.totalValue()))
-                .add("{value_formatted}", Utils.formatBalance((long) data.totalValue()))
-                .add("{multiplier}", Common.digits(data.multiplier())));
-
+        if (!silent) {
+            VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
+                    .add("{amount}", Common.digits(data.totalItems()))
+                    .add("{amount_formatted}", Utils.formatBalance(data.totalItems()))
+                    .add("{value}", Common.digits(data.totalValue()))
+                    .add("{value_formatted}", Utils.formatBalance((long) data.totalValue()))
+                    .add("{multiplier}", Common.digits(data.multiplier())));
+        }
         // set the statistics
         user.addEarnings(data.totalValue());
         user.addItemsSold(data.totalItems());
@@ -166,10 +186,12 @@ public class UserManager {
                 int normalSell = result.getInt(6);
                 int sellwandSell = result.getInt(7);
                 boolean toggleCashback = result.getBoolean(8);
+                boolean toggleInventorySell = result.getBoolean(9);
+                boolean toggleGensSell = result.getBoolean(10);
 
                 // store it on the map
-                this.userMap.put(uuid, new User(
-                        uuid, bonus, multiplier, earnings, itemsSold, normalSell, sellwandSell, toggleCashback
+                this.userMap.put(uuid, new User(uuid, bonus, multiplier, earnings, itemsSold, normalSell,
+                        sellwandSell, toggleCashback, toggleInventorySell, toggleGensSell
                 ));
             }
             // send log message
@@ -190,6 +212,8 @@ public class UserManager {
             statement.setInt(6, user.getNormalSell());
             statement.setInt(7, user.getSellwandSell());
             statement.setBoolean(8, user.isToggleCashback());
+            statement.setBoolean(9, user.isToggleInventoryAutoSell());
+            statement.setBoolean(10, user.isToggleGensAutoSell());
 
             statement.executeUpdate();
 
@@ -213,6 +237,8 @@ public class UserManager {
                 statement.setInt(6, user.getNormalSell());
                 statement.setInt(7, user.getSellwandSell());
                 statement.setBoolean(8, user.isToggleCashback());
+                statement.setBoolean(9, user.isToggleInventoryAutoSell());
+                statement.setBoolean(10, user.isToggleGensAutoSell());
 
                 // add batch
                 statement.addBatch();

@@ -48,19 +48,23 @@ public record Drop(
         return ThreadLocalRandom.current().nextDouble(101) <= this.chance();
     }
 
-    public void spawn(Block block, @Nullable OfflinePlayer player) {
+    public ItemStack getItem() {
+        // create the proper item first
+        ItemBuilder builder = new ItemBuilder(this.item().clone());
+        // add the drop value
+        if (this.dropValue() != null) {
+            builder.pdc(NextGens.drop_value, this.dropValue());
+        }
+        return builder.build();
+    }
+
+    public void spawn(Block block, @Nullable OfflinePlayer player, boolean shouldItemDrop) {
         // get the drop location
         Location dropLocation = block.getLocation().add(0.5, 1, 0.5);
         // drop the item if it's exist
-        if (this.item() != null) {
-            // create the proper item first
-            ItemBuilder builder = new ItemBuilder(this.item().clone());
-            // add the drop value
-            if (this.dropValue() != null) {
-                builder.pdc(NextGens.drop_value, this.dropValue());
-            }
+        if (this.item() != null && shouldItemDrop) {
             // finally, drop the item
-            Item item = block.getWorld().dropItem(dropLocation, builder.build());
+            Item item = block.getWorld().dropItem(dropLocation, this.getItem());
             // remove the velocity
             item.setVelocity(new Vector(0, 0, 0));
         }

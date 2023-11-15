@@ -2184,7 +2184,6 @@ netherite_generator:
           - "&7"
           - "&e&lCONDENSED DROP!"
 
-data:
 anchor_generator:
   # The display name of the generator that will be used across messages
   display-name: "#742CFB&lAnchor Generator"

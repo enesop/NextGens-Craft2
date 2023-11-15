@@ -16,13 +16,17 @@ public class User {
     private int normalSell, sellwandSell;
     // settings
     private boolean toggleCashback = true;
+    private boolean toggleInventoryAutoSell = false;
+    private boolean toggleGensAutoSell = false;
+
+    private int interval;
 
     public User(UUID uuid) {
         this.uuid = uuid;
     }
 
     public User(UUID uuid, int bonus, double multiplier, double earnings, int itemsSold, int normalSell, int sellwandSell,
-                boolean toggleCashback) {
+                boolean toggleCashback, boolean toggleInventoryAutoSell, boolean toggleGensAutoSell) {
         this.uuid = uuid;
         this.bonus = bonus;
         this.multiplier = multiplier;
@@ -31,6 +35,8 @@ public class User {
         this.normalSell = normalSell;
         this.sellwandSell = sellwandSell;
         this.toggleCashback = toggleCashback;
+        this.toggleInventoryAutoSell = toggleInventoryAutoSell;
+        this.toggleGensAutoSell = toggleGensAutoSell;
     }
 
     public UUID getUniqueId() {
@@ -155,6 +161,34 @@ public class User {
 
     public void setToggleCashback(boolean toggleCashback) {
         this.toggleCashback = toggleCashback;
+    }
+
+    public boolean isToggleInventoryAutoSell() {
+        return toggleInventoryAutoSell;
+    }
+
+    public void setToggleInventoryAutoSell(boolean toggleInventoryAutoSell) {
+        this.toggleInventoryAutoSell = toggleInventoryAutoSell;
+    }
+
+    public boolean isToggleGensAutoSell() {
+        return toggleGensAutoSell;
+    }
+
+    public void setToggleGensAutoSell(boolean toggleGensAutoSell) {
+        this.toggleGensAutoSell = toggleGensAutoSell;
+    }
+
+    public int getInterval() {
+        return interval;
+    }
+
+    public void updateInterval(int amount) {
+        this.interval += amount;
+    }
+
+    public void setInterval(int amount) {
+        this.interval = interval;
     }
 
 }

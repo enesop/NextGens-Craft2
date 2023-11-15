@@ -106,6 +106,10 @@ commands:
     enabled: true
     command: togglecashback
     aliases: [cashback, togglecash]
+  player_settings:
+    enabled: true
+    command: genssettings
+    aliases: [setting, settings, gensetting, gensettings, options, option]
 
 # What is the default max generator for every player
 default-max-generator:
