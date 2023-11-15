@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import org.bukkit.Material;
@@ -41,6 +42,8 @@ public class PickupCommand {
                 .executes((sender, args) -> {
                     Player target = (Player) args.get("target");
                     Player actualTarget;
+                    // early stop to prevent dupe
+                    if (NextGens.STOPPING) return;
                     if (target == null) {
                         if (!sender.hasPermission("nextgens.pickup")) {
                             Common.configMessage("config.yml", sender, "messages.no-permission");

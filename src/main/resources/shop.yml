@@ -35,7 +35,7 @@ items:
     type: GENERATOR
     generator: melon_generator
     page: 1
-    cost: 50
+    cost: 100
     material: MELON
     display-name: "#2CD842&lMelon Generator"
     glowing: false
@@ -61,7 +61,7 @@ items:
     type: GENERATOR
     generator: pumpkin_generator
     page: 1
-    cost: 50
+    cost: 200
     material: PUMPKIN
     display-name: "#2CD842&lMelon Generator"
     glowing: false
@@ -87,7 +87,7 @@ items:
     type: GENERATOR
     generator: coal_generator
     page: 1
-    cost: 50
+    cost: 300
     material: COAL_BLOCK
     display-name: "#726365&lCoal Generator"
     glowing: false
@@ -113,7 +113,7 @@ items:
     type: GENERATOR
     generator: iron_generator
     page: 1
-    cost: 50
+    cost: 400
     material: IRON_BLOCK
     display-name: "#FFDFE2&lIron Generator"
     glowing: false
@@ -139,7 +139,7 @@ items:
     type: GENERATOR
     generator: gold_generator
     page: 1
-    cost: 50
+    cost: 500
     material: GOLD_BLOCK
     display-name: "#FBBE06&lGold Generator"
     glowing: false
@@ -165,7 +165,7 @@ items:
     type: GENERATOR
     generator: redstone_generator
     page: 1
-    cost: 50
+    cost: 750
     material: REDSTONE_BLOCK
     display-name: "#FB2727&lRedstone Generator"
     glowing: false
@@ -191,7 +191,7 @@ items:
     type: GENERATOR
     generator: lapis_generator
     page: 1
-    cost: 50
+    cost: 1000
     material: LAPIS_BLOCK
     display-name: "#4042FB&lLapis Generator"
     glowing: false
@@ -211,13 +211,13 @@ items:
       - "&7Condensed Lapis &8(value: &a240&8)"
       - "&7Money &8(value: &a$320&8)"
       - "&7"
-      - "&7Cost to buy: &a$1000"
+      - "&7Cost to buy: &a$1,000"
       - "&a> Click to purchase <"
   diamond_generator:
     type: GENERATOR
     generator: diamond_generator
     page: 1
-    cost: 50
+    cost: 5000
     material: DIAMOND_BLOCK
     display-name: "#4FF6FB&lDiamond Generator"
     glowing: false
@@ -237,13 +237,13 @@ items:
       - "&7Condensed Diamond &8(value: &a320&8)"
       - "&7Money &8(value: &a$400&8)"
       - "&7"
-      - "&7Cost to buy: &a$5000"
+      - "&7Cost to buy: &a$5,000"
       - "&a> Click to purchase <"
   emerald_generator:
     type: GENERATOR
     generator: emerald_generator
     page: 1
-    cost: 50
+    cost: 10000
     material: EMERALD_BLOCK
     display-name: "#74FB3D&lEmerald Generator"
     glowing: false
@@ -263,13 +263,13 @@ items:
       - "&7Condensed Emerald &8(value: &a400&8)"
       - "&7Money &8(value: &a$480&8)"
       - "&7"
-      - "&7Cost to buy: &a$10000"
+      - "&7Cost to buy: &a$10,000"
       - "&a> Click to purchase <"
   quartz_generator:
     type: GENERATOR
     generator: quartz_generator
     page: 1
-    cost: 50
+    cost: 25000
     material: QUARTZ
     display-name: "#F7FBB1&lQuartz Generator"
     glowing: false
@@ -289,13 +289,13 @@ items:
       - "&7Condensed Quartz &8(value: &a480&8)"
       - "&7Money &8(value: &a$560&8)"
       - "&7"
-      - "&7Cost to buy: &a$25000"
+      - "&7Cost to buy: &a$25,000"
       - "&a> Click to purchase <"
   gold_nugget_generator:
     type: GENERATOR
     generator: gold_nugget_generator
     page: 1
-    cost: 50
+    cost: 50000
     material: NETHER_GOLD_ORE
     display-name: "#FBC379&lGold Nugget Generator"
     glowing: false
@@ -315,13 +315,13 @@ items:
       - "&7Condensed Gold Nugget &8(value: &a560&8)"
       - "&7Money &8(value: &a$640&8)"
       - "&7"
-      - "&7Cost to buy: &a$50000"
+      - "&7Cost to buy: &a$50,000"
       - "&a> Click to purchase <"
   sea_lantern_generator:
     type: GENERATOR
     generator: sea_lantern_generator
     page: 2
-    cost: 50
+    cost: 100000
     material: SEA_LANTERN
     display-name: "#9DF6FF&lSea Lantern Generator"
     glowing: false
@@ -347,7 +347,7 @@ items:
     type: GENERATOR
     generator: magma_generator
     page: 2
-    cost: 50
+    cost: 250000
     material: MAGMA_BLOCK
     display-name: "#FF4D0B&lMagma Generator"
     glowing: false
@@ -373,7 +373,7 @@ items:
     type: GENERATOR
     generator: glowstone_generator
     page: 2
-    cost: 50
+    cost: 500000
     material: GLOWSTONE
     display-name: "#FBC831&lGlowstone Generator"
     glowing: false
@@ -399,7 +399,7 @@ items:
     type: GENERATOR
     generator: tube_coral_generator
     page: 2
-    cost: 50
+    cost: 1000000
     material: TUBE_CORAL_BLOCK
     display-name: "#2568FF&lTube Coral Generator"
     glowing: false
@@ -425,7 +425,7 @@ items:
     type: GENERATOR
     generator: brain_coral_generator
     page: 2
-    cost: 50
+    cost: 2500000
     material: BRAIN_CORAL_BLOCK
     display-name: "#FB45F9&lBrain Coral Generator"
     glowing: false
@@ -451,7 +451,7 @@ items:
     type: GENERATOR
     generator: bubble_coral_generator
     page: 2
-    cost: 50
+    cost: 5000000
     material: BUBBLE_CORAL_BLOCK
     display-name: "#A82AFF&lBubble Coral Generator"
     glowing: false
@@ -477,7 +477,7 @@ items:
     type: GENERATOR
     generator: fire_coral_generator
     page: 2
-    cost: 50
+    cost: 10000000
     material: FIRE_CORAL_BLOCK
     display-name: "#FB4242&lFire Coral Generator"
     glowing: false
@@ -503,7 +503,7 @@ items:
     type: GENERATOR
     generator: horn_coral_generator
     page: 2
-    cost: 50
+    cost: 25000000
     material: HORN_CORAL_BLOCK
     display-name: "#FBF945&lHorn Coral Generator"
     glowing: false
@@ -529,7 +529,7 @@ items:
     type: GENERATOR
     generator: slime_generator
     page: 2
-    cost: 50
+    cost: 50000000
     material: SLIME_BLOCK
     display-name: "#ACFB74&lSlime Generator"
     glowing: false
@@ -555,7 +555,7 @@ items:
     type: GENERATOR
     generator: honey_generator
     page: 2
-    cost: 50
+    cost: 100000000
     material: HONEY_BLOCK
     display-name: "#FFC61B&lHoney Generator"
     glowing: false
@@ -581,7 +581,7 @@ items:
     type: GENERATOR
     generator: netherite_generator
     page: 2
-    cost: 50
+    cost: 150000000
     material: NETHERITE_BLOCK
     display-name: "#B77F44&lNethrite Generator"
     glowing: false
@@ -607,7 +607,7 @@ items:
     type: GENERATOR
     generator: anchor_generator
     page: 2
-    cost: 50
+    cost: 200000000
     material: RESPAWN_ANCHOR
     display-name: "#742CFB&lAnchor Generator"
     glowing: false

@@ -108,8 +108,8 @@ public class DatabaseManager {
                 "normal_sell INTEGER, " +
                 "sellwand_sell INTEGER, " +
                 "toggle_cashback BOOL, " +
-                "toggle_inventory_sell, " +
-                "toggle_gens_sell" +
+                "toggle_inventory_sell BOOL, " +
+                "toggle_gens_sell BOOL" +
                 ");");
         // add column if not exists
         // directly add the table and ignore the error
@@ -119,8 +119,8 @@ public class DatabaseManager {
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN normal_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN sellwand_sell INTEGER NOT NULL DEFAULT 0;", ex -> {});
         this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_cashback BOOL NOT NULL DEFAULT 1;", ex -> {});
-        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_inventory_sell BOOL NOT NULL DEFAULT 0;");
-        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_gens_sell BOOL NOT NULL DEFAULT 0;");
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_inventory_sell BOOL NOT NULL DEFAULT 0;", ex -> {});
+        this.executeUpdate("ALTER TABLE " + USER_TABLE + " ADD COLUMN toggle_gens_sell BOOL NOT NULL DEFAULT 0;", ex -> {});
     }
 
     public void deleteGenerator(ActiveGenerator active) {

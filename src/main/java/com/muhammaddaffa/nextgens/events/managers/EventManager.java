@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -40,7 +41,17 @@ public class EventManager {
 
     @NotNull
     public Event getRandomEvent() {
-        Event event = this.eventList.get(ThreadLocalRandom.current().nextInt(this.eventList.size()));
+        List<Event> list = new ArrayList<>(this.eventList);
+        // shuffle the list
+        Collections.shuffle(list);
+        // get random event
+        Event event = list.get(ThreadLocalRandom.current().nextInt(list.size()));
+        // check for chance
+        // check for is only command
+        if (event.getChance() > ThreadLocalRandom.current().nextDouble(101) || event.isOnlyByCommand()) {
+            return this.getRandomEvent();
+        }
+        // check for same event
         if (this.activeEvent != null && event.getId().equals(this.activeEvent.getId())) {
             return this.getRandomEvent();
         }
@@ -64,8 +75,12 @@ public class EventManager {
         if (count) {
             this.index = next;
         }
-        // if the next event is present, return the next event
-        return this.eventList.get(next);
+        // if the next event is present, check for availability
+        Event event = this.eventList.get(next);
+        if (event.isOnlyByCommand()) {
+            return this.getNextEvent(count);
+        }
+        return event;
     }
 
     public void loadEvents() {

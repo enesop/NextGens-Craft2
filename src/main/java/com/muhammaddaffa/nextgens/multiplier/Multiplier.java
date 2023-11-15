@@ -5,20 +5,20 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 
 public class Multiplier {
 
-    public static int getSellMultiplier(Player player) {
-        int max = 0;
+    public static double getSellMultiplier(Player player) {
+        int multiplier = 0;
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
             if (!permission.startsWith("nextgens.multiplier.sell")) {
                 continue;
             }
             int current = Integer.parseInt(permission.split("\\.")[3]);
-            if (current > max) {
-                max = current;
+            if (current > multiplier) {
+                multiplier = current;
             }
         }
-        // get the bonus slot
-        return max;
+        // get the multiplier in decimals
+        return (double) multiplier / 100;
     }
 
 }

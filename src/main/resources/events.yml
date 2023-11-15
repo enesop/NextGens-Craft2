@@ -24,6 +24,10 @@ events:
       multiplier: 2.0
       # The duration of the event (in seconds)
       duration: 120
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -56,6 +60,10 @@ events:
       tier-amount: 1
       # The duration of the event (in seconds)
       duration: 180
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -88,6 +96,10 @@ events:
       percentage: 50
       # The duration of the event (in seconds)
       duration: 180
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -119,6 +131,10 @@ events:
       drop-amount: 2
       # The duration of the event (in seconds)
       duration: 180
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -148,6 +164,10 @@ events:
       display-name: '#f69220&lMixed &e&lUp'
       # The duration of the event (in seconds)
       duration: 180
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -179,6 +199,10 @@ events:
       multiplier: 1.5
       # The duration of the event (in seconds)
       duration: 180
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -211,6 +235,10 @@ events:
       tier-amount: 2
       # The duration of the event (in seconds)
       duration: 60
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -243,6 +271,10 @@ events:
       percentage: 25
       # The duration of the event (in seconds)
       duration: 300
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -274,6 +306,10 @@ events:
       drop-amount: 3
       # The duration of the event (in seconds)
       duration: 60
+      # What is the chance this event will be selected (required random: true)
+      chance: 75
+      # Should this event can only be started from command?
+      only-by-command: false
       # The start message
       start-message:
         - '&7'
@@ -303,6 +339,10 @@ events:
       display-name: '#f69220&lMixed &e&lUp'
       # The duration of the event (in seconds)
       duration: 300
+      # What is the chance this event will be selected (required random: true)
+      chance: 25
+      # Should this event can only be started from command?
+      only-by-command: true
       # The start message
       start-message:
         - '&7'

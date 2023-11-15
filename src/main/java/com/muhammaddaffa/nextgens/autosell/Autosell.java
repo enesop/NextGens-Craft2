@@ -16,7 +16,7 @@ public class Autosell {
         int interval = 0;
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
-            if (permission.startsWith("nextgens.autosell.inv.")) {
+            if (permission.startsWith("nextgens.autosell.inv")) {
                 String split = permission.split("\\.")[3];
                 if (!Common.isInt(split)) continue;
                 int permissionInterval = Integer.parseInt(split);
@@ -31,7 +31,7 @@ public class Autosell {
     public static boolean hasAutosellInventoryPermission(Player player) {
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
-            if (permission.startsWith("nextgens.autosell.inv.")) return true;
+            if (permission.startsWith("nextgens.autosell.inv")) return true;
         }
         return false;
     }

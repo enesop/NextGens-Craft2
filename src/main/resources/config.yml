@@ -102,10 +102,6 @@ commands:
     enabled: true
     command: worth
     aliases: [genworth, gensworth, itemworth, itemsworth]
-  cashback:
-    enabled: true
-    command: togglecashback
-    aliases: [cashback, togglecash]
   player_settings:
     enabled: true
     command: genssettings
@@ -352,8 +348,6 @@ messages:
   multiplier-set: '&6[NextGens] &aYour multiplier has been set to &e{multiplier}x'
   item-worthless: '&6[NextGens] &cThis item is worthless!'
   item-worth: '&6[NextGens] &aThis item is worth ${worth}'
-  cashback-on: '&6[NextGens] &aYour cashback notification has been turned on.'
-  cashback-off: '&6[NextGens] &cYour cashback notification has been turned off.'
   cashback: '&6[NextGens] &aYou have received ${amount} in {percentage}% cashback from your last transaction.'
   help:
     - '&6&lNextGens &7- by aglerr'

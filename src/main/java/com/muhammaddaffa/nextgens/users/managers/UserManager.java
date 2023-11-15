@@ -13,6 +13,7 @@ import com.muhammaddaffa.nextgens.api.events.sell.SellwandUseEvent;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
+import com.muhammaddaffa.nextgens.multiplier.Multiplier;
 import com.muhammaddaffa.nextgens.sellwand.SellwandData;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.utils.SellData;
@@ -97,16 +98,18 @@ public class UserManager {
         }
         // check if player has anything to sell
         if (totalItems == 0) {
-            // send message
-            Common.configMessage("config.yml", player, "messages.no-sell");
-            // play bass sound
-            Utils.bassSound(player);
+            if (!silent) {
+                // send message
+                Common.configMessage("config.yml", player, "messages.no-sell");
+                // play bass sound
+                Utils.bassSound(player);
+            }
             return null;
         }
         // get all variables needed
         User user = this.getUser(player);
         // create the sell data
-        final SellData sellData = this.getSellData(sellwand, totalValue, totalItems, user);
+        final SellData sellData = this.getSellData(player, sellwand, totalValue, totalItems, user);
         SellEvent sellEvent = new SellCommandUseEvent(player, user, sellData);
         if (sellwand != null) sellEvent = new SellwandUseEvent(player, user, sellData);
         // call the event
@@ -138,10 +141,10 @@ public class UserManager {
         return data;
     }
 
-    private SellData getSellData(SellwandData sellwand, double totalValue, int totalItems, User user) {
+    private SellData getSellData(Player player, SellwandData sellwand, double totalValue, int totalItems, User user) {
         Event event = this.eventManager.getActiveEvent();
         double playerMultiplier = user.getMultiplier();
-        double sellwandMultiplier = sellwand != null ? (sellwand.multiplier() - 1.0) : 0;
+        double sellwandMultiplier = sellwand != null ? sellwand.multiplier() : 0;
         double eventMultiplier = (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) ? event.getSellMultiplier() : 0;
         // get the final amount
         double playerBonus = totalValue * playerMultiplier;
@@ -150,6 +153,7 @@ public class UserManager {
         double finalAmount = totalValue + playerBonus + sellwandBonus + eventBonus;
         // get the total multiplier
         double totalMultiplier = playerMultiplier + sellwandMultiplier + eventMultiplier;
+        if (player != null) totalMultiplier += Multiplier.getSellMultiplier(player);
         // return the sell data
         return new SellData(user, finalAmount, totalItems, totalMultiplier, sellwand);
     }
@@ -200,7 +204,7 @@ public class UserManager {
     }
 
     public void saveUser(User user) {
-        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
+        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?,?,?);";
         try (Connection connection = this.dbm.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
@@ -224,7 +228,7 @@ public class UserManager {
     }
 
     public void saveUser() {
-        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?);";
+        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?,?,?);";
         try (Connection connection = this.dbm.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
 

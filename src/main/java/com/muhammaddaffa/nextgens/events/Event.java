@@ -25,6 +25,10 @@ public class Event implements Cloneable{
     private Integer dropMultiplier;
     private List<String> blacklistedGenerators = new ArrayList<>();
 
+    // settings
+    private final double chance;
+    private final boolean onlyByCommand;
+
     public Event(String id, Type type, FileConfiguration config, String path) {
         this.id = id;
         this.type = type;
@@ -33,6 +37,8 @@ public class Event implements Cloneable{
         this.endMessage = config.getStringList(path + ".end-message");
         this.duration = config.getDouble(path + ".duration");
         this.setBlacklistedGenerators(config.getStringList(path + ".blacklisted-generators"));
+        this.chance = config.getDouble(path + ".chance", 65);
+        this.onlyByCommand = config.getBoolean(path + ".only-by-command");
     }
 
     @Nullable
@@ -145,6 +151,14 @@ public class Event implements Cloneable{
         this.endMessage.forEach(message -> Common.broadcast(message, new Placeholder()
                 .add("{name}", this.displayName)
                 .add("{next_duration}", TimeFormat.parse((long) Config.getFileConfiguration("events.yml").getDouble("events.wait-time")))));
+    }
+
+    public double getChance() {
+        return chance;
+    }
+
+    public boolean isOnlyByCommand() {
+        return onlyByCommand;
     }
 
     @Override

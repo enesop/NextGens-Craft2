@@ -18,7 +18,9 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
+import com.muhammaddaffa.nextgens.gui.PlayerSettingsInventory;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
+import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
@@ -116,6 +118,7 @@ public final class NextGens extends JavaPlugin {
         Config.registerConfig(new Config("events.yml", null, true));
         Config.registerConfig(new Config("data.yml", null, false));
         Config.registerConfig(new Config("worth.yml", null, true));
+        Config.registerConfig(new Config("settings_gui.yml", "gui", true));
 
         VaultEconomy.init();
 
@@ -232,6 +235,10 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("LWC") != null) {
             Logger.info("Found LWC! Registering hook...");
         }
+        if (pm.getPlugin("FabledSkyblock") != null) {
+            Logger.info("Found FabledSkyblock! Registering hook...");
+            pm.registerEvents(new FabledSbListener(this.generatorManager, this.refundManager), this);
+        }
         // register bstats metrics hook
         this.connectMetrics();
     }
@@ -272,7 +279,7 @@ public final class NextGens extends JavaPlugin {
         ShopCommand.register(this.generatorManager);
         PickupCommand.register(this.generatorManager);
         WorthCommand.registerThis();
-        ToggleCashbackCommand.register(this.userManager);
+        PlayerSettingsCommand.register(this.userManager);
     }
 
     private void connectMetrics() {

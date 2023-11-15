@@ -198,6 +198,14 @@
             <artifactId>AdvancedChestsAPI</artifactId>
             <version>3.2-BETA</version>
         </dependency>
+        <!-- FabledSkyblock -->
+        <dependency>
+            <groupId>com.craftaro</groupId>
+            <artifactId>fabledskyblock</artifactId>
+            <version>v3.0.0-b7-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/FabledSkyBlock-3.0.0-b7-SNAPSHOT.jar</systemPath>
+        </dependency>
 
         <!-- MDLib -->
         <dependency>
@@ -219,11 +227,5 @@
             <version>5.0.1</version>
         </dependency>
 
-        <!-- Jetbrains Annotations -->
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.0.1</version>
-        </dependency>
     </dependencies>
 </project>
