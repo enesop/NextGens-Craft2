@@ -119,7 +119,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.1-R0.1-SNAPSHOT</version>
+            <version>1.20.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Vault -->
@@ -203,7 +203,7 @@
         <dependency>
             <groupId>com.github.mdaffa48</groupId>
             <artifactId>MDLib</artifactId>
-            <version>1.2</version>
+            <version>1.4</version>
         </dependency>
         <!-- BStats -->
         <dependency>
