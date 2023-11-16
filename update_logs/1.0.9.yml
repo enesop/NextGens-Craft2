@@ -1,4 +1,5 @@
 Changelogs v1.0.9
+[+] Add 1.20.2 support
 [+] Bringing back permission-based multiplier (nextgens.multiplier.sell.<percentage>)
 [+] Add player's inventory auto sell feature (nextgens.autosell.inv.<interval in seconds>)
 [+] Add player's gens auto sell feature (nextgens.autosell.gens)
@@ -11,5 +12,6 @@ Changelogs v1.0.9
 [+] Fix where you can dupe generators using gens upgrade gui
 [+] Fix an issue regarding the random event option
 [+] Add FabledSkyblock support!
+[+] Expand the Developer API by adding a event related stuff
 
 [-] Remove toggle cashback command

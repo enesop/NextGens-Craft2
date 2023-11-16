@@ -2278,3 +2278,6 @@ anchor_generator:
           - "&7Use &a/sell &7to sell this for &a&n$4800"
           - "&7"
           - "&e&lCONDENSED DROP!"
+
+# Ignore this config option
+data: []
