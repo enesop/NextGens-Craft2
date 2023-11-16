@@ -2,6 +2,8 @@ package com.muhammaddaffa.nextgens.api;
 
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.events.Event;
+import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -35,14 +37,16 @@ public class GeneratorAPI {
     private final UserManager userManager;
     private final WorthManager worthManager;
     private final SellwandManager sellwandManager;
+    private final EventManager eventManager;
 
     public GeneratorAPI(GeneratorManager generatorManager, RefundManager refundManager, UserManager userManager,
-                        WorthManager worthManager, SellwandManager sellwandManager) {
+                        WorthManager worthManager, SellwandManager sellwandManager, EventManager eventManager) {
         this.generatorManager = generatorManager;
         this.refundManager = refundManager;
         this.userManager = userManager;
         this.worthManager = worthManager;
         this.sellwandManager = sellwandManager;
+        this.eventManager = eventManager;
     }
 
     @Nullable
@@ -200,6 +204,26 @@ public class GeneratorAPI {
     @NotNull
     public ItemStack createSellwand(double multiplier, int uses) {
         return this.sellwandManager.create(multiplier, uses);
+    }
+
+    @Nullable
+    public Event getActiveEvent() {
+        return this.eventManager.getActiveEvent();
+    }
+
+    @Nullable
+    public Event getEvent(String id) {
+        return this.eventManager.getEvent(id);
+    }
+
+    @NotNull
+    public Event getRandomEvent() {
+        return this.eventManager.getRandomEvent();
+    }
+
+    @NotNull
+    public List<Event> getEvents() {
+        return this.eventManager.getEvents();
     }
 
     public void updateSellwand(@Nullable ItemStack stack) {

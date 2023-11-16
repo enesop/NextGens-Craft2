@@ -64,6 +64,9 @@ public class Event implements Cloneable{
         if (Type.MIXED_UP.name().equalsIgnoreCase(type)) {
             return new Event(id, Type.MIXED_UP, config, path);
         }
+        if (Type.CUSTOM.name().equalsIgnoreCase(type)) {
+            return new Event(id, Type.CUSTOM, config, path);
+        }
         return null;
     }
 
@@ -176,7 +179,8 @@ public class Event implements Cloneable{
         GENERATOR_UPGRADE,
         GENERATOR_SPEED,
         DROP_MULTIPLIER,
-        MIXED_UP
+        MIXED_UP,
+        CUSTOM
     }
 
 }

@@ -157,7 +157,8 @@ public final class NextGens extends JavaPlugin {
             this.worthManager.load();
 
             // initialize the api
-            api = new GeneratorAPI(this.generatorManager, this.refundManager, this.userManager, this.worthManager, this.sellwandManager);
+            api = new GeneratorAPI(this.generatorManager, this.refundManager, this.userManager,
+                    this.worthManager, this.sellwandManager, this.eventManager);
 
             // register task
             this.registerTask();
