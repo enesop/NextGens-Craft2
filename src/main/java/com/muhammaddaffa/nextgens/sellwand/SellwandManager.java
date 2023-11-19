@@ -35,7 +35,7 @@ public record SellwandManager(
         return stack.getItemMeta().getPersistentDataContainer().has(NextGens.sellwand_global, PersistentDataType.STRING);
     }
 
-    public boolean action(Player player, ItemStack stack, Inventory inventory) {
+    public boolean action(Player player, ItemStack stack, Inventory... inventories) {
         // scrap the data from the item
         ItemBuilder builder = new ItemBuilder(stack);
         ItemMeta meta = builder.getItemMeta();
@@ -48,7 +48,7 @@ public record SellwandManager(
             return false;
         }
         // perform the sell
-        SellData data = this.userManager.performSell(player, inventory, new SellwandData(stack, multiplier));
+        SellData data = this.userManager.performSell(player, new SellwandData(stack, multiplier), inventories);
         if (data == null) return true;
         // final uses
         int finalUses = uses - 1;

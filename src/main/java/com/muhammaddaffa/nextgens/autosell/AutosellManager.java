@@ -22,7 +22,7 @@ public record AutosellManager(
                 // check if sell interval is equals or greater than user interval
                 if (sellInterval >= user.getInterval()) {
                     // sell the inventory
-                    this.userManager.performSell(player, player.getInventory(), null, true);
+                    this.userManager.performSell(player, null, true, player.getInventory());
                     // set interval back to 0
                     user.setInterval(0);
                     continue;

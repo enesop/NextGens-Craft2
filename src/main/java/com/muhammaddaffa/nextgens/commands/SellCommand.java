@@ -65,7 +65,7 @@ public class SellCommand {
                         finalTarget = target;
                     }
                     // perform the sell
-                    this.userManager.performSell(finalTarget, finalTarget.getInventory(), null);
+                    this.userManager.performSell(finalTarget, null, finalTarget.getInventory());
                 });
         this.command.setAliases(aliases.toArray(new String[0]));
     }

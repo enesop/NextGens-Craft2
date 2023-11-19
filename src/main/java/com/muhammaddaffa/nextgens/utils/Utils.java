@@ -8,6 +8,7 @@ import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -15,6 +16,16 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 public class Utils {
 
     private static final FormatBalance formatBalance = new FormatBalance();
+
+    public static Inventory replicateInventoryRemoveLastRow(Inventory inventory) {
+        // create another inventory
+        Inventory cloned = Bukkit.createInventory(null, inventory.getSize() - 9);
+        for (int i = 0; i < cloned.getSize(); i++) {
+            // clone the item
+            cloned.setItem(i, inventory.getItem(i));
+        }
+        return cloned;
+    }
 
     public static boolean isSimilar(ItemStack one, ItemStack two) {
         if (one == null || two == null) return false;

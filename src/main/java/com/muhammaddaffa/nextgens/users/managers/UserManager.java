@@ -30,10 +30,8 @@ import org.jetbrains.annotations.NotNull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserManager {
 
@@ -75,25 +73,27 @@ public class UserManager {
         return true;
     }
 
-    public SellData performSell(Player player, Inventory inventory, SellwandData sellwand) {
-        return this.performSell(player, inventory, sellwand, false);
+    public SellData performSell(Player player, SellwandData sellwand, Inventory... inventories) {
+        return this.performSell(player, sellwand, false, inventories);
     }
 
-    public SellData performSell(Player player, Inventory inventory, SellwandData sellwand, boolean silent) {
+    public SellData performSell(Player player, SellwandData sellwand, boolean silent, Inventory... inventories) {
         GeneratorAPI api = NextGens.getApi();
         double totalValue = 0.0;
         int totalItems = 0;
         // loop through inventory contents
-        for (ItemStack stack : inventory) {
-            // get value
-            Double value = api.getWorth(stack);
-            if (value == null) continue;
-            // if the item has value, register it
-            if (value > 0) {
-                totalItems += stack.getAmount();
-                totalValue += value;
-                // remove the item
-                stack.setAmount(0);
+        for (Inventory inventory : inventories) {
+            for (ItemStack stack : inventory) {
+                // get value
+                Double value = api.getWorth(stack);
+                if (value == null) continue;
+                // if the item has value, register it
+                if (value > 0) {
+                    totalItems += stack.getAmount();
+                    totalValue += value;
+                    // remove the item
+                    stack.setAmount(0);
+                }
             }
         }
         // check if player has anything to sell

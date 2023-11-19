@@ -2,7 +2,6 @@ package com.muhammaddaffa.nextgens.sellwand;
 
 import com.griefcraft.lwc.LWC;
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -13,19 +12,25 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
+import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsPlugin;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
+import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
+import us.lynuxcraft.deadsilenceiv.advancedchests.utils.inventory.InteractiveInventory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record SellwandListener(
         SellwandManager sellwandManager
 ) implements Listener {
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     private void onInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
         ItemStack stack = event.getItem();
@@ -37,7 +42,29 @@ public record SellwandListener(
          * Advanced Chests API Hook
          *
          */
-        // AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
+        AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
+        if (advancedChest != null) {
+            // check if player is the owner of the chest
+            if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
+                // send a message and do nothing
+                Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                // cancel the event
+                event.setCancelled(true);
+                // bass sound
+                Utils.bassSound(player);
+                return;
+            }
+            // get all pages
+            List<Inventory> inventories = advancedChest.getPages().values()
+                    .stream()
+                    .map(InteractiveInventory::getBukkitInventory)
+                    .toList();
+            // try to sell the content of the chest
+            if (this.sellwandManager.action(player, stack, inventories.toArray(Inventory[]::new))) {
+                event.setCancelled(true);
+            }
+            return;
+        }
         /**
          * Normal Container
          */
