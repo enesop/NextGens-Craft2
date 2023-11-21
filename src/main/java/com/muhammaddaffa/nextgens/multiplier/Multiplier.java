@@ -18,7 +18,7 @@ public class Multiplier {
             }
         }
         // get the multiplier in decimals
-        return (double) multiplier / 100;
+        return ((double) multiplier / 100);
     }
 
 }
