@@ -146,14 +146,20 @@ public class UserManager {
         double playerMultiplier = user.getMultiplier();
         double sellwandMultiplier = sellwand != null ? sellwand.multiplier() : 0;
         double eventMultiplier = (event != null && event.getType() == Event.Type.SELL_MULTIPLIER && event.getSellMultiplier() != null) ? event.getSellMultiplier() : 0;
+        double permissionMultiplier = Multiplier.getSellMultiplier(player);
         // get the final amount
         double playerBonus = totalValue * playerMultiplier;
         double sellwandBonus = totalValue * Math.max(0, sellwandMultiplier - 1);
         double eventBonus = totalValue * Math.max(0, eventMultiplier - 1);
-        double finalAmount = totalValue + playerBonus + sellwandBonus + eventBonus;
+        double permissionBonus = totalValue * permissionMultiplier;
+        double finalAmount = totalValue + playerBonus + sellwandBonus + eventBonus + permissionBonus;
+        // the display
+        double playerMultiplierDisplay = playerMultiplier >= 1.0 ? (playerMultiplier + 1) : playerMultiplier;
+        double sellwandMultiplierDisplay = (sellwandMultiplier - 1) >= 1.0 ? sellwandMultiplier : Math.max(0, sellwandMultiplier - 1);
+        double eventMultiplierDisplay = (eventMultiplier - 1) >= 1.0 ? eventMultiplier : Math.max(0, eventMultiplier - 1);
+        double permissionMultiplierDisplay = permissionMultiplier >= 1.0 ? (permissionMultiplier + 1) : permissionMultiplier;
         // get the total multiplier
-        double totalMultiplier = playerMultiplier + sellwandMultiplier + eventMultiplier;
-        if (player != null) totalMultiplier += Multiplier.getSellMultiplier(player);
+        double totalMultiplier = playerMultiplierDisplay + sellwandMultiplierDisplay + eventMultiplierDisplay + permissionMultiplierDisplay;
         // return the sell data
         return new SellData(user, finalAmount, totalItems, totalMultiplier, sellwand);
     }

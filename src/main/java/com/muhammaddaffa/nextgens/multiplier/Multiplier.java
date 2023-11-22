@@ -6,6 +6,8 @@ import org.bukkit.permissions.PermissionAttachmentInfo;
 public class Multiplier {
 
     public static double getSellMultiplier(Player player) {
+        if (player == null) return 0;
+
         int multiplier = 0;
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
