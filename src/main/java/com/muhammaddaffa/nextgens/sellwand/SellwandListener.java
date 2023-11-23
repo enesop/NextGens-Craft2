@@ -12,6 +12,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
@@ -38,6 +39,8 @@ public record SellwandListener(
         if (block == null || !this.sellwandManager.isSellwand(stack)) {
             return;
         }
+        // cancel the event no matter what
+        event.setCancelled(true);
         /**
          * Advanced Chests API Hook
          *
@@ -48,8 +51,6 @@ public record SellwandListener(
             if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
                 // send a message and do nothing
                 Common.configMessage("config.yml", player, "messages.sellwand-failed");
-                // cancel the event
-                event.setCancelled(true);
                 // bass sound
                 Utils.bassSound(player);
                 return;
@@ -60,9 +61,7 @@ public record SellwandListener(
                     .map(InteractiveInventory::getBukkitInventory)
                     .toList();
             // try to sell the content of the chest
-            if (this.sellwandManager.action(player, stack, inventories.toArray(Inventory[]::new))) {
-                event.setCancelled(true);
-            }
+            this.sellwandManager.action(player, stack, inventories.toArray(Inventory[]::new));
             return;
         }
         /**
@@ -73,17 +72,19 @@ public record SellwandListener(
             if (Bukkit.getPluginManager().getPlugin("LWC") != null && !LWC.getInstance().canAccessProtection(player, block)) {
                 // send a message and do nothing
                 Common.configMessage("config.yml", player, "messages.sellwand-failed");
-                // cancel the event
-                event.setCancelled(true);
                 // bass sound
                 Utils.bassSound(player);
                 return;
             }
             // try to sell the content of the chest
-            if (this.sellwandManager.action(player, stack, container.getInventory())) {
-                event.setCancelled(true);
-            }
+            this.sellwandManager.action(player, stack, container.getInventory());
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void onLoseDurability(PlayerItemDamageEvent event) {
+        if (!this.sellwandManager.isSellwand(event.getItem())) return;
+        event.setCancelled(true);
     }
 
 }
