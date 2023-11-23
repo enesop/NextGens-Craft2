@@ -11,6 +11,7 @@ import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
 import com.muhammaddaffa.nextgens.users.User;
@@ -56,6 +57,7 @@ public class MainCommand {
                 .withSubcommand(this.getAddMultiplierSubCommand())
                 .withSubcommand(this.getRemoveMultiplierSubCommand())
                 .withSubcommand(this.getSetMultiplierSubCommand())
+                .withSubcommand(this.getStartCorruptionCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.configMessage("config.yml", sender, "messages.help");
@@ -422,6 +424,20 @@ public class MainCommand {
                     } else {
                         Common.configMessage("config.yml", sender, "messages.no-event");
                     }
+                });
+    }
+
+    private CommandAPICommand getStartCorruptionCommand() {
+        return new CommandAPICommand("startcorruption")
+                .executes((sender, args) -> {
+                    // permission check
+                    if (!sender.hasPermission("nextgens.admin")) {
+                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        return;
+                    }
+                    // corrupt the generators
+                    CorruptionTask.getInstance().corruptGenerators();
+                    Common.configMessage("config.yml", sender, "messages.corrupt-gens");
                 });
     }
 

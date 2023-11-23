@@ -349,6 +349,7 @@ messages:
   item-worthless: '&6[NextGens] &cThis item is worthless!'
   item-worth: '&6[NextGens] &aThis item is worth ${worth}'
   cashback: '&6[NextGens] &aYou have received ${amount} in {percentage}% cashback from your last transaction.'
+  corrupt-gens: '&6[NextGens] &aYou have executed the corruption event!'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'

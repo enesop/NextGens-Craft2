@@ -39,6 +39,10 @@ public class CorruptionTask extends BukkitRunnable {
         return runnable.getCorruptionTime() - runnable.getTimer();
     }
 
+    public static CorruptionTask getInstance() {
+        return runnable;
+    }
+
     private final GeneratorManager generatorManager;
     public CorruptionTask(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
@@ -58,30 +62,35 @@ public class CorruptionTask extends BukkitRunnable {
         if (this.timer >= this.getCorruptionTime()) {
             // set the timer back to 0
             this.timer = 0;
-            // get possibly infected generators
-            AtomicInteger actuallyCorrupted = new AtomicInteger();
-            for (ActiveGenerator active : this.getPossiblyInfectedGenerators()) {
-                // check for chances
-                if (ThreadLocalRandom.current().nextDouble(101) <= active.getGenerator().corruptChance()) {
-                    // must run in a sync task
-                    Executor.sync(() -> {
-                        // call the event, and check for cancelled
-                        GeneratorCorruptedEvent corruptedEvent = new GeneratorCorruptedEvent(active.getGenerator(), active);
-                        Bukkit.getPluginManager().callEvent(corruptedEvent);
-                        if (!corruptedEvent.isCancelled()) {
-                            // actually set the generator to be corrupted
-                            active.setCorrupted(true);
-                            // increment the counter
-                            actuallyCorrupted.getAndIncrement();
-                        }
-                    });
-                }
+            // corrupt the generators
+            this.corruptGenerators();
+        }
+    }
+
+    public void corruptGenerators() {
+        // get possibly infected generators
+        AtomicInteger actuallyCorrupted = new AtomicInteger();
+        for (ActiveGenerator active : this.getPossiblyInfectedGenerators()) {
+            // check for chances
+            if (ThreadLocalRandom.current().nextDouble(101) <= active.getGenerator().corruptChance()) {
+                // must run in a sync task
+                Executor.sync(() -> {
+                    // call the event, and check for cancelled
+                    GeneratorCorruptedEvent corruptedEvent = new GeneratorCorruptedEvent(active.getGenerator(), active);
+                    Bukkit.getPluginManager().callEvent(corruptedEvent);
+                    if (!corruptedEvent.isCancelled()) {
+                        // actually set the generator to be corrupted
+                        active.setCorrupted(true);
+                        // increment the counter
+                        actuallyCorrupted.getAndIncrement();
+                    }
+                });
             }
-            // broadcast the corrupt event
-            if (actuallyCorrupted.get() > 0) {
-                Settings.CORRUPTION_BROADCAST.broadcast(new Placeholder()
-                        .add("{amount}", actuallyCorrupted.get()));
-            }
+        }
+        // broadcast the corrupt event
+        if (actuallyCorrupted.get() > 0) {
+            Settings.CORRUPTION_BROADCAST.broadcast(new Placeholder()
+                    .add("{amount}", actuallyCorrupted.get()));
         }
     }
 
