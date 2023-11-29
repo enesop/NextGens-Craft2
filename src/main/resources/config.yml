@@ -31,6 +31,14 @@ mysql:
   password: ''
   useSSL: false
 
+# Should we save generators and users data on server stop?
+# Generally, this plugin will save generators and users' data every time the generator
+# or user data is being modified (e.g: modifying user's multiplier with command, upgrading generator)
+# This option has been added because there are some cases where the server is frozen
+# because of trying to save tons of generator and user data, it should be safe to have this option
+# set to false, but if you want to be safer, then you should turn on this option
+save-on-stop: false
+
 # Auto Save Option
 auto-save:
   # Should we enable auto save?

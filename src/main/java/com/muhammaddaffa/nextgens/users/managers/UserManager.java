@@ -1,10 +1,7 @@
 package com.muhammaddaffa.nextgens.users.managers;
 
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
-import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
-import com.muhammaddaffa.mdlib.utils.Logger;
-import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.GeneratorAPI;
 import com.muhammaddaffa.nextgens.api.events.sell.SellCommandUseEvent;
@@ -138,6 +135,9 @@ public class UserManager {
         } else {
             user.addNormalSell(1);
         }
+        // save the user data
+        Executor.async(() -> this.saveUser(user));
+
         return data;
     }
 

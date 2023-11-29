@@ -3,3 +3,6 @@
 [+] Tweaking the multiplier display
 [+] Sellwand is no longer can be used like regular minecraft vanilla tools.
 [+] Add command to force start corruption event /gens startcorruption
+[+] Fix generators can be used in grind stone
+[+] Tweak the database saving system
+[+] Automatically remove generator if corrupted/invalid

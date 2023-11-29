@@ -176,14 +176,15 @@ public final class NextGens extends JavaPlugin {
         MDLib.shutdown();
         // remove all holograms
         GeneratorTask.flush();
-        // save refunds
+        // save small things first
         this.refundManager.save();
-        // save the users
-        this.userManager.saveUser();
-        // save the events
         this.eventManager.save();
-        // save the generators
-        this.generatorManager.saveActiveGenerator();
+        // should we save on stop?
+        if (Config.getFileConfiguration("config.yml").getBoolean("save-on-stop", false)) {
+            // save all data
+            this.userManager.saveUser();
+            this.generatorManager.saveActiveGenerator();
+        }
         // close the database
         this.dbm.close();
     }

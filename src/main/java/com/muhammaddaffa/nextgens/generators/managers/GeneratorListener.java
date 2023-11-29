@@ -26,9 +26,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
@@ -353,6 +356,16 @@ public record GeneratorListener(
             for (String command : config.getStringList("first-join-generator.commands")) {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("{player}", player.getName()));
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    private void prevention(InventoryClickEvent event) {
+        Inventory inventory = event.getView().getTopInventory();
+        ItemStack stack = event.getCurrentItem();
+        if (!this.generatorManager.isGeneratorItem(stack)) return;
+        if (inventory.getType() == InventoryType.GRINDSTONE) {
+            event.setCancelled(true);
         }
     }
 

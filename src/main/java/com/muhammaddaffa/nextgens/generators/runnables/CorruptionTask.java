@@ -117,7 +117,8 @@ public class CorruptionTask extends BukkitRunnable {
             }
             ActiveGenerator active = activeGenerators.get(index);
             // blacklist check, or corrupted check
-            if (blacklisted.contains(active.getGenerator().id()) || active.isCorrupted()) {
+            if (active == null || active.getGenerator() == null ||
+                    blacklisted.contains(active.getGenerator().id()) || active.isCorrupted()) {
                 continue;
             }
             // proceed to corrupt the generator

@@ -216,8 +216,11 @@ public class GeneratorManager {
                 double timer = result.getDouble(4);
                 boolean isCorrupted = result.getBoolean(5);
 
+                Generator generator = this.getGenerator(generatorId);
+                if (generatorId == null || generator == null) continue;
+
                 // store it on the map
-                this.activeGenerators.put(serialized, new ActiveGenerator(owner, location, this.getGenerator(generatorId), timer, isCorrupted));
+                this.activeGenerators.put(serialized, new ActiveGenerator(owner, location, generator, timer, isCorrupted));
                 // add generator count
                 this.addGeneratorCount(owner, 1);
             }
