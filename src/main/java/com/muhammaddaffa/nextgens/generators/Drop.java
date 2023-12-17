@@ -73,7 +73,8 @@ public record Drop(
                 .add("{x}", dropLocation.getBlockX())
                 .add("{y}", dropLocation.getBlockY())
                 .add("{z}", dropLocation.getBlockZ())
-                .add("{world}", dropLocation.getWorld().getName());
+                .add("{world}", dropLocation.getWorld().getName())
+                .add("{world_lower}", dropLocation.getWorld().getName().toLowerCase());
         if (player != null) {
             placeholder.add("{player}", player.getName());
         }

@@ -1,0 +1,43 @@
+
+# The title and size of the gui
+title: "&8Generator List ({player})"
+size: 36
+
+slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]
+
+# Permission to pick-up generator through gui
+pickup-own: "nextgens.pickupgui"
+# Permission to pick-up generator that user do not own through gui
+pickup-others: "nextgens.pickupgui.others"
+
+# Additional lore that will be added to the item
+additional-lore:
+  - "&7"
+  - "&d&lVIEW ACTIONS"
+  - "&7This generator is located at &ex {x}&7,"
+  - "&ey {y}&7, &ez {z} &7in &e{world} &7world"
+  - "&7"
+  - "&eLeft-Click to pick-up this generator"
+
+items:
+  next-page:
+    type: next_page
+    material: PAPER
+    display-name: "&a&lNext Page -->"
+    slots: [ 32 ]
+    commands: []
+    lore: []
+  previous-page:
+    type: previous_page
+    material: PAPER
+    display-name: "&c&l<-- Previous Page"
+    slots: [ 30 ]
+    commands: []
+    lore: []
+  filler:
+    type: dummy
+    material: BLACK_STAINED_GLASS_PANE
+    display-name: "&f"
+    slots: [ 27, 28, 29, 31, 33, 34, 35]
+    commands: []
+    lore: []

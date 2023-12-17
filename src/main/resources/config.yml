@@ -170,6 +170,16 @@ generator-place-distance:
 blacklisted-worlds:
   - disablegen
   - notagenworld
+# Generator Limit
+# Define the maximum generator player can have, this value cannot be added
+player-generator-limit:
+  enabled: false
+  limit: 50
+# Multiplier Limit
+# Define the maximum multiplier that player can have on sell
+player-multiplier-limit:
+  enabled: false
+  limit: 5.0
 
 # Configuration options for sellwand
 sellwand:
@@ -358,6 +368,7 @@ messages:
   item-worth: '&6[NextGens] &aThis item is worth ${worth}'
   cashback: '&6[NextGens] &aYou have received ${amount} in {percentage}% cashback from your last transaction.'
   corrupt-gens: '&6[NextGens] &aYou have executed the corruption event!'
+  invalid-user: '&6[NextGens] &cThere is no user with that name!'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'

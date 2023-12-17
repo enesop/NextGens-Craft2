@@ -45,24 +45,26 @@ public record SellwandListener(
          * Advanced Chests API Hook
          *
          */
-        AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
-        if (advancedChest != null) {
-            // check if player is the owner of the chest
-            if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
-                // send a message and do nothing
-                Common.configMessage("config.yml", player, "messages.sellwand-failed");
-                // bass sound
-                Utils.bassSound(player);
+        if (Bukkit.getPluginManager().getPlugin("AdvancedChests") != null) {
+            AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
+            if (advancedChest != null) {
+                // check if player is the owner of the chest
+                if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
+                    // send a message and do nothing
+                    Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                    // bass sound
+                    Utils.bassSound(player);
+                    return;
+                }
+                // get all pages
+                List<Inventory> inventories = advancedChest.getPages().values()
+                        .stream()
+                        .map(InteractiveInventory::getBukkitInventory)
+                        .toList();
+                // try to sell the content of the chest
+                this.sellwandManager.action(player, stack, inventories.toArray(Inventory[]::new));
                 return;
             }
-            // get all pages
-            List<Inventory> inventories = advancedChest.getPages().values()
-                    .stream()
-                    .map(InteractiveInventory::getBukkitInventory)
-                    .toList();
-            // try to sell the content of the chest
-            this.sellwandManager.action(player, stack, inventories.toArray(Inventory[]::new));
-            return;
         }
         /**
          * Normal Container

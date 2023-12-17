@@ -37,11 +37,7 @@ public class VisualAction {
         }
         // sound
         if (section.getBoolean("sound.enabled")) {
-            Sound sound = Sound.valueOf(section.getString("sound.name"));
-            float volume = (float) section.getDouble("sound.volume");
-            float pitch = (float) section.getDouble("sound.pitch");
-            // play the sound
-            player.playSound(player.getLocation(), sound, volume, pitch);
+            PlayableSound.parse(section).play(player);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.muhammaddaffa.nextgens.users;
 
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
+import org.bukkit.Bukkit;
 
 import java.util.UUID;
 
@@ -41,6 +42,10 @@ public class User {
 
     public UUID getUniqueId() {
         return uuid;
+    }
+
+    public String getName() {
+        return Bukkit.getOfflinePlayer(this.uuid).getName();
     }
 
     public int getBonus() {

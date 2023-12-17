@@ -217,7 +217,7 @@ public class GeneratorManager {
                 boolean isCorrupted = result.getBoolean(5);
 
                 Generator generator = this.getGenerator(generatorId);
-                if (generatorId == null || generator == null) continue;
+                if (generatorId == null || generator == null || location.getWorld() == null) continue;
 
                 // store it on the map
                 this.activeGenerators.put(serialized, new ActiveGenerator(owner, location, generator, timer, isCorrupted));
@@ -283,6 +283,13 @@ public class GeneratorManager {
         double corruptChance = section.getDouble("corrupted.chance");
         String nextTier = section.getString("upgrade.next-generator");
         double upgradeCost = section.getDouble("upgrade.upgrade-cost");
+        // online only options
+        Boolean onlineOnly;
+        if (section.get("online-only") == null) {
+            onlineOnly = null;
+        } else {
+            onlineOnly = section.getBoolean("online-only");
+        }
 
         ConfigurationSection itemSection = section.getConfigurationSection("item");
         if (itemSection == null) {
@@ -310,7 +317,7 @@ public class GeneratorManager {
         }
 
         Generator generator = new Generator(id, displayName, interval, item, drops, nextTier, upgradeCost,
-                corrupted, fixCost, corruptChance);
+                corrupted, fixCost, corruptChance, onlineOnly);
 
         // call the custom event
         GeneratorLoadEvent loadEvent = new GeneratorLoadEvent(generator);

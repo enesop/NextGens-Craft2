@@ -1,8 +1,16 @@
-[+] Add AdvancedChests Support (now you can use sellwand on advanced chests)
-[+] Fix the permission multiplier issue
-[+] Tweaking the multiplier display
-[+] Sellwand is no longer can be used like regular minecraft vanilla tools.
-[+] Add command to force start corruption event /gens startcorruption
-[+] Fix generators can be used in grind stone
-[+] Tweak the database saving system
-[+] Automatically remove generator if corrupted/invalid
+[ + ] Add 1.20.3 and 1.20.4 support
+  [+] Add AdvancedChests Support (now you can use sellwand on advanced chests)
+  [+] Fix the permission multiplier issue
+  [+] Tweaking the multiplier display
+  [+] Sellwand can no longer be used like regular Minecraft vanilla tools.
+  [+] Add command to force start corruption event /gens startcorruption
+  [+] Fix generators can be used in grindstone
+  [+] Tweak the database saving system
+  [+] Automatically remove the generator if corrupted/invalid
+  [+] Add /gens view command
+  [+] Add online only option per generator (you can add 'online-only: true' to the generator config)
+  [ + ] Now you can play a custom sound using the resource pack
+  [+] Add player generator limit (similar to generator max, except this value cannot be modified and it will override generator max system)
+  [+] Add player multiplier limit
+  [+] Fix head texture not parsed correctly
+  [+] Prevent generators with sponge block absorb water

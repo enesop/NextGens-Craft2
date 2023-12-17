@@ -17,7 +17,8 @@ public record Generator(
         double cost,
         boolean corrupted,
         double fixCost,
-        double corruptChance
+        double corruptChance,
+        Boolean onlineOnly
 ) {
 
     @NotNull

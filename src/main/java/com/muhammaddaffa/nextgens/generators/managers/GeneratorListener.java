@@ -428,6 +428,12 @@ public record GeneratorListener(
         this.checkPiston(event, event.getBlocks());
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private void prevention(SpongeAbsorbEvent event) {
+        ActiveGenerator active = this.generatorManager.getActiveGenerator(event.getBlock());
+        if (active != null) event.setCancelled(true);
+    }
+
     private void checkPiston(BlockPistonEvent event, List<Block> blocks) {
         for (Block block : blocks) {
             // get active generator from block
@@ -435,25 +441,6 @@ public record GeneratorListener(
             if (active != null) {
                 event.setCancelled(true);
             }
-            /*// if piston move is enabled
-            if (enabled) {
-                // change the active generator location
-                Location previous = block.getLocation();
-                Location next = block.getRelative(event.getDirection()).getLocation();
-                boolean corrupted = active.isCorrupted();
-                // unregister the generator
-                this.generatorManager.unregisterGenerator(previous);
-                // destroy the hologram
-                GeneratorTask.destroy(active);
-                // register back the generator
-                Executor.syncLater(3L, () -> {
-                    ActiveGenerator fresh = this.generatorManager.registerGenerator(active.getOwner(), active.getGenerator(), next.getBlock());
-                    fresh.setCorrupted(corrupted);
-                });
-            } else {
-                // cancel the event
-                event.setCancelled(true);
-            }*/
         }
     }
 

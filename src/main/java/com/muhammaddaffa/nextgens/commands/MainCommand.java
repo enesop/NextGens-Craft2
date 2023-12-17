@@ -13,6 +13,7 @@ import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
+import com.muhammaddaffa.nextgens.gui.ViewInventory;
 import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
@@ -58,6 +59,7 @@ public class MainCommand {
                 .withSubcommand(this.getRemoveMultiplierSubCommand())
                 .withSubcommand(this.getSetMultiplierSubCommand())
                 .withSubcommand(this.getStartCorruptionCommand())
+                .withSubcommand(this.getViewCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.configMessage("config.yml", sender, "messages.help");
@@ -440,5 +442,31 @@ public class MainCommand {
                     Common.configMessage("config.yml", sender, "messages.corrupt-gens");
                 });
     }
+
+    private CommandAPICommand getViewCommand() {
+        return new CommandAPICommand("view")
+                .withPermission("nextgens.view")
+                .withOptionalArguments(new StringArgument("name")
+                        .replaceSuggestions(ArgumentSuggestions.strings(info -> {
+                            return this.userManager.getUsersName().toArray(String[]::new);
+                        })))
+                .executesPlayer((player, args) -> {
+                    String name = (String) args.getOrDefault("name", player.getName());
+                    User user = this.userManager.getUser(name);
+                    if (user == null) {
+                        Common.configMessage("config.yml", player, "messages.invalid-user");
+                        return;
+                    }
+                    // if player is not the user
+                    if (!user.getUniqueId().equals(player.getUniqueId()) &&
+                            !player.hasPermission("nextgens.view.others")) {
+                        Common.configMessage("config.yml", player, "messages.no-permission");
+                        return;
+                    }
+                    // open the inventory
+                    ViewInventory.openInventory(player, user, this.generatorManager);
+                });
+    }
+
 
 }

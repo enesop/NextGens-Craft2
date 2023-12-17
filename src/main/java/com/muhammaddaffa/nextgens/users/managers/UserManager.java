@@ -23,6 +23,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,6 +40,23 @@ public class UserManager {
     public UserManager(DatabaseManager dbm, EventManager eventManager) {
         this.dbm = dbm;
         this.eventManager = eventManager;
+    }
+
+    public List<String> getUsersName() {
+        return this.userMap.values().stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
+    }
+
+    @Nullable
+    public User getUser(String name) {
+        return this.userMap.values().stream()
+                .filter(user -> {
+                    if (user.getName() == null) return false;
+                    return user.getName().equalsIgnoreCase(name);
+                })
+                .findFirst()
+                .orElse(null);
     }
 
     @NotNull
@@ -107,6 +125,16 @@ public class UserManager {
         User user = this.getUser(player);
         // create the sell data
         final SellData sellData = this.getSellData(player, sellwand, totalValue, totalItems, user);
+
+        // inject the multiplier limit system
+        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        if (config.getBoolean("player-multiplier-limit.enabled")) {
+            double limit = config.getDouble("player-multiplier-limit.limit");
+            if (sellData.multiplier() > limit) {
+                sellData.multiplier(limit);
+            }
+        }
+
         SellEvent sellEvent = new SellCommandUseEvent(player, user, sellData);
         if (sellwand != null) sellEvent = new SellwandUseEvent(player, user, sellData);
         // call the event
@@ -120,7 +148,7 @@ public class UserManager {
         VaultEconomy.deposit(player, data.totalValue());
         // send the visual action
         if (!silent) {
-            VisualAction.send(player, Config.getFileConfiguration("config.yml"), "sell-options", new Placeholder()
+            VisualAction.send(player, config, "sell-options", new Placeholder()
                     .add("{amount}", Common.digits(data.totalItems()))
                     .add("{amount_formatted}", Utils.formatBalance(data.totalItems()))
                     .add("{value}", Common.digits(data.totalValue()))
@@ -180,8 +208,13 @@ public class UserManager {
                 max = current;
             }
         }
-        // get the bonus slot
-        return max + this.getUser(player).getBonus();
+
+        int bonusMax = max + this.getUser(player).getBonus();
+        int limit = config.getInt("player-generator-limit.limit");
+        if (config.getBoolean("player-generator-limit.enabled") && bonusMax > limit) {
+            return limit;
+        }
+        return bonusMax;
     }
 
     public void loadUser() {

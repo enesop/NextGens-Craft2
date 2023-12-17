@@ -84,7 +84,16 @@ public class GeneratorTask extends BukkitRunnable {
                 continue;
             }
             // check for online-only option
-            if (Settings.ONLINE_ONLY) {
+            boolean onlineOnly;
+
+            // check for generator online only
+            if (generator.onlineOnly() == null) {
+                onlineOnly = Settings.ONLINE_ONLY;
+            } else {
+                onlineOnly = generator.onlineOnly();
+            }
+
+            if (onlineOnly) {
                 if (player == null || !player.isOnline()) {
                     continue;
                 }

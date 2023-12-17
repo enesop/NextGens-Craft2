@@ -1,8 +1,10 @@
 package com.muhammaddaffa.nextgens.hooks.ssb2;
 
+import com.bgsoftware.superiorskyblock.api.events.IslandBanEvent;
 import com.bgsoftware.superiorskyblock.api.events.IslandDisbandEvent;
 import com.bgsoftware.superiorskyblock.api.events.IslandKickEvent;
 import com.bgsoftware.superiorskyblock.api.events.IslandQuitEvent;
+import com.bgsoftware.superiorskyblock.api.island.Island;
 import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
@@ -36,6 +38,18 @@ public record SSB2Listener(
     @EventHandler(priority = EventPriority.MONITOR)
     private void onIslandLeave(IslandQuitEvent event) {
         this.check(event.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private void onIslandBan(IslandBanEvent event) {
+        SuperiorPlayer player = event.getTarget();
+        Island island = event.getIsland();
+        Island playerIsland = player.getIsland();
+        if (playerIsland == null) return;
+
+        if (island.getUniqueId().equals(playerIsland.getUniqueId())) {
+            this.check(player);
+        }
     }
 
     private void check(SuperiorPlayer superiorPlayer) {
