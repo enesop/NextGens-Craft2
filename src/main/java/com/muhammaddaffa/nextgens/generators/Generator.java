@@ -23,18 +23,11 @@ public record Generator(
 
     @NotNull
     public Drop getRandomDrop() {
-        // drop algorithm
-        Drop drop = null;
+        for (Drop drop : this.drops)
+            if (drop.shouldUse())
+                return drop;
 
-        while (drop == null) {
-            for (Drop potential : this.drops()) {
-                if (potential.shouldUse()) {
-                    drop = potential;
-                    break;
-                }
-            }
-        }
-        return drop;
+        return null;
     }
 
     public ItemStack createItem(int amount) {
