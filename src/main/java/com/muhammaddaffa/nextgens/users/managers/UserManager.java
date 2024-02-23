@@ -29,11 +29,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class UserManager {
 
-    private final Map<UUID, User> userMap = new HashMap<>();
+    private final Map<UUID, User> userMap = new ConcurrentHashMap<>();
 
     private final DatabaseManager dbm;
     private final EventManager eventManager;
