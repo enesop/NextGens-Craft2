@@ -1,5 +1,8 @@
 package com.muhammaddaffa.nextgens.sellwand;
 
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.superiorskyblock.api.island.Island;
+import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.griefcraft.lwc.LWC;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -16,14 +19,11 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
-import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsPlugin;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
-import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import us.lynuxcraft.deadsilenceiv.advancedchests.utils.inventory.InteractiveInventory;
+import world.bentobox.bentobox.BentoBox;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public record SellwandListener(
         SellwandManager sellwandManager
@@ -39,6 +39,31 @@ public record SellwandListener(
         if (block == null || !this.sellwandManager.isSellwand(stack)) {
             return;
         }
+
+        //BentoBox fix for sellwand
+        BentoBox.getInstance().getIslands().getIslandAt(block.getLocation()).ifPresent(island -> {
+            if (!island.getMembers().containsKey(player.getUniqueId())) {
+                Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                Utils.bassSound(player);
+                event.setCancelled(true);
+            }
+        });
+
+        // SuperiorSkyblock fix for sellwand
+        Island islandAt = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
+        if (islandAt != null) {
+
+            SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(player);
+            if (superiorPlayer == null)
+                return;
+
+            if (!islandAt.getIslandMembers(true).contains(superiorPlayer)) {
+                Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                Utils.bassSound(player);
+                event.setCancelled(true);
+            }
+        }
+
         // cancel the event no matter what
         event.setCancelled(true);
         /**
