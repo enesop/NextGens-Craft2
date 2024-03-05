@@ -21,7 +21,6 @@ public record Generator(
         Boolean onlineOnly
 ) {
 
-    @NotNull
     public Drop getRandomDrop() {
         for (Drop drop : this.drops)
             if (drop.shouldUse())
