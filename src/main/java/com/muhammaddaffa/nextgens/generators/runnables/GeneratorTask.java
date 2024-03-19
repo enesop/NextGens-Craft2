@@ -187,6 +187,9 @@ public class GeneratorTask extends BukkitRunnable {
                     // get the drop amount
                     for (int i = 0; i < generatorEvent.getDropAmount(); i++) {
                         Drop drop = generatorEvent.getGenerator().getRandomDrop();
+                        if (drop == null)
+                            continue;
+
                         // check if player has autosell
                         if (player != null && Autosell.hasAutosellGensPermission(player) &&
                                 user.isToggleGensAutoSell()) {
