@@ -179,11 +179,11 @@ public final class NextGens extends JavaPlugin {
         this.refundManager.save();
         this.eventManager.save();
         // should we save on stop?
-        if (Config.getFileConfiguration("config.yml").getBoolean("save-on-stop", false)) {
+        /*if (Config.getFileConfiguration("config.yml").getBoolean("save-on-stop", false)) {
             // save all data
             this.userManager.saveUser();
             this.generatorManager.saveActiveGenerator();
-        }
+        }*/
         // close the database
         this.dbm.close();
     }

@@ -19,19 +19,12 @@ import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
-import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsPlugin;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
-import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import us.lynuxcraft.deadsilenceiv.advancedchests.utils.inventory.InteractiveInventory;
 import world.bentobox.bentobox.BentoBox;
-import world.bentobox.bentobox.api.flags.Flag;
-import world.bentobox.bentobox.api.user.User;
-import world.bentobox.bentobox.database.objects.Players;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public record SellwandListener(
         SellwandManager sellwandManager
