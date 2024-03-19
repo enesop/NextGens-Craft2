@@ -9,8 +9,11 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.helpers.ViewPagination;
 import com.muhammaddaffa.nextgens.users.User;
+import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.VisualAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,9 +23,9 @@ import java.util.List;
 
 public class ViewInventory extends SimpleInventory {
 
-    public static void openInventory(Player player, User user, GeneratorManager generatorManager) {
+    public static void openInventory(Player player, User user, GeneratorManager generatorManager, UserManager userManager) {
         // create the gui
-        ViewInventory gui = new ViewInventory(player, user, generatorManager);
+        ViewInventory gui = new ViewInventory(player, user, generatorManager, userManager);
         // open the gui
         gui.open(player);
     }
@@ -30,16 +33,18 @@ public class ViewInventory extends SimpleInventory {
     private final Player player;
     private final User user;
     private final GeneratorManager generatorManager;
+    private final UserManager userManager;
 
     private ViewPagination pagination;
 
-    public ViewInventory(Player player, User user, GeneratorManager generatorManager) {
+    public ViewInventory(Player player, User user, GeneratorManager generatorManager, UserManager userManager) {
         super(Config.getFileConfiguration("view_gui.yml").getInt("size"),
                 Common.color(Config.getFileConfiguration("view_gui.yml").getString("title")
                         .replace("{player}", user.getName())));
         this.player = player;
         this.user = user;
         this.generatorManager = generatorManager;
+        this.userManager = userManager;
 
         this.setAllItems();
     }
@@ -85,6 +90,16 @@ public class ViewInventory extends SimpleInventory {
                 active.getLocation().getBlock().setType(Material.AIR);
                 // give the item to the player
                 Common.addInventoryItem(this.player, active.getGenerator().createItem(1));
+                // add visual action
+                Player owner = Bukkit.getPlayer(active.getOwner());
+                if (owner != null) {
+                    VisualAction.send(owner, config, "generator-break-options", new Placeholder()
+                            .add("{gen}", active.getGenerator().displayName())
+                            .add("{current}", this.generatorManager.getGeneratorCount(owner))
+                            .add("{max}", this.userManager.getMaxSlot(owner)));
+                }
+                // play click button sound
+                this.player.playSound(this.player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
 
                 // update the gui
                 int currentPage = this.pagination.currentPage;

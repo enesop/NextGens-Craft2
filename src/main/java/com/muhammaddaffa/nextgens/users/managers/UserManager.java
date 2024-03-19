@@ -243,35 +243,19 @@ public class UserManager {
     }
 
     public void saveUser(User user) {
+        this.saveUser(List.of(user));
+    }
+
+    public void saveUser() {
+        this.saveUser(this.userMap.values().stream().toList());
+    }
+
+    public void saveUser(List<User> users) {
         String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?,?,?);";
         try (Connection connection = this.dbm.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            statement.setString(1, user.getUniqueId().toString());
-            statement.setInt(2, user.getBonus());
-            statement.setDouble(3, user.getMultiplier());
-            statement.setDouble(4, user.getEarnings());
-            statement.setInt(5, user.getItemsSold());
-            statement.setInt(6, user.getNormalSell());
-            statement.setInt(7, user.getSellwandSell());
-            statement.setBoolean(8, user.isToggleCashback());
-            statement.setBoolean(9, user.isToggleInventoryAutoSell());
-            statement.setBoolean(10, user.isToggleGensAutoSell());
-
-            statement.executeUpdate();
-
-        } catch (SQLException ex) {
-            Logger.severe("Failed to save all users data!");
-            ex.printStackTrace();
-        }
-    }
-
-    public void saveUser() {
-        String query = "REPLACE INTO " + DatabaseManager.USER_TABLE + " VALUES (?,?,?,?,?,?,?,?,?,?);";
-        try (Connection connection = this.dbm.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
-
-            for (User user : this.userMap.values()) {
+            for (User user : users) {
                 statement.setString(1, user.getUniqueId().toString());
                 statement.setInt(2, user.getBonus());
                 statement.setDouble(3, user.getMultiplier());
@@ -291,10 +275,10 @@ public class UserManager {
             statement.executeBatch();
 
             // send log message
-            Logger.info("Successfully saved " + this.userMap.size() + " users data!");
+            Logger.info("Successfully saved " + users.size() + " users data!");
 
         } catch (SQLException ex) {
-            Logger.severe("Failed to save all users data!");
+            Logger.severe("Failed to save " + users.size() + " users data!");
             ex.printStackTrace();
         }
     }

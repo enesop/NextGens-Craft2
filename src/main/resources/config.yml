@@ -31,22 +31,6 @@ mysql:
   password: ''
   useSSL: false
 
-# Should we save generators and users data on server stop?
-# Generally, this plugin will save generators and users' data every time the generator
-# or user data is being modified (e.g: modifying user's multiplier with command, upgrading generator)
-# This option has been added because there are some cases where the server is frozen
-# because of trying to save tons of generator and user data, it should be safe to have this option
-# set to false, but if you want to be safer, then you should turn on this option
-save-on-stop: false
-
-# Auto Save Option
-auto-save:
-  # Should we enable auto save?
-  enabled: true
-  # How often should we save the data (in seconds)
-  # It will be executed in async task
-  interval: 1800
-
 # Corruption System, check resource description on the market for details
 # tldr; if this option is enabled, generators will be broken occasionally
 #       and player need to fix the broken generator with money by
@@ -369,6 +353,7 @@ messages:
   cashback: '&6[NextGens] &aYou have received ${amount} in {percentage}% cashback from your last transaction.'
   corrupt-gens: '&6[NextGens] &aYou have executed the corruption event!'
   invalid-user: '&6[NextGens] &cThere is no user with that name!'
+  remove-all: '&6[NextGens] &aYou have removed all &e{player} &agenerators!'
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
@@ -386,4 +371,5 @@ messages:
     - '&6/gens addmultiplier <player> <amount> &7- add multiplier amount'
     - '&6/gens removemultiplier <player> <amount> &7- decrease multiplier amount'
     - '&6/gens setmultiplier <player> <amount> &7- set multiplier amount'
+    - '&6/gens removeall <player> &7- remove all specific player generators'
     - '&6/gens reload &7- reload the configuration'

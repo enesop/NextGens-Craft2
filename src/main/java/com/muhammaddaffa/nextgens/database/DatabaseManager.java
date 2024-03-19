@@ -36,8 +36,8 @@ public class DatabaseManager {
         HikariConfig hikari = new HikariConfig();
         hikari.setConnectionTestQuery("SELECT 1");
         hikari.setPoolName("NextGens Database Pool");
-        hikari.setMaxLifetime(480000);
-        hikari.setConnectionTimeout(60000);
+        hikari.setMaxLifetime(1000000);
+        hikari.setConnectionTimeout(600000);
         hikari.setIdleTimeout(600000);
         hikari.setLeakDetectionThreshold(360000);
         hikari.addDataSourceProperty("characterEncoding", "utf8");
@@ -181,32 +181,6 @@ public class DatabaseManager {
             Logger.severe("Failed to save all generators!");
             ex.printStackTrace();
         }
-
-        /*try (Connection connection = this.getConnection()) {
-            for (ActiveGenerator active : activeGenerators) {
-                // if the world is null, skip it
-                if (active.getLocation().getWorld() == null) {
-                    continue;
-                }
-
-                try (PreparedStatement statement = connection.prepareStatement(query)) {
-                    statement.setString(1, active.getOwner().toString());
-                    statement.setString(2, LocationSerializer.serialize(active.getLocation()));
-                    statement.setString(3, active.getGenerator().id());
-                    statement.setDouble(4, active.getTimer());
-                    statement.setBoolean(5, active.isCorrupted());
-
-                    statement.executeUpdate();
-                }
-            }
-
-            // send log message
-            Logger.info("Successfully saved " + activeGenerators.size() + " active generators!");
-
-        } catch (SQLException ex) {
-            Logger.severe("Failed to save all generators!");
-            ex.printStackTrace();
-        }*/
     }
 
     public void executeUpdate(String statement) {

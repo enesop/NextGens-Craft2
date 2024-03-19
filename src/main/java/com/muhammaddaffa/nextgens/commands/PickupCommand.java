@@ -68,7 +68,7 @@ public class PickupCommand {
                     // loop generators
                     for (ActiveGenerator active : generators) {
                         // check if broken pickup option is enabled
-                        if (Config.getFileConfiguration("config.yml").getBoolean("broken-pickup") && active.isCorrupted()) {
+                        if (!Config.getFileConfiguration("config.yml").getBoolean("broken-pickup") && active.isCorrupted()) {
                             total--;
                             continue;
                         }

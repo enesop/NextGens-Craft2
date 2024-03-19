@@ -83,6 +83,8 @@ public class CorruptionTask extends BukkitRunnable {
                         active.setCorrupted(true);
                         // increment the counter
                         actuallyCorrupted.getAndIncrement();
+                        // Save the generator
+                        Executor.async(() -> this.generatorManager.saveActiveGenerator(active));
                     }
                 });
             }

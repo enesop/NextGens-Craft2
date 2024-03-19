@@ -1,4 +1,4 @@
-package com.muhammaddaffa.nextgens.generators.managers;
+package com.muhammaddaffa.nextgens.generators.listeners;
 
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
@@ -10,6 +10,7 @@ import com.muhammaddaffa.nextgens.api.events.generators.GeneratorUpgradeEvent;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.action.InteractAction;
+import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.FixInventory;
 import com.muhammaddaffa.nextgens.gui.UpgradeInventory;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
@@ -73,7 +74,7 @@ public record GeneratorListener(
                 }
                 if (config.getBoolean("corruption.gui-fix")) {
                     // create gui
-                    FixInventory gui = new FixInventory(player, active, generator, this.userManager);
+                    FixInventory gui = new FixInventory(player, active, generator, this.userManager, this.generatorManager);
                     // open the gui
                     gui.open(player);
                 } else {
@@ -103,6 +104,8 @@ public record GeneratorListener(
                             // happy villager particle
                             block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                         }
+                        // Save the generator
+                        Executor.async(() -> this.generatorManager.saveActiveGenerator(active));
                     });
                     // give cashback to the player
                     Utils.performCashback(player, this.userManager, generator.fixCost());
@@ -340,11 +343,7 @@ public record GeneratorListener(
         Player player = event.getPlayer();
         FileConfiguration config = Config.getFileConfiguration("config.yml");
         // check if option is enabled
-        if (config.getBoolean("first-join-generator.enabled")) {
-            // if it's not first join, skip it
-            if (player.hasPlayedBefore()) {
-                return;
-            }
+        if (config.getBoolean("first-join-generator.enabled") && !player.hasPlayedBefore()) {
             // get the generator
             Generator generator = this.generatorManager.getGenerator(config.getString("first-join-generator.generator"));
             // give the generator to the player

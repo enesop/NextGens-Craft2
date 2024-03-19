@@ -60,6 +60,7 @@ public class MainCommand {
                 .withSubcommand(this.getSetMultiplierSubCommand())
                 .withSubcommand(this.getStartCorruptionCommand())
                 .withSubcommand(this.getViewCommand())
+                .withSubcommand(this.getRemoveAllCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
                         Common.configMessage("config.yml", sender, "messages.help");
@@ -464,7 +465,21 @@ public class MainCommand {
                         return;
                     }
                     // open the inventory
-                    ViewInventory.openInventory(player, user, this.generatorManager);
+                    ViewInventory.openInventory(player, user, this.generatorManager, this.userManager);
+                });
+    }
+
+    private CommandAPICommand getRemoveAllCommand() {
+        return new CommandAPICommand("removeall")
+                .withPermission("nextgens.admin")
+                .withArguments(new PlayerArgument("target"))
+                .executes((sender, args) -> {
+                    Player target = (Player) args.get("target");
+                    // Remove all generators
+                    this.generatorManager.removeAllGenerator(target);
+                    // Send message
+                    Common.configMessage("config.yml", sender, "messages.remove-all", new Placeholder()
+                            .add("{player}", target.getName()));
                 });
     }
 

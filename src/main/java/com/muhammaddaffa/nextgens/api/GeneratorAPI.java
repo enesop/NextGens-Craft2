@@ -185,6 +185,10 @@ public class GeneratorAPI {
         Double itemWorth = this.getItemWorth(stack);
         Double itemMetaWorth = this.getItemMetaWorth(stack);
         Double shopGuiPlusWorth = this.getShopGuiPlusWorth(stack);
+        // Check if it's generator item
+        if (this.generatorManager.isGeneratorItem(stack)) {
+            return null;
+        }
         // prioritize the shopguiplus first
         if (external && shopGuiPlusWorth != null && itemMetaWorth == null) {
             return shopGuiPlusWorth;

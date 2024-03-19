@@ -64,6 +64,8 @@ public class RefundManager {
     public void save() {
         Config data = Config.getConfig("data.yml");
         FileConfiguration config = data.getConfig();
+        // We should clear the data first
+        config.set("items", null);
         // loop through all data
         this.itemMap.forEach((uuid, generators) -> {
             config.set("items." + uuid.toString(), generators);

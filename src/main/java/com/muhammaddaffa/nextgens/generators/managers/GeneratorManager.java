@@ -198,6 +198,20 @@ public class GeneratorManager {
         }
     }
 
+    public void removeAllGenerator(Player player) {
+        this.removeAllGenerator(player.getUniqueId());
+    }
+
+    public void removeAllGenerator(UUID uuid) {
+        this.getActiveGenerator(uuid).forEach(active -> {
+            // Get the block
+            Block block = active.getLocation().getBlock();
+            // Unregister the generator and set it to air
+            this.unregisterGenerator(block);
+            block.setType(Material.AIR);
+        });
+    }
+
     public void loadActiveGenerator() {
         String query = "SELECT * FROM " + DatabaseManager.GENERATOR_TABLE;
         this.dbm.executeQuery(query, result -> {
@@ -227,6 +241,10 @@ public class GeneratorManager {
             // send log message
             Logger.info("Successfully loaded " + this.activeGenerators.size() + " active generators!");
         });
+    }
+
+    public void saveActiveGenerator(ActiveGenerator active) {
+        this.dbm.saveGenerator(active);
     }
 
     public void saveActiveGenerator() {

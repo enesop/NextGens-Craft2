@@ -1,5 +1,8 @@
 package com.muhammaddaffa.nextgens.sellwand;
 
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.superiorskyblock.api.island.Island;
+import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.griefcraft.lwc.LWC;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -20,16 +23,21 @@ import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsPlugin;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.gui.page.ChestPage;
 import us.lynuxcraft.deadsilenceiv.advancedchests.utils.inventory.InteractiveInventory;
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.flags.Flag;
+import world.bentobox.bentobox.api.user.User;
+import world.bentobox.bentobox.database.objects.Players;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record SellwandListener(
         SellwandManager sellwandManager
 ) implements Listener {
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Player player = event.getPlayer();
@@ -70,8 +78,8 @@ public record SellwandListener(
          * Normal Container
          */
         if (block.getState() instanceof Container container) {
-            // LWC check
-            if (Bukkit.getPluginManager().getPlugin("LWC") != null && !LWC.getInstance().canAccessProtection(player, block)) {
+            // Access check
+            if (!this.hasAccess(player, container)) {
                 // send a message and do nothing
                 Common.configMessage("config.yml", player, "messages.sellwand-failed");
                 // bass sound
@@ -87,6 +95,36 @@ public record SellwandListener(
     private void onLoseDurability(PlayerItemDamageEvent event) {
         if (!this.sellwandManager.isSellwand(event.getItem())) return;
         event.setCancelled(true);
+    }
+
+    private boolean hasAccess(Player player, Container container) {
+        // LWC Check
+        if (Bukkit.getPluginManager().getPlugin("LWC") != null &&
+                !LWC.getInstance().canAccessProtection(player, container.getBlock())) {
+            return false;
+        }
+        // SuperiorSkyblock Check
+        if (Bukkit.getPluginManager().getPlugin("SuperiorSkyblock2") != null) {
+            SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(player);
+            Island playerIsland = superiorPlayer.getIsland();
+            Island islandAt = SuperiorSkyblockAPI.getIslandAt(container.getLocation());
+            // If island is not found, skip it
+            if (playerIsland == null || islandAt == null) {
+                return false;
+            }
+            return playerIsland.getUniqueId().equals(islandAt.getUniqueId());
+        }
+        // BentoBox Check
+        if (Bukkit.getPluginManager().getPlugin("BentoBox") != null) {
+            Optional<world.bentobox.bentobox.database.objects.Island> islandAt = BentoBox.getInstance().getIslandsManager().getIslandAt(container.getLocation());
+            // If island is not present, skip it
+            if (islandAt.isEmpty()) {
+                return false;
+            }
+            world.bentobox.bentobox.database.objects.Island island = islandAt.get();
+            return island.getMemberSet().contains(player.getUniqueId());
+        }
+        return true;
     }
 
 }

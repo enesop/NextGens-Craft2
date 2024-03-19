@@ -1,0 +1,9 @@
+After couple of months investigating an issue and receiving various feedback I can come up with updates that can solve database issue and improve the plugin's quality overall, with this I'm confident and can deliver new features easily without worrying previous problems. Thank you for the feedback and support throughout this journey, also thank you guys for being patient with this project.
+
+[+] Information will be displayed upon generator pick up from view gui.
+[+] Fixed generators dupe on server restart.
+[+] Fixed sellwand can be used in area that you do not have access.
+[+] Potentially fix database issue while saving generators data.
+[+] Removed auto save and save on stop action to improve database handling.
+[+] Removed misleading log.
+[+] Add /gens removeall <player> command (requested by sh0ckadv for rebirth system)

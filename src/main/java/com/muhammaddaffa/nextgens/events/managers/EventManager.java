@@ -69,7 +69,7 @@ public class EventManager {
             }
             // if there is no next event
             // return the first event
-            return this.eventList.get(0);
+            return this.eventList.get(0).clone();
         }
         // assign the index to the next event
         if (count) {
@@ -78,9 +78,9 @@ public class EventManager {
         // if the next event is present, check for availability
         Event event = this.eventList.get(next);
         if (event.isOnlyByCommand()) {
-            return this.getNextEvent(count);
+            return this.getNextEvent(count).clone();
         }
-        return event;
+        return event.clone();
     }
 
     public void loadEvents() {
@@ -149,6 +149,8 @@ public class EventManager {
         }
         // below or equals to 0 wait time
         if (this.waitTime <= 0) {
+            // reset back the wait time
+            this.waitTime = this.getDefaultWaitTime();
             // assign next event
             if (this.isRandom()) {
                 this.activeEvent = this.getRandomEvent().clone();
@@ -157,8 +159,6 @@ public class EventManager {
             }
             // send start messages
             this.activeEvent.sendStartMessage();
-            // reset back the wait time
-            this.waitTime = this.getDefaultWaitTime();
             // return the code
             return;
         }

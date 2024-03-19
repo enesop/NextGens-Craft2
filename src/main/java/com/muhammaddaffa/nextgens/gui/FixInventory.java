@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
+import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Particle;
@@ -22,14 +23,16 @@ public class FixInventory extends SimpleInventory {
     private final ActiveGenerator active;
     private final Generator generator;
     private final UserManager userManager;
+    private final GeneratorManager generatorManager;
 
-    public FixInventory(Player player, ActiveGenerator active, Generator generator, UserManager userManager) {
+    public FixInventory(Player player, ActiveGenerator active, Generator generator, UserManager userManager, GeneratorManager generatorManager) {
         super(Settings.CORRUPT_GUI_SIZE,
                 Common.color(Settings.CORRUPT_GUI_TITLE));
         this.player = player;
         this.active = active;
         this.generator = generator;
         this.userManager = userManager;
+        this.generatorManager = generatorManager;
 
         this.setAcceptButton();
         this.setCancelButton();
@@ -96,6 +99,8 @@ public class FixInventory extends SimpleInventory {
                     // happy villager particle
                     block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
+                // Save the generator
+                Executor.async(() -> this.generatorManager.saveActiveGenerator(active));
             });
             // give cashback to the player
             Utils.performCashback(player, this.userManager, this.generator.fixCost());
