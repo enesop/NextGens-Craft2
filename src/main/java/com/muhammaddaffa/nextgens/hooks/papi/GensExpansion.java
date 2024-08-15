@@ -1,15 +1,14 @@
 package com.muhammaddaffa.nextgens.hooks.papi;
 
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
-import com.muhammaddaffa.mdlib.utils.TimeFormat;
+import com.muhammaddaffa.mdlib.utils.TimeUtils;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
-import com.muhammaddaffa.nextgens.utils.FormatBalance;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -104,24 +103,24 @@ public class GensExpansion extends PlaceholderExpansion {
             return Common.digits(this.generatorManager.getActiveGenerator().size());
         }
         if (params.equalsIgnoreCase("corrupt_time")) {
-            return TimeFormat.parse(CorruptionTask.getTimeLeft());
+            return TimeUtils.format(CorruptionTask.getTimeLeft());
         }
         if (params.equalsIgnoreCase("event_name")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {
-                return Config.getFileConfiguration("events.yml").getString("events.placeholders.no-event");
+                return NextGens.EVENTS_CONFIG.getConfig().getString("events.placeholders.no-event");
             }
-            return Config.getFileConfiguration("events.yml").getString("events.placeholders.active-event")
+            return NextGens.EVENTS_CONFIG.getConfig().getString("events.placeholders.active-event")
                     .replace("{display_name}", event.getDisplayName());
         }
         if (params.equalsIgnoreCase("event_time")) {
             Event event = this.eventManager.getActiveEvent();
             if (event == null) {
-                return Config.getFileConfiguration("events.yml").getString("events.placeholders.no-event-timer")
-                        .replace("{timer}", TimeFormat.parse((long) this.eventManager.getWaitTime()));
+                return NextGens.EVENTS_CONFIG.getConfig().getString("events.placeholders.no-event-timer")
+                        .replace("{timer}", TimeUtils.format((long) this.eventManager.getWaitTime()));
             }
-            return Config.getFileConfiguration("events.yml").getString("events.placeholders.active-event-timer")
-                    .replace("{timer}", TimeFormat.parse((long) event.getDuration()));
+            return NextGens.EVENTS_CONFIG.getConfig().getString("events.placeholders.active-event-timer")
+                    .replace("{timer}", TimeUtils.format((long) event.getDuration()));
         }
 
         return null; // Placeholder is unknown by the Expansion

@@ -16,7 +16,7 @@ public class WorthCommand {
 
     public static void registerThis() {
         // check if the command is enabled
-        if (!Config.getFileConfiguration("config.yml").getBoolean("commands.worth.enabled")) {
+        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("commands.worth.enabled")) {
             return;
         }
         // register the command
@@ -27,7 +27,7 @@ public class WorthCommand {
     private final CommandAPICommand command;
     public WorthCommand() {
         // get the variables
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         String mainCommand = config.getString("commands.worth.command");
         List<String> aliases = config.getStringList("commands.worth.aliases");
 
@@ -44,11 +44,11 @@ public class WorthCommand {
                     Double worth = api.getWorth(stack);
                     // if worth is null, let player know
                     if (worth == null) {
-                        Common.configMessage("config.yml", player, "messages.item-worthless");
+                        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.item-worthless");
                         return;
                     }
                     // send message
-                    Common.configMessage("config.yml", player, "messages.item-worth", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.item-worth", new Placeholder()
                             .add("{worth}", Common.digits(worth)));
                 });
         // set the aliases

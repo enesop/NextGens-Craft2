@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.worth;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Logger;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -42,7 +43,7 @@ public class WorthManager {
         this.materialWorth.clear();
         this.itemWorth.clear();
         // get all variables we want
-        FileConfiguration config = Config.getFileConfiguration("worth.yml");
+        FileConfiguration config = NextGens.WORTH_CONFIG.getConfig();
         ConfigurationSection materialSection = config.getConfigurationSection("material-worth");
         ConfigurationSection itemSection = config.getConfigurationSection("custom-item-worth");
         // load the material worth first

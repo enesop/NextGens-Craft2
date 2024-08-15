@@ -1,8 +1,7 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
-import com.muhammaddaffa.mdlib.utils.LocationSerializer;
+import com.muhammaddaffa.mdlib.utils.LocationUtils;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorGenerateItemEvent;
 import com.muhammaddaffa.nextgens.autosell.Autosell;
@@ -18,7 +17,6 @@ import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -80,7 +78,8 @@ public class GeneratorTask extends BukkitRunnable {
             if (generator == null || !active.isChunkLoaded()) {
                 continue;
             }
-            if (Settings.BLACKLISTED_WORLDS.contains(active.getLocation().getWorld().getName())) {
+            if (active.getLocation().getWorld() == null ||
+                    Settings.BLACKLISTED_WORLDS.contains(active.getLocation().getWorld().getName())) {
                 continue;
             }
             // check for online-only option
@@ -98,7 +97,7 @@ public class GeneratorTask extends BukkitRunnable {
                     continue;
                 }
             }
-            String serialized = LocationSerializer.serialize(active.getLocation());
+            String serialized = LocationUtils.serialize(active.getLocation());
             // check for corruption option
             if (Settings.CORRUPTION_ENABLED && active.isCorrupted()) {
                 // check if hologram is enabled
@@ -212,7 +211,7 @@ public class GeneratorTask extends BukkitRunnable {
     }
 
     public void forceRemoveHologram(ActiveGenerator active) {
-        CorruptedHologram removed = this.hologramMap.remove(LocationSerializer.serialize(active.getLocation()));
+        CorruptedHologram removed = this.hologramMap.remove(LocationUtils.serialize(active.getLocation()));
         // if hologram is present, remove it
         if (removed != null) {
             removed.destroy();

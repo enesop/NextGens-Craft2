@@ -2,6 +2,7 @@ package com.muhammaddaffa.nextgens.hooks.bento;
 
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
@@ -55,7 +56,7 @@ public record BentoListener(
             // set the block to air
             active.getLocation().getBlock().setType(Material.AIR);
             // check for island pickup option
-            if (Config.getFileConfiguration("config.yml").getBoolean("island-pickup")) {
+            if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("island-pickup")) {
                 // give the generator back
                 if (player == null) {
                     // if player not online, register it to item join

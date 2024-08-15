@@ -140,7 +140,7 @@ public class GeneratorManager {
 
     @Nullable
     public ActiveGenerator getActiveGenerator(@NotNull Location location) {
-        return this.getActiveGenerator(LocationSerializer.serialize(location));
+        return this.getActiveGenerator(LocationUtils.serialize(location));
     }
 
     @Nullable
@@ -157,7 +157,7 @@ public class GeneratorManager {
         // check if block is already active generator or not
         if (active == null) {
             // register the new one
-            String serialized = LocationSerializer.serialize(block.getLocation());
+            String serialized = LocationUtils.serialize(block.getLocation());
             active = new ActiveGenerator(owner, block.getLocation(), generator);
             this.activeGenerators.put(serialized, active);
             // add generator count
@@ -180,7 +180,7 @@ public class GeneratorManager {
     }
 
     public void unregisterGenerator(Location location) {
-        this.unregisterGenerator(LocationSerializer.serialize(location));
+        this.unregisterGenerator(LocationUtils.serialize(location));
     }
 
     public void unregisterGenerator(String serialized) {
@@ -225,7 +225,7 @@ public class GeneratorManager {
                 // otherwise, continue to load
                 UUID owner = UUID.fromString(uuidString);
                 String serialized = result.getString(2);
-                Location location = LocationSerializer.deserialize(serialized);
+                Location location = LocationUtils.deserialize(serialized);
                 String generatorId = result.getString(3);
                 double timer = result.getDouble(4);
                 boolean isCorrupted = result.getBoolean(5);
@@ -264,7 +264,7 @@ public class GeneratorManager {
                 }
             }
             // load generator from 'generators.yml'
-            this.loadGenerators(Config.getFileConfiguration("generators.yml"));
+            this.loadGenerators(NextGens.GENERATORS_CONFIG.getConfig());
             // send log message
             Logger.info("Successfully loaded " + this.generatorMap.size() + " generators!");
         } else {

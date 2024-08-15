@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.utils;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.PlayerCashbackEvent;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import org.bukkit.Bukkit;
@@ -64,7 +65,7 @@ public class Utils {
         VaultEconomy.deposit(player, refund);
         // send the message only if player has notify on
         if (userManager.getUser(player).isToggleCashback()) {
-            Common.configMessage("config.yml", player, "messages.cashback", new Placeholder()
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.cashback", new Placeholder()
                     .add("{amount}", Common.digits(refund))
                     .add("{amount_formatted}", Utils.formatBalance((long) refund))
                     .add("{percentage}", Common.digits(cashback)));

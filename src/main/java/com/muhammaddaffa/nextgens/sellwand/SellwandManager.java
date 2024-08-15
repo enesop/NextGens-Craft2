@@ -25,7 +25,7 @@ public record SellwandManager(
 
     public String getUsesPlaceholder(int uses) {
         if (uses == -1) {
-            return Config.getFileConfiguration("config.yml").getString("sellwand.unlimited-placeholder");
+            return NextGens.DEFAULT_CONFIG.getConfig().getString("sellwand.unlimited-placeholder");
         }
         return Common.digits(uses);
     }
@@ -57,7 +57,7 @@ public record SellwandManager(
             // destroy the item
             stack.setAmount(0);
             // send message
-            Common.configMessage("config.yml", player, "messages.sellwand-broke");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-broke");
             // play break sound
             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
             return true;
@@ -76,7 +76,7 @@ public record SellwandManager(
     public void update(ItemStack stack) {
         if (stack == null) return;
         // update the item
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         ItemBuilder builder = new ItemBuilder(stack);
         // get the multiplier and uses
         ItemMeta meta = builder.getItemMeta();
@@ -104,7 +104,7 @@ public record SellwandManager(
 
     public ItemStack create(double multiplier, int uses) {
         // create the item
-        ItemBuilder builder = ItemBuilder.fromConfig(Config.getFileConfiguration("config.yml"), "sellwand.item");
+        ItemBuilder builder = ItemBuilder.fromConfig(NextGens.DEFAULT_CONFIG.getConfig(), "sellwand.item");
         builder.pdc(NextGens.sellwand_global, UUID.randomUUID().toString());
         builder.pdc(NextGens.sellwand_multiplier, multiplier);
         builder.pdc(NextGens.sellwand_uses, uses);

@@ -46,7 +46,7 @@ public record GeneratorListener(
     private void generatorUpgrade(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         if (event.getHand() != EquipmentSlot.HAND ||
                 block == null ||
                 NextGens.STOPPING) {
@@ -67,7 +67,7 @@ public record GeneratorListener(
             InteractAction required = InteractAction.find(config.getString("interaction.gens-fix"), InteractAction.SHIFT_RIGHT);
             if (action == required) {
                 if (config.getBoolean("repair-owner-only") && !player.getUniqueId().equals(active.getOwner())) {
-                    Common.configMessage("config.yml", player, "messages.not-owner");
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-owner");
                     // play bass sound
                     Utils.bassSound(player);
                     return;
@@ -80,7 +80,7 @@ public record GeneratorListener(
                 } else {
                     // money check
                     if (VaultEconomy.getBalance(player) < generator.fixCost()) {
-                        Common.configMessage("config.yml", player, "messages.not-enough-money", new Placeholder()
+                        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-enough-money", new Placeholder()
                                 .add("{money}", Common.digits(VaultEconomy.getBalance(player)))
                                 .add("{upgradecost}", Common.digits(generator.fixCost()))
                                 .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.fixCost())));
@@ -93,16 +93,16 @@ public record GeneratorListener(
                     // fix the generator
                     active.setCorrupted(false);
                     // visual actions
-                    VisualAction.send(player, Config.getFileConfiguration("config.yml"), "corrupt-fix-options", new Placeholder()
+                    VisualAction.send(player, NextGens.DEFAULT_CONFIG.getConfig(), "corrupt-fix-options", new Placeholder()
                             .add("{gen}", generator.displayName())
                             .add("{cost}", Common.digits(generator.fixCost())));
                     // play particle
                     Executor.async(() -> {
-                        if (Config.getFileConfiguration("config.yml").getBoolean("corrupt-fix-options.particles")) {
+                        if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("corrupt-fix-options.particles")) {
                             // block crack particle
-                            block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+                            block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
                             // happy villager particle
-                            block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                            block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                         }
                         // Save the generator
                         Executor.async(() -> this.generatorManager.saveActiveGenerator(active));
@@ -116,7 +116,7 @@ public record GeneratorListener(
         }
         // check if player is the owner
         if (!player.getUniqueId().equals(active.getOwner())) {
-            Common.configMessage("config.yml", player, "messages.not-owner");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-owner");
             // play bass sound
             Utils.bassSound(player);
             return;
@@ -141,14 +141,14 @@ public record GeneratorListener(
             gui.open(player);
         } else {
             if (nextGenerator == null) {
-                Common.configMessage("config.yml", player, "messages.no-upgrade");
+                NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.no-upgrade");
                 // play bass sound
                 Utils.bassSound(player);
                 return;
             }
             // money check
             if (VaultEconomy.getBalance(player) < generator.cost()) {
-                Common.configMessage("config.yml", player, "messages.not-enough-money", new Placeholder()
+                NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(player)))
                         .add("{upgradecost}", Common.digits(generator.cost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.cost())));
@@ -175,9 +175,9 @@ public record GeneratorListener(
             Executor.asyncLater(3L, () -> {
                 if (config.getBoolean("generator-upgrade-options.particles")) {
                     // block crack particle
-                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, nextGenerator.item().getType().createBlockData());
+                    block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, nextGenerator.item().getType().createBlockData());
                     // happy villager particle
-                    block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                    block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
             });
             // give cashback to the player
@@ -189,7 +189,7 @@ public record GeneratorListener(
     private void generatorBreak(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         if (event.getHand() != EquipmentSlot.HAND ||
                 block == null ||
                 NextGens.STOPPING) {
@@ -207,14 +207,14 @@ public record GeneratorListener(
         event.setCancelled(true);
         // pickup broken check
         if (active.isCorrupted()) {
-            Common.configMessage("config.yml", player, "messages.pickup-broken");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.pickup-broken");
             // play bass sound
             Utils.bassSound(player);
             return;
         }
         // disable breaking others gens
         if (!player.hasPermission("nextgens.break.others") && !player.getUniqueId().equals(active.getOwner())) {
-            Common.configMessage("config.yml", player, "messages.not-owner");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-owner");
             // play bass sound
             Utils.bassSound(player);
             return;
@@ -263,7 +263,7 @@ public record GeneratorListener(
         Block block = event.getBlockPlaced();
         ItemStack stack = event.getItemInHand();
         Generator generator = this.generatorManager.getGenerator(stack);
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         // skip if the item is not generator
         if (generator == null || NextGens.STOPPING) {
             return;
@@ -274,7 +274,7 @@ public record GeneratorListener(
         if (current >= max) {
             event.setCancelled(true);
             // send message
-            Common.configMessage("config.yml", player, "messages.max-gen");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.max-gen");
             // play bass sound
             Utils.bassSound(player);
             return;
@@ -282,7 +282,7 @@ public record GeneratorListener(
         if (config.getBoolean("place-permission") && !player.hasPermission("nextgens.generator." + generator.id()) && !player.hasPermission("nextgens.generator.*")) {
             event.setCancelled(true);
             // send message
-            Common.configMessage("config.yml", player, "messages.no-permission-gen");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.no-permission-gen");
             // bass sound
             Utils.bassSound(player);
             return;
@@ -290,7 +290,7 @@ public record GeneratorListener(
         if (config.getStringList("blacklisted-worlds").contains(player.getWorld().getName())) {
             event.setCancelled(true);
             // send message
-            Common.configMessage("config.yml", player, "messages.invalid-world");
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.invalid-world");
             // bass sound
             Utils.bassSound(player);
             return;
@@ -306,7 +306,7 @@ public record GeneratorListener(
                 if (active.getLocation().distance(block.getLocation()) < distance) {
                     event.setCancelled(true);
                     // send message
-                    Common.configMessage("config.yml", player, "messages.too-close");
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.too-close");
                     // bass sound
                     Utils.bassSound(player);
                     return;
@@ -331,9 +331,9 @@ public record GeneratorListener(
         Executor.async(() -> {
             if (config.getBoolean("generator-place-options.particles")) {
                 // block crack particle
-                block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+                block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
                 // happy villager particle
-                block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
             }
         });
     }
@@ -341,7 +341,7 @@ public record GeneratorListener(
     @EventHandler(priority = EventPriority.MONITOR)
     private void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         // check if option is enabled
         if (config.getBoolean("first-join-generator.enabled") && !player.hasPlayedBefore()) {
             // get the generator
@@ -370,7 +370,7 @@ public record GeneratorListener(
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void prevention(CraftItemEvent event) {
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         // if it's not enabled, skip it
         if (!config.getBoolean("disable-crafting.enabled")) {
             return;
@@ -379,7 +379,7 @@ public record GeneratorListener(
             if (this.generatorManager.isGeneratorItem(stack) || this.generatorManager.isDropItem(stack)) {
                 event.setCancelled(true);
                 // send message
-                Common.configMessage("config.yml", event.getWhoClicked(), "disable-crafting.message");
+                NextGens.DEFAULT_CONFIG.sendMessage(event.getWhoClicked(), "disable-crafting.message");
                 return;
             }
         }
@@ -412,7 +412,7 @@ public record GeneratorListener(
     private void prevention(BlockPlaceEvent event) {
         ItemStack hand = event.getItemInHand();
         // check if requirements are correct
-        if (Config.getFileConfiguration("config.yml").getBoolean("disable-drop-place") && this.generatorManager.isDropItem(hand)) {
+        if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("disable-drop-place") && this.generatorManager.isDropItem(hand)) {
             event.setCancelled(true);
         }
     }
@@ -444,7 +444,7 @@ public record GeneratorListener(
     }
 
     private void checkExplosion(List<Block> blocks) {
-        if (Config.getFileConfiguration("config.yml").getBoolean("anti-explosion")) {
+        if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("anti-explosion")) {
             // remove generator blocks
             blocks.removeIf(block -> this.generatorManager.getActiveGenerator(block) != null);
         } else {

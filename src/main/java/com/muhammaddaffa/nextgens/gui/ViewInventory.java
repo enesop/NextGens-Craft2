@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.helpers.ViewPagination;
@@ -38,9 +39,8 @@ public class ViewInventory extends SimpleInventory {
     private ViewPagination pagination;
 
     public ViewInventory(Player player, User user, GeneratorManager generatorManager, UserManager userManager) {
-        super(Config.getFileConfiguration("view_gui.yml").getInt("size"),
-                Common.color(Config.getFileConfiguration("view_gui.yml").getString("title")
-                        .replace("{player}", user.getName())));
+        super(NextGens.VIEW_GUI_CONFIG.getInt("size"), NextGens.VIEW_GUI_CONFIG.getString("title")
+                .replace("{player}", user.getName()));
         this.player = player;
         this.user = user;
         this.generatorManager = generatorManager;
@@ -50,7 +50,7 @@ public class ViewInventory extends SimpleInventory {
     }
 
     private void setAllItems() {
-        FileConfiguration config = Config.getFileConfiguration("view_gui.yml");
+        FileConfiguration config = NextGens.VIEW_GUI_CONFIG.getConfig();
         List<ActiveGenerator> generators = this.generatorManager.getActiveGenerator(user.getUniqueId());
         List<Integer> slots = config.getIntegerList("slots");
         if (this.pagination == null) {

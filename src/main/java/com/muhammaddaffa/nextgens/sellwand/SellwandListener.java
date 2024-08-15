@@ -5,6 +5,7 @@ import com.bgsoftware.superiorskyblock.api.island.Island;
 import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.griefcraft.lwc.LWC;
 import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -52,7 +53,7 @@ public record SellwandListener(
                 // check if player is the owner of the chest
                 if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
                     // send a message and do nothing
-                    Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-failed");
                     // bass sound
                     Utils.bassSound(player);
                     return;
@@ -74,7 +75,7 @@ public record SellwandListener(
             // Access check
             if (!this.hasAccess(player, container)) {
                 // send a message and do nothing
-                Common.configMessage("config.yml", player, "messages.sellwand-failed");
+                NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-failed");
                 // bass sound
                 Utils.bassSound(player);
                 return;

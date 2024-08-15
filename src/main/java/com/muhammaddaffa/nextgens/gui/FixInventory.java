@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.gui;
 import com.muhammaddaffa.mdlib.gui.SimpleInventory;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -51,7 +52,7 @@ public class FixInventory extends SimpleInventory {
     }
 
     private void setFixButton(List<Integer> slots) {
-        FileConfiguration config = Config.getFileConfiguration("corrupt_gui.yml");
+        FileConfiguration config = NextGens.CORRUPT_GUI_CONFIG.getConfig();
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
                 .name(config.getString("display-enough-money.display-name"))
@@ -65,7 +66,7 @@ public class FixInventory extends SimpleInventory {
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
 
         if (config.getBoolean("display-enough-money.glowing")) {
-            builder.enchant(Enchantment.DURABILITY);
+            builder.enchant(Enchantment.INFINITY);
         }
 
         // set the item
@@ -73,7 +74,7 @@ public class FixInventory extends SimpleInventory {
             Block block = this.active.getLocation().getBlock();
             // money check
             if (VaultEconomy.getBalance(this.player) < this.generator.fixCost()) {
-                Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
+                NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                         .add("{upgradecost}", Common.digits(this.generator.fixCost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.fixCost())));
@@ -88,16 +89,16 @@ public class FixInventory extends SimpleInventory {
             // fix the generator
             this.active.setCorrupted(false);
             // visual actions
-            VisualAction.send(this.player, Config.getFileConfiguration("config.yml"), "corrupt-fix-options", new Placeholder()
+            VisualAction.send(this.player, NextGens.DEFAULT_CONFIG.getConfig(), "corrupt-fix-options", new Placeholder()
                     .add("{gen}", this.generator.displayName())
                     .add("{cost}", Common.digits(this.generator.fixCost())));
             // play particle
             Executor.async(() -> {
-                if (Config.getFileConfiguration("config.yml").getBoolean("corrupt-fix-options.particles")) {
+                if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("corrupt-fix-options.particles")) {
                     // block crack particle
-                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.generator.item().getType().createBlockData());
+                    block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.generator.item().getType().createBlockData());
                     // happy villager particle
-                    block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                    block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
                 // Save the generator
                 Executor.async(() -> this.generatorManager.saveActiveGenerator(active));
@@ -110,7 +111,7 @@ public class FixInventory extends SimpleInventory {
     }
 
     private void setNoMoneyButton(List<Integer> slots) {
-        FileConfiguration config = Config.getFileConfiguration("corrupt_gui.yml");
+        FileConfiguration config = NextGens.CORRUPT_GUI_CONFIG.getConfig();
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
                 .name(config.getString("display-no-money.display-name"))
@@ -124,12 +125,12 @@ public class FixInventory extends SimpleInventory {
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
 
         if (config.getBoolean("display-no-money.glowing")) {
-            builder.enchant(Enchantment.DURABILITY);
+            builder.enchant(Enchantment.INFINITY);
         }
 
         // set the item
         this.setItems(slots, builder.build(), event -> {
-            Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
+            NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
                     .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                     .add("{upgradecost}", Common.digits(this.generator.fixCost()))
                     .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.fixCost())));
@@ -141,7 +142,7 @@ public class FixInventory extends SimpleInventory {
     }
 
     private void setAcceptButton() {
-        FileConfiguration config = Config.getFileConfiguration("corrupt_gui.yml");
+        FileConfiguration config = NextGens.CORRUPT_GUI_CONFIG.getConfig();
         // get the slots
         List<Integer> slots = config.getIntegerList("confirm-slots");
         // create the item
@@ -154,7 +155,7 @@ public class FixInventory extends SimpleInventory {
             Block block = this.active.getLocation().getBlock();
             // money check
             if (VaultEconomy.getBalance(this.player) < this.generator.fixCost()) {
-                Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
+                NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
                         .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                         .add("{upgradecost}", Common.digits(this.generator.fixCost()))
                         .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.fixCost())));
@@ -169,16 +170,16 @@ public class FixInventory extends SimpleInventory {
             // fix the generator
             this.active.setCorrupted(false);
             // visual actions
-            VisualAction.send(this.player, Config.getFileConfiguration("config.yml"), "corrupt-fix-options", new Placeholder()
+            VisualAction.send(this.player, NextGens.DEFAULT_CONFIG.getConfig(), "corrupt-fix-options", new Placeholder()
                     .add("{gen}", this.generator.displayName())
                     .add("{cost}", Common.digits(this.generator.fixCost())));
             // play particle
             Executor.async(() -> {
-                if (Config.getFileConfiguration("config.yml").getBoolean("corrupt-fix-options.particles")) {
+                if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("corrupt-fix-options.particles")) {
                     // block crack particle
-                    block.getWorld().spawnParticle(Particle.BLOCK_CRACK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.generator.item().getType().createBlockData());
+                    block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.generator.item().getType().createBlockData());
                     // happy villager particle
-                    block.getWorld().spawnParticle(Particle.VILLAGER_HAPPY, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                    block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
                 }
             });
             // close the inventory
@@ -187,7 +188,7 @@ public class FixInventory extends SimpleInventory {
     }
 
     private void setCancelButton() {
-        FileConfiguration config = Config.getFileConfiguration("corrupt_gui.yml");
+        FileConfiguration config = NextGens.CORRUPT_GUI_CONFIG.getConfig();
         // get the slots
         List<Integer> slots = config.getIntegerList("cancel-slots");
         // create the item

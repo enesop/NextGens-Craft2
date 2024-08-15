@@ -1,6 +1,7 @@
 package com.muhammaddaffa.nextgens.utils;
 
 import com.muhammaddaffa.mdlib.utils.Config;
+import com.muhammaddaffa.nextgens.NextGens;
 import jdk.dynalink.linker.LinkerServices;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -37,7 +38,7 @@ public class Settings {
     }
 
     public static void config() {
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
 
         // Boolean
         FORCE_UPDATE_BLOCKS = config.getBoolean("force-update-blocks");
@@ -85,7 +86,7 @@ public class Settings {
     }
 
     public static void corruptGui() {
-        FileConfiguration config = Config.getFileConfiguration("corrupt_gui.yml");
+        FileConfiguration config = NextGens.CORRUPT_GUI_CONFIG.getConfig();
 
         // String
         CORRUPT_GUI_TITLE = config.getString("title");

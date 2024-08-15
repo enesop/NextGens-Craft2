@@ -1,9 +1,8 @@
 package com.muhammaddaffa.nextgens.database;
 
 import com.muhammaddaffa.mdlib.utils.Config;
-import com.muhammaddaffa.mdlib.utils.LocationSerializer;
+import com.muhammaddaffa.mdlib.utils.LocationUtils;
 import com.muhammaddaffa.mdlib.utils.Logger;
-import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.zaxxer.hikari.HikariConfig;
@@ -14,10 +13,7 @@ import org.bukkit.util.Consumer;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Collection;
 
 public class DatabaseManager {
@@ -30,7 +26,7 @@ public class DatabaseManager {
 
     public void connect() {
         // get all variables we want
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         String path = "plugins/NextGens/generators.db";
         // create the hikari config
         HikariConfig hikari = new HikariConfig();
@@ -127,7 +123,7 @@ public class DatabaseManager {
         String query = "DELETE FROM " + GENERATOR_TABLE + " WHERE location=?;";
         try (Connection connection = this.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, LocationSerializer.serialize(active.getLocation()));
+            statement.setString(1, LocationUtils.serialize(active.getLocation()));
 
             statement.executeUpdate();
         } catch (SQLException ex) {
@@ -137,18 +133,25 @@ public class DatabaseManager {
 
     public void saveGenerator(ActiveGenerator active) {
         // if the world is null, skip it
-        if (active.getLocation().getWorld() == null) {
+        if (active == null || active.getOwner() == null || active.getLocation().getWorld() == null) {
             return;
         }
 
-        String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
+        String mysqlSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE generator_id=?, timer=?, is_corrupted=?;";
+        String sqliteSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON CONFLICT(location) DO UPDATE SET generator_id=?, timer=?, is_corrupted=?;";
+        String query = this.mysql ? mysqlSyntax : sqliteSyntax;
+
         try (Connection connection = this.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, active.getOwner().toString());
-            statement.setString(2, LocationSerializer.serialize(active.getLocation()));
+            statement.setString(2, LocationUtils.serialize(active.getLocation()));
             statement.setString(3, active.getGenerator().id());
             statement.setDouble(4, active.getTimer());
             statement.setBoolean(5, active.isCorrupted());
+
+            statement.setString(6, active.getGenerator().id());
+            statement.setDouble(7, active.getTimer());
+            statement.setBoolean(8, active.isCorrupted());
 
             statement.executeUpdate();
         } catch (SQLException ex) {
@@ -157,29 +160,60 @@ public class DatabaseManager {
     }
 
     public void saveGenerator(Collection<ActiveGenerator> activeGenerators) {
-        String query = "REPLACE INTO " + GENERATOR_TABLE + " VALUES (?,?,?,?,?);";
-        try (Connection connection = this.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
+        String mysqlSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE generator_id=?, timer=?, is_corrupted=?;";
+        String sqliteSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON CONFLICT(location) DO UPDATE SET generator_id=?, timer=?, is_corrupted=?;";
+        String query = this.mysql ? mysqlSyntax : sqliteSyntax;
 
-            for (ActiveGenerator active : activeGenerators) {
-                if (active.getLocation().getWorld() == null) continue;
-                statement.setString(1, active.getOwner().toString());
-                statement.setString(2, LocationSerializer.serialize(active.getLocation()));
-                statement.setString(3, active.getGenerator().id());
-                statement.setDouble(4, active.getTimer());
-                statement.setBoolean(5, active.isCorrupted());
-                // add the batch
-                statement.addBatch();
+        int maxRetries = 3;
+        int attempt = 0;
+        boolean success = false;
+
+        while (attempt < maxRetries && !success) {
+            attempt++;
+
+            try (Connection connection = this.getConnection();
+                 PreparedStatement statement = connection.prepareStatement(query)) {
+
+                connection.setAutoCommit(false);
+
+                for (ActiveGenerator active : activeGenerators) {
+                    if (active.getOwner() == null) continue;
+                    if (active.getLocation().getWorld() == null) continue;
+                    statement.setString(1, active.getOwner().toString());
+                    statement.setString(2, LocationUtils.serialize(active.getLocation()));
+                    statement.setString(3, active.getGenerator().id());
+                    statement.setDouble(4, active.getTimer());
+                    statement.setBoolean(5, active.isCorrupted());
+
+                    statement.setString(6, active.getGenerator().id());
+                    statement.setDouble(7, active.getTimer());
+                    statement.setBoolean(8, active.isCorrupted());
+                    // add the batch
+                    statement.addBatch();
+                }
+
+                statement.executeBatch();
+                connection.commit();
+                success = true;
+
+                if (activeGenerators.size() > 1) {
+                    Logger.info("Successfully saved " + activeGenerators.size() + " active generators on attempt " + attempt + "!");
+                }
+
+            } catch (SQLException ex) {
+                Logger.severe("Failed to save " + activeGenerators.size() + " generators on attempt " + attempt + "!");
+                if (ex instanceof BatchUpdateException && ex.getCause() instanceof SQLException sqlEx) {
+                    if (sqlEx.getSQLState().equals("40001") || sqlEx.getSQLState().equals("HY000")) {
+                        // Deadlock detected, retry
+                        Logger.warning("Deadlock detected. Retrying... (attempt " + attempt + ")");
+                        continue;
+                    }
+                }
+                ex.printStackTrace();
+                if (attempt == maxRetries) {
+                    throw new RuntimeException("Max retry attempts reached. Failing...");
+                }
             }
-
-            // execute the batch
-            statement.executeBatch();
-            // send log message
-            Logger.info("Successfully saved " + activeGenerators.size() + " active generators!");
-
-        } catch (SQLException ex) {
-            Logger.severe("Failed to save all generators!");
-            ex.printStackTrace();
         }
     }
 

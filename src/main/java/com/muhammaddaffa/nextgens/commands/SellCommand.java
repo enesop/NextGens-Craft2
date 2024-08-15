@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.commandapi.CommandAPIBukkit;
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.*;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -16,7 +17,7 @@ public class SellCommand {
     public static void register(UserManager userManager) {
         SellCommand command = new SellCommand(userManager);
         // check if sell command is enabled
-        if (!Config.getFileConfiguration("config.yml").getBoolean("sell-command")) {
+        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("sell-command")) {
             return;
         }
         Executor.sync(() -> {
@@ -36,7 +37,7 @@ public class SellCommand {
         this.userManager = userManager;
 
         // get variables we need
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         String mainCommand = config.getString("commands.sell.command");
         List<String> aliases = config.getStringList("commands.sell.aliases");
 
@@ -47,7 +48,7 @@ public class SellCommand {
                     Player finalTarget = null;
                     if (target == null) {
                         if (!sender.hasPermission("nextgens.sell")) {
-                            Common.configMessage("config.yml", sender, "messages.no-permission");
+                            NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                             return;
                         }
                         if (!(sender instanceof Player player)) {
@@ -59,7 +60,7 @@ public class SellCommand {
                         finalTarget = player;
                     } else {
                         if (!sender.hasPermission("nextgens.sell.others")) {
-                            Common.configMessage("config.yml", sender, "messages.no-permission");
+                            NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                             return;
                         }
                         finalTarget = target;

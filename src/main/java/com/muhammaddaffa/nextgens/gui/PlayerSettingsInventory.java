@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.autosell.Autosell;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
@@ -28,8 +29,7 @@ public class PlayerSettingsInventory extends SimpleInventory {
     private final UserManager userManager;
 
     public PlayerSettingsInventory(Player player, UserManager userManager) {
-        super(Config.getFileConfiguration("settings_gui.yml").getInt("size"),
-                Common.color(Config.getFileConfiguration("settings_gui.yml").getString("title")));
+        super(NextGens.SETTINGS_GUI_CONFIG.getInt("size"), NextGens.SETTINGS_GUI_CONFIG.getString("title"));
         this.player = player;
         this.userManager = userManager;
 
@@ -37,7 +37,7 @@ public class PlayerSettingsInventory extends SimpleInventory {
     }
 
     private void setAllItems() {
-        FileConfiguration config = Config.getFileConfiguration("settings_gui.yml");
+        FileConfiguration config = NextGens.SETTINGS_GUI_CONFIG.getConfig();
         User user = this.userManager.getUser(this.player);
         String on = config.getString("placeholder-on");
         String off = config.getString("placeholder-off");

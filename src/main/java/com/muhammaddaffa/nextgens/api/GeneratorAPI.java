@@ -165,7 +165,7 @@ public class GeneratorAPI {
 
     @Nullable
     private Double getShopGuiPlusWorth(@NotNull ItemStack stack) {
-        if (Config.getFileConfiguration("config.yml").getBoolean("sell-options.hook_shopguiplus") && this.isShopGUIPlus()) {
+        if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("sell-options.hook_shopguiplus") && this.isShopGUIPlus()) {
             // get the price from shopgui+
             double price = ShopGuiPlusApi.getItemStackPriceSell(stack);
             // if price below or equals to 0, make it null

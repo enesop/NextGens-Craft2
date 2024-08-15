@@ -19,7 +19,7 @@ public class PickupCommand {
 
     public static void register(GeneratorManager generatorManager) {
         // check if the command is enabled
-        if (!Config.getFileConfiguration("config.yml").getBoolean("commands.pickup.enabled")) {
+        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("commands.pickup.enabled")) {
             return;
         }
         PickupCommand command = new PickupCommand(generatorManager);
@@ -33,7 +33,7 @@ public class PickupCommand {
         this.generatorManager = generatorManager;
 
         // get variables we need
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         String mainCommand = config.getString("commands.pickup.command");
         List<String> aliases = config.getStringList("commands.pickup.aliases");
 
@@ -46,7 +46,7 @@ public class PickupCommand {
                     if (NextGens.STOPPING) return;
                     if (target == null) {
                         if (!sender.hasPermission("nextgens.pickup")) {
-                            Common.configMessage("config.yml", sender, "messages.no-permission");
+                            NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                             return;
                         }
                         if (!(sender instanceof Player player)) {
@@ -57,7 +57,7 @@ public class PickupCommand {
                         actualTarget = player;
                     } else {
                         if (!sender.hasPermission("nextgens.pickup.others")) {
-                            Common.configMessage("config.yml", sender, "messages.no-permission");
+                            NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                             return;
                         }
                         actualTarget = target;
@@ -68,7 +68,7 @@ public class PickupCommand {
                     // loop generators
                     for (ActiveGenerator active : generators) {
                         // check if broken pickup option is enabled
-                        if (!Config.getFileConfiguration("config.yml").getBoolean("broken-pickup") && active.isCorrupted()) {
+                        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("broken-pickup") && active.isCorrupted()) {
                             total--;
                             continue;
                         }
@@ -80,10 +80,10 @@ public class PickupCommand {
                         Common.addInventoryItem(actualTarget, active.getGenerator().createItem(1));
                     }
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.force-pickup", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.force-pickup", new Placeholder()
                             .add("{player}", actualTarget.getName())
                             .add("{amount}", Common.digits(total)));
-                    Common.configMessage("config.yml", actualTarget, "messages.pickup-gens", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(actualTarget, "messages.pickup-gens", new Placeholder()
                             .add("{amount}", Common.digits(total)));
                     // send sound
                     actualTarget.playSound(actualTarget.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);

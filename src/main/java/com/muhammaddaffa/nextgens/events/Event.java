@@ -1,9 +1,9 @@
 package com.muhammaddaffa.nextgens.events;
 
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
-import com.muhammaddaffa.mdlib.utils.TimeFormat;
+import com.muhammaddaffa.mdlib.utils.TimeUtils;
+import com.muhammaddaffa.nextgens.NextGens;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.Nullable;
 
@@ -147,13 +147,13 @@ public class Event implements Cloneable{
     public void sendStartMessage() {
         this.startMessage.forEach(message -> Common.broadcast(message, new Placeholder()
                 .add("{name}", this.displayName)
-                .add("{duration}", TimeFormat.parse((long) this.duration))));
+                .add("{duration}", TimeUtils.format((long) this.duration))));
     }
 
     public void sendEndMessage() {
         this.endMessage.forEach(message -> Common.broadcast(message, new Placeholder()
                 .add("{name}", this.displayName)
-                .add("{next_duration}", TimeFormat.parse((long) Config.getFileConfiguration("events.yml").getDouble("events.wait-time")))));
+                .add("{next_duration}", TimeUtils.format((long) NextGens.EVENTS_CONFIG.getDouble("events.wait-time")))));
     }
 
     public double getChance() {

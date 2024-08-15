@@ -7,7 +7,8 @@ import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Logger;
-import com.muhammaddaffa.mdlib.utils.SpigotUpdateChecker;
+import com.muhammaddaffa.mdlib.utils.updatechecker.UpdateCheckSource;
+import com.muhammaddaffa.mdlib.utils.updatechecker.UpdateChecker;
 import com.muhammaddaffa.nextgens.api.GeneratorAPI;
 import com.muhammaddaffa.nextgens.autosell.AutosellManager;
 import com.muhammaddaffa.nextgens.commands.*;
@@ -75,6 +76,9 @@ public final class NextGens extends JavaPlugin {
     private final SellwandManager sellwandManager = new SellwandManager(this.userManager);
     private final AutosellManager autosellManager = new AutosellManager(this.userManager);
 
+    public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
+            WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
+
     public static boolean STOPPING = false;
 
     @Override
@@ -108,16 +112,16 @@ public final class NextGens extends JavaPlugin {
                 """);
 
         // initialize stuff
-        Config.registerConfig(new Config("config.yml", null, true));
-        Config.registerConfig(new Config("generators.yml", null, true));
-        Config.registerConfig(new Config("shop.yml", null, true));
-        Config.registerConfig(new Config("upgrade_gui.yml", "gui", true));
-        Config.registerConfig(new Config("corrupt_gui.yml", "gui", true));
-        Config.registerConfig(new Config("events.yml", null, true));
-        Config.registerConfig(new Config("data.yml", null, false));
-        Config.registerConfig(new Config("worth.yml", null, true));
-        Config.registerConfig(new Config("settings_gui.yml", "gui", true));
-        Config.registerConfig(new Config("view_gui.yml", "gui", true));
+        DEFAULT_CONFIG          = new Config("config.yml", null, true);
+        GENERATORS_CONFIG       = new Config("generators.yml", null, true);
+        SHOP_CONFIG             = new Config("shop.yml", null, true);
+        UPGRADE_GUI_CONFIG      = new Config("upgrade_gui.yml", "gui", true);
+        CORRUPT_GUI_CONFIG      = new Config("corrupt_gui.yml", "gui", true);
+        EVENTS_CONFIG           = new Config("events.yml", null, true);
+        DATA_CONFIG             = new Config("data.yml", null, false);
+        WORTH_CONFIG            = new Config("worth.yml", null, true);
+        SETTINGS_GUI_CONFIG     = new Config("settings_gui.yml", "gui", true);
+        VIEW_GUI_CONFIG         = new Config("view_gui.yml", "gui", true);
 
         VaultEconomy.init();
 
@@ -130,16 +134,23 @@ public final class NextGens extends JavaPlugin {
         this.dbm.createGeneratorTable();
         this.dbm.createUserTable();
 
-        Executor.sync(() -> {
-            // register commands & listeners
-            this.registerCommands();
-            this.registerListeners();
+        // register commands & listeners
+        this.registerCommands();
+        this.registerListeners();
 
-            // load all generators
-            this.generatorManager.loadGenerators();
-            // delayed active generator load
-            Executor.asyncLater(3L, this.generatorManager::loadActiveGenerator);
+        // load all generators
+        this.generatorManager.loadGenerators();
 
+        // register task
+        this.registerTask();
+        // register hook
+        this.registerHook();
+        // update checker
+        this.updateCheck();
+
+        Executor.asyncLater(3L, () -> {
+            // load active generators
+            this.generatorManager.loadActiveGenerator();
             // load users
             this.userManager.loadUser();
 
@@ -154,17 +165,6 @@ public final class NextGens extends JavaPlugin {
 
             // worth system
             this.worthManager.load();
-
-            // initialize the api
-            api = new GeneratorAPI(this.generatorManager, this.refundManager, this.userManager,
-                    this.worthManager, this.sellwandManager, this.eventManager);
-
-            // register task
-            this.registerTask();
-            // register hook
-            this.registerHook();
-            // update checker
-            this.updateCheck();
         });
     }
 
@@ -178,12 +178,8 @@ public final class NextGens extends JavaPlugin {
         // save small things first
         this.refundManager.save();
         this.eventManager.save();
-        // should we save on stop?
-        /*if (Config.getFileConfiguration("config.yml").getBoolean("save-on-stop", false)) {
-            // save all data
-            this.userManager.saveUser();
-            this.generatorManager.saveActiveGenerator();
-        }*/
+        // save users data
+        this.userManager.saveUser();
         // close the database
         this.dbm.close();
     }
@@ -222,7 +218,7 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("DecentHolograms") != null) {
             Logger.info("Found DecentHolograms! Registering hook...");
         }
-        if (pm.getPlugin("WildTools") != null && Config.getFileConfiguration("config.yml").getBoolean("sellwand.hooks.wildtools")) {
+        if (pm.getPlugin("WildTools") != null && NextGens.DEFAULT_CONFIG.getBoolean("sellwand.hooks.wildtools")) {
             Logger.info("Found WildTools! Registering hook...");
             WildToolsAPI.getWildTools().getProviders().setPricesProvider((player, stack) -> api.getWorth(stack));
         }
@@ -246,7 +242,7 @@ public final class NextGens extends JavaPlugin {
 
     private void updateConfig() {
         // check for auto config update
-        if (!Config.getFileConfiguration("config.yml").getBoolean("auto-config-update", true)) {
+        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("auto-config-update", true)) {
             return;
         }
 
@@ -311,42 +307,17 @@ public final class NextGens extends JavaPlugin {
     }
 
     private SimplePie createSimplePie(String id, String path) {
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         return new SimplePie(id, () -> this.yesOrNo(config.getBoolean(path)));
     }
 
     private void updateCheck(){
-        Executor.async(() -> {
-            SpigotUpdateChecker.init(this, SPIGOT_ID).requestUpdateCheck().whenComplete((result, exception) -> {
-                if (result.requiresUpdate()) {
-                    Logger.warning(
-                            "----------------------------------------------------------------",
-                            String.format("An update is available! NextGens %s may be downloaded on SpigotMC", result.getNewestVersion()),
-                            String.format("* Current Version: %s", this.getDescription().getVersion()),
-                            String.format("* Latest Version: %s", result.getNewestVersion()),
-                            " ",
-                            "Update the plugin at:",
-                            "SpigotMC: https://www.spigotmc.org/resources/111857/",
-                            "BuiltByBit: https://builtbybit.com/resources/30903/",
-                            "----------------------------------------------------------------"
-                    );
-                    return;
-                }
-
-                if (result.getReason() == SpigotUpdateChecker.UpdateReason.UP_TO_DATE) {
-                    Logger.finest(String.format("Your version of NextGens (%s) is up to date!", result.getNewestVersion()));
-                } else if (result.getReason() == SpigotUpdateChecker.UpdateReason.UNRELEASED_VERSION) {
-                    Logger.warning(
-                            "----------------------------------------------------------------",
-                            String.format("Your version of NextGens (%s) is more recent than the", result.getNewestVersion()),
-                            "one publicly available. Are you on development build?",
-                            "----------------------------------------------------------------"
-                    );
-                } else {
-                    Logger.severe("Could not check for a new version of NextGens. Reason: " + result.getReason());
-                }
-            });
-        });
+        Executor.async(() -> new UpdateChecker(this, UpdateCheckSource.SPIGOT, SPIGOT_ID + "")
+                .setDownloadLink(SPIGOT_ID)
+                .checkEveryXHours(24)
+                .setNotifyOpsOnJoin(true)
+                .setNotifyByPermissionOnJoin("nextgens.notifyupdate")
+                .checkNow());
     }
 
     private String yesOrNo(boolean status) {
@@ -358,7 +329,37 @@ public final class NextGens extends JavaPlugin {
     }
 
     public static GeneratorAPI getApi() {
+        // initialize the api
+        if (api == null) {
+            NextGens plugin = NextGens.getInstance();
+            api = new GeneratorAPI(plugin.getGeneratorManager(), plugin.getRefundManager(), plugin.getUserManager(),
+                    plugin.getWorthManager(), plugin.getSellwandManager(), plugin.getEventManager());
+        }
         return api;
+    }
+
+    public GeneratorManager getGeneratorManager() {
+        return generatorManager;
+    }
+
+    public RefundManager getRefundManager() {
+        return refundManager;
+    }
+
+    public UserManager getUserManager() {
+        return userManager;
+    }
+
+    public WorthManager getWorthManager() {
+        return worthManager;
+    }
+
+    public SellwandManager getSellwandManager() {
+        return sellwandManager;
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     public static NextGens getInstance() {

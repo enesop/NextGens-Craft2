@@ -1,9 +1,8 @@
 package com.muhammaddaffa.nextgens.generators;
 
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
-import com.muhammaddaffa.mdlib.utils.LocationSerializer;
+import com.muhammaddaffa.mdlib.utils.LocationUtils;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import eu.decentsoftware.holograms.api.DHAPI;
@@ -23,7 +22,7 @@ public class CorruptedHologram {
     public CorruptedHologram(ActiveGenerator active) {
         this.active = active;
         this.hologramLocation = active.getLocation().clone().add(0.5, Settings.CORRUPTION_HOLOGRAM_HEIGHT, 0.5);
-        this.name = this.getCleanNames(LocationSerializer.serialize(this.hologramLocation));
+        this.name = this.getCleanNames(LocationUtils.serialize(this.hologramLocation));
     }
 
     public void spawn() {

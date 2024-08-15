@@ -7,6 +7,7 @@ import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.Generator;
@@ -45,7 +46,7 @@ public class MainCommand {
         this.eventManager = eventManager;
         this.worthManager = worthManager;
         this.sellwandManager = sellwandManager;
-        this.command = new CommandAPICommand(Config.getFileConfiguration("config.yml").getString("commands.nextgens.command"))
+        this.command = new CommandAPICommand(NextGens.DEFAULT_CONFIG.getConfig().getString("commands.nextgens.command"))
                 .withSubcommand(this.getGiveSubcommand())
                 .withSubcommand(this.getAddMaxSubCommand())
                 .withSubcommand(this.getRemoveMaxSubcommand())
@@ -63,10 +64,10 @@ public class MainCommand {
                 .withSubcommand(this.getRemoveAllCommand())
                 .executes((sender, args) -> {
                     if (sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.help");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.help");
                     }
                 });
-        List<String> aliases = Config.getFileConfiguration("config.yml").getStringList("commands.nextgens.aliases");
+        List<String> aliases = NextGens.DEFAULT_CONFIG.getConfig().getStringList("commands.nextgens.aliases");
         this.command.setAliases(aliases.toArray(new String[0]));
     }
 
@@ -82,7 +83,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -94,11 +95,11 @@ public class MainCommand {
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.multiplier-increase", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.multiplier-increase", new Placeholder()
                             .add("{player}", player.getName())
                             .add("{multiplier}", Common.digits(amount))
                             .add("{total}", Common.digits(user.getMultiplier())));
-                    Common.configMessage("config.yml", player, "messages.increased-multiplier", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.increased-multiplier", new Placeholder()
                             .add("{multiplier}", Common.digits(amount))
                             .add("{total}", Common.digits(user.getMultiplier())));
                 });
@@ -112,7 +113,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -124,11 +125,11 @@ public class MainCommand {
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.multiplier-decrease", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.multiplier-decrease", new Placeholder()
                             .add("{player}", player.getName())
                             .add("{multiplier}", Common.digits(amount))
                             .add("{total}", Common.digits(user.getMultiplier())));
-                    Common.configMessage("config.yml", player, "messages.decreased-multiplier", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.decreased-multiplier", new Placeholder()
                             .add("{multiplier}", Common.digits(amount))
                             .add("{total}", Common.digits(user.getMultiplier())));
                 });
@@ -142,7 +143,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -154,10 +155,10 @@ public class MainCommand {
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.set-multiplier", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.set-multiplier", new Placeholder()
                             .add("{player}", player.getName())
                             .add("{multiplier}", Common.digits(amount)));
-                    Common.configMessage("config.yml", player, "messages.multiplier-set", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.multiplier-set", new Placeholder()
                             .add("{multiplier}", Common.digits(amount)));
                 });
     }
@@ -174,7 +175,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -184,7 +185,7 @@ public class MainCommand {
                     // get the generator object
                     Generator generator = this.generatorManager.getGenerator(generatorId);
                     if (generator == null) {
-                        Common.configMessage("config.yml", sender, "messages.invalid-gen");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.invalid-gen");
                         return;
                     }
                     int actualAmount = 1;
@@ -194,12 +195,12 @@ public class MainCommand {
                     // actually give the item to the player
                     Common.addInventoryItem(target, generator.createItem(actualAmount));
                     // send message to the sender
-                    Common.configMessage("config.yml", sender, "messages.give-gen", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.give-gen", new Placeholder()
                             .add("{amount}", actualAmount)
                             .add("{gen}", generator.displayName())
                             .add("{player}", target.getName()));
                     // send message to the receiver
-                    Common.configMessage("config.yml", target, "messages.receive-gen", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.receive-gen", new Placeholder()
                             .add("{amount}", actualAmount)
                             .add("{gen}", generator.displayName()));
                 });
@@ -212,7 +213,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -224,11 +225,11 @@ public class MainCommand {
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
                     // send message to the command sender
-                    Common.configMessage("config.yml", sender, "messages.add-max", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.add-max", new Placeholder()
                             .add("{amount}", amount)
                             .add("{player}", target.getName()));
                     // send message to the player
-                    Common.configMessage("config.yml", target, "messages.max-added", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.max-added", new Placeholder()
                             .add("{amount}", amount)
                             .add("{current}", this.generatorManager.getGeneratorCount(target))
                             .add("{max}", this.userManager.getMaxSlot(target)));
@@ -242,7 +243,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // get all variables
@@ -254,11 +255,11 @@ public class MainCommand {
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
                     // send message to the command sender
-                    Common.configMessage("config.yml", sender, "messages.remove-max", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.remove-max", new Placeholder()
                             .add("{amount}", amount)
                             .add("{player}", target.getName()));
                     // send message to the player
-                    Common.configMessage("config.yml", target, "messages.max-removed", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.max-removed", new Placeholder()
                             .add("{amount}", amount)
                             .add("{current}", this.generatorManager.getGeneratorCount(target))
                             .add("{max}", this.userManager.getMaxSlot(target)));
@@ -271,7 +272,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     Player target = (Player) args.get("target");
@@ -280,12 +281,11 @@ public class MainCommand {
                     user.setBonus(0);
                     // save the user data afterward
                     Executor.async(() -> this.userManager.saveUser(user));
-                    this.userManager.saveUser();
                     // send message to the command sender
-                    Common.configMessage("config.yml", sender, "messages.reset-max", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.reset-max", new Placeholder()
                             .add("{player}", target.getName()));
                     // send message to the player
-                    Common.configMessage("config.yml", target, "messages.max-resetted", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.max-resetted", new Placeholder()
                             .add("{current}", this.generatorManager.getGeneratorCount(target))
                             .add("{max}", this.userManager.getMaxSlot(target)));
                 });
@@ -297,7 +297,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     Player target = (Player) args.get("target");
@@ -305,10 +305,10 @@ public class MainCommand {
                     Executor.async(() -> {
                         this.generatorManager.getActiveGenerator(target).forEach(active -> active.setCorrupted(false));
                         // send message to the command sender
-                        Common.configMessage("config.yml", sender, "messages.player-repair", new Placeholder()
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.player-repair", new Placeholder()
                                 .add("{player}", target.getName()));
                         // send message to the player
-                        Common.configMessage("config.yml", target, "messages.gens-repaired");
+                        NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.gens-repaired");
                     });
                 });
     }
@@ -318,7 +318,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // actually reload the config
@@ -338,7 +338,7 @@ public class MainCommand {
                     // worth reload
                     this.worthManager.load();
                     // send message to the sender
-                    Common.configMessage("config.yml", sender, "messages.reload");
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.reload");
                     // close all gui
                     SimpleInventoryManager.closeAll();
                 });
@@ -354,7 +354,7 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     Player target = (Player) args.get("target");
@@ -363,11 +363,11 @@ public class MainCommand {
                     // give player the sellwand
                     Common.addInventoryItem(target, this.sellwandManager.create(multiplier, uses));
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.sellwand-give", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.sellwand-give", new Placeholder()
                             .add("{player}", target.getName())
                             .add("{multiplier}", Common.digits(multiplier))
                             .add("{uses}", this.sellwandManager.getUsesPlaceholder(uses)));
-                    Common.configMessage("config.yml", target, "messages.sellwand-receive", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(target, "messages.sellwand-receive", new Placeholder()
                             .add("{multiplier}", Common.digits(multiplier))
                             .add("{uses}", this.sellwandManager.getUsesPlaceholder(uses)));
                 });
@@ -385,12 +385,12 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // if there is an event running
                     if (this.eventManager.getActiveEvent() != null) {
-                        Common.configMessage("config.yml", sender, "messages.event-is-running");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.event-is-running");
                         return;
                     }
                     String eventId = (String) args.get("event");
@@ -402,13 +402,13 @@ public class MainCommand {
                     }
                     // check if event is invalid
                     if (event == null) {
-                        Common.configMessage("config.yml", sender, "messages.invalid-event");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.invalid-event");
                         return;
                     }
                     // actually start the event
                     this.eventManager.forceStart(event);
                     // send message
-                    Common.configMessage("config.yml", sender, "messages.event-start", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.event-start", new Placeholder()
                             .add("{event}", event.getDisplayName()));
                 });
     }
@@ -419,13 +419,13 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     if (this.eventManager.forceEnd()) {
-                        Common.configMessage("config.yml", sender, "messages.event-stop");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.event-stop");
                     } else {
-                        Common.configMessage("config.yml", sender, "messages.no-event");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-event");
                     }
                 });
     }
@@ -435,12 +435,12 @@ public class MainCommand {
                 .executes((sender, args) -> {
                     // permission check
                     if (!sender.hasPermission("nextgens.admin")) {
-                        Common.configMessage("config.yml", sender, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.no-permission");
                         return;
                     }
                     // corrupt the generators
                     CorruptionTask.getInstance().corruptGenerators();
-                    Common.configMessage("config.yml", sender, "messages.corrupt-gens");
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.corrupt-gens");
                 });
     }
 
@@ -455,13 +455,13 @@ public class MainCommand {
                     String name = (String) args.getOrDefault("name", player.getName());
                     User user = this.userManager.getUser(name);
                     if (user == null) {
-                        Common.configMessage("config.yml", player, "messages.invalid-user");
+                        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.invalid-user");
                         return;
                     }
                     // if player is not the user
                     if (!user.getUniqueId().equals(player.getUniqueId()) &&
                             !player.hasPermission("nextgens.view.others")) {
-                        Common.configMessage("config.yml", player, "messages.no-permission");
+                        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.no-permission");
                         return;
                     }
                     // open the inventory
@@ -478,7 +478,7 @@ public class MainCommand {
                     // Remove all generators
                     this.generatorManager.removeAllGenerator(target);
                     // Send message
-                    Common.configMessage("config.yml", sender, "messages.remove-all", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.remove-all", new Placeholder()
                             .add("{player}", target.getName()));
                 });
     }

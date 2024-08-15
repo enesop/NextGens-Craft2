@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.refund;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import org.bukkit.Bukkit;
@@ -35,17 +36,15 @@ public class RefundManager {
         for (String id : generators) {
             // get the generator
             Generator generator = this.generatorManager.getGenerator(id);
-            // if generator doesn't exist, skip it
-            if (generator == null) {
-                continue;
-            }
             // proceed to give player the generator
-            Common.addInventoryItem(player, generator.createItem(1));
+            if (generator != null) {
+                Common.addInventoryItem(player, generator.createItem(1));
+            }
         }
     }
 
     public void load() {
-        FileConfiguration config = Config.getFileConfiguration("data.yml");
+        FileConfiguration config = NextGens.DATA_CONFIG.getConfig();
         // check if there are any data
         if (!config.isConfigurationSection("items")) {
             return;
@@ -62,7 +61,7 @@ public class RefundManager {
     }
 
     public void save() {
-        Config data = Config.getConfig("data.yml");
+        Config data = NextGens.DATA_CONFIG;
         FileConfiguration config = data.getConfig();
         // We should clear the data first
         config.set("items", null);

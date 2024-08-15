@@ -6,6 +6,7 @@ import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -35,8 +36,7 @@ public class ShopInventory extends SimpleInventory {
     private int guiPage = 1;
 
     public ShopInventory(Player player, GeneratorManager generatorManager) {
-        super(Config.getFileConfiguration("shop.yml").getInt("size"),
-                Common.color(Config.getFileConfiguration("shop.yml").getString("title")));
+        super(NextGens.SHOP_CONFIG.getInt("size"), NextGens.SHOP_CONFIG.getString("title"));
         this.player = player;
         this.generatorManager = generatorManager;
 
@@ -48,7 +48,7 @@ public class ShopInventory extends SimpleInventory {
         // clear the items first
         this.paginationMap.clear();
         // load the config
-        FileConfiguration config = Config.getFileConfiguration("shop.yml");
+        FileConfiguration config = NextGens.SHOP_CONFIG.getConfig();
         // load the items first
         for (String key : config.getConfigurationSection("items").getKeys(false)) {
             int page = config.getInt("items." + key + ".page", 1);
@@ -64,7 +64,7 @@ public class ShopInventory extends SimpleInventory {
             this.setItem(i, new ItemStack(Material.AIR));
         }
         // proceed to set all items
-        FileConfiguration config = Config.getFileConfiguration("shop.yml");
+        FileConfiguration config = NextGens.SHOP_CONFIG.getConfig();
         // get the items according to the page
         List<String> pageItems = this.paginationMap.get(this.guiPage);
         if (pageItems == null) {
@@ -97,14 +97,14 @@ public class ShopInventory extends SimpleInventory {
                 this.setItems(slots, stack, event -> {
                     // money check
                     if (VaultEconomy.getBalance(this.player) < cost) {
-                        Common.configMessage("config.yml", this.player, "messages.not-enough-money", new Placeholder()
+                        NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
                                 .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                                 .add("{upgradecost}", Common.digits(cost))
                                 .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - cost)));
                         // play bass sound
                         Utils.bassSound(this.player);
                         // close on no money
-                        if (Config.getFileConfiguration("config.yml").getBoolean("close-on-no-money")) {
+                        if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("close-on-no-money")) {
                             this.player.closeInventory();
                         }
                         return;
@@ -114,11 +114,11 @@ public class ShopInventory extends SimpleInventory {
                     // give the generator
                     Common.addInventoryItem(this.player, generator.createItem(1));
                     // send message
-                    Common.configMessage("config.yml", this.player, "messages.gen-purchase", new Placeholder()
+                    NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.gen-purchase", new Placeholder()
                             .add("{gen}", generator.displayName())
                             .add("{cost}", Common.digits(cost)));
                     // close on purchase
-                    if (Config.getFileConfiguration("config.yml").getBoolean("close-on-purchase")) {
+                    if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("close-on-purchase")) {
                         this.player.closeInventory();
                     }
                 });

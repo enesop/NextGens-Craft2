@@ -116,7 +116,7 @@ public class UserManager {
         if (totalItems == 0) {
             if (!silent) {
                 // send message
-                Common.configMessage("config.yml", player, "messages.no-sell");
+                NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.no-sell");
                 // play bass sound
                 Utils.bassSound(player);
             }
@@ -128,7 +128,7 @@ public class UserManager {
         final SellData sellData = this.getSellData(player, sellwand, totalValue, totalItems, user);
 
         // inject the multiplier limit system
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         if (config.getBoolean("player-multiplier-limit.enabled")) {
             double limit = config.getDouble("player-multiplier-limit.limit");
             if (sellData.multiplier() > limit) {
@@ -195,7 +195,7 @@ public class UserManager {
 
     public int getMaxSlot(Player player) {
         int max = 0;
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         if (config.getBoolean("default-max-generator.enabled")) {
             max += config.getInt("default-max-generator.amount");
         }

@@ -14,7 +14,7 @@ public class PlayerSettingsCommand {
 
     public static void register(UserManager userManager) {
         // check if the command is enabled
-        if (!Config.getFileConfiguration("config.yml").getBoolean("commands.player_settings.enabled")) {
+        if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("commands.player_settings.enabled")) {
             return;
         }
         PlayerSettingsCommand command = new PlayerSettingsCommand(userManager);
@@ -29,7 +29,7 @@ public class PlayerSettingsCommand {
         this.userManager = userManager;
 
         // get variables we need
-        FileConfiguration config = Config.getFileConfiguration("config.yml");
+        FileConfiguration config = NextGens.DEFAULT_CONFIG.getConfig();
         String mainCommand = config.getString("commands.player_settings.command");
         List<String> aliases = config.getStringList("commands.player_settings.aliases");
 
