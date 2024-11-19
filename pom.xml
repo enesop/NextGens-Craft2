@@ -6,7 +6,7 @@
 
     <groupId>com.muhammaddaffa</groupId>
     <artifactId>NextGens</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <name>NextGens</name>
@@ -123,7 +123,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.21-R0.1-SNAPSHOT</version>
+            <version>1.21.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Vault -->
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>com.bgsoftware</groupId>
             <artifactId>SuperiorSkyblockAPI</artifactId>
-            <version>2023.3</version>
+            <version>2024.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- BentoBox -->
@@ -179,7 +179,7 @@
         <dependency>
             <groupId>com.bgsoftware</groupId>
             <artifactId>WildToolsAPI</artifactId>
-            <version>2023.1</version>
+            <version>2024.1</version>
             <scope>provided</scope>
         </dependency>
         <!-- DeluxeSellwands -->
@@ -212,9 +212,9 @@
         </dependency>
         <!-- MDLib -->
         <dependency>
-            <groupId>com.muhammaddaffa</groupId>
+            <groupId>com.github.mdaffa48</groupId>
             <artifactId>MDLib</artifactId>
-            <version>3.0.4</version>
+            <version>2.0.3</version>
         </dependency>
         <!-- BStats -->
         <dependency>
