@@ -1,9 +1,8 @@
 package com.muhammaddaffa.nextgens.gui;
 
-import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -20,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShopInventory extends SimpleInventory {
+public class ShopInventory extends FastInv {
 
     public static void openInventory(Player player, GeneratorManager generatorManager) {
         ShopInventory gui = new ShopInventory(player, generatorManager);
@@ -80,7 +79,7 @@ public class ShopInventory extends SimpleInventory {
             ItemStack stack = builder.build();
 
             if (type == null) {
-                this.setItems(slots, stack);
+                this.setItems(Utils.convertListToIntArray(slots), stack);
                 continue;
             }
 
@@ -94,7 +93,7 @@ public class ShopInventory extends SimpleInventory {
                     continue;
                 }
 
-                this.setItems(slots, stack, event -> {
+                this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
                     // money check
                     if (VaultEconomy.getBalance(this.player) < cost) {
                         NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
@@ -126,7 +125,7 @@ public class ShopInventory extends SimpleInventory {
             }
 
             if (type.equalsIgnoreCase("NEXT_PAGE")) {
-                this.setItems(slots, stack, event -> {
+                this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
                     if (this.paginationMap.containsKey(this.guiPage + 1)) {
                         this.guiPage += 1;
                         this.setAllItems();
@@ -136,7 +135,7 @@ public class ShopInventory extends SimpleInventory {
             }
 
             if (type.equalsIgnoreCase("PREVIOUS_PAGE")) {
-                this.setItems(slots, stack, event -> {
+                this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
                     if (this.paginationMap.containsKey(this.guiPage - 1)) {
                         this.guiPage -= 1;
                         this.setAllItems();
@@ -146,7 +145,7 @@ public class ShopInventory extends SimpleInventory {
             }
 
             // set the normal items
-            this.setItems(slots, stack);
+            this.setItems(Utils.convertListToIntArray(slots), stack);
         }
 
     }

@@ -1,8 +1,7 @@
 package com.muhammaddaffa.nextgens.gui;
 
-import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -11,6 +10,7 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.helpers.ViewPagination;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import com.muhammaddaffa.nextgens.utils.VisualAction;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -19,10 +19,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
-public class ViewInventory extends SimpleInventory {
+public class ViewInventory extends FastInv {
 
     public static void openInventory(Player player, User user, GeneratorManager generatorManager, UserManager userManager) {
         // create the gui
@@ -58,7 +57,9 @@ public class ViewInventory extends SimpleInventory {
         }
 
         // clear the inventory first
-        this.clearInventory();
+        for (int i = 0; i < this.getInventory().getSize(); i++) {
+            this.setItem(i, new ItemStack(Material.AIR));
+        }
 
         List<String> additionalLore = config.getStringList("additional-lore");
         String pickupPermission = config.getString("pickup-own");
@@ -119,7 +120,7 @@ public class ViewInventory extends SimpleInventory {
                 List<String> commands = config.getStringList("items." + key + ".commands");
                 List<Integer> itemSlots = config.getIntegerList("items." + key + ".slots");
                 // set the item
-                this.setItems(itemSlots, stack, event -> {
+                this.setItems(Utils.convertListToIntArray(itemSlots), stack, event -> {
                     // execute commands
                     commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command
                             .replace("{player}", this.player.getName())));

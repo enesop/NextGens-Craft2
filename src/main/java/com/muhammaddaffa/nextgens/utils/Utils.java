@@ -14,9 +14,23 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 
+import java.util.List;
+
 public class Utils {
 
     private static final FormatBalance formatBalance = new FormatBalance();
+
+    public static int[] convertListToIntArray(List<Integer> list) {
+        // Create an int array of the same size as the list
+        int[] array = new int[list.size()];
+
+        // Populate the int array with values from the list
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i); // Auto-unboxing from Integer to int
+        }
+
+        return array;
+    }
 
     public static Inventory replicateInventoryRemoveLastRow(Inventory inventory) {
         // create another inventory

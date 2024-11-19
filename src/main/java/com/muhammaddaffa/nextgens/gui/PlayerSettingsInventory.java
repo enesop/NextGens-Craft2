@@ -1,14 +1,14 @@
 package com.muhammaddaffa.nextgens.gui;
 
-import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.utils.Common;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.autosell.Autosell;
 import com.muhammaddaffa.nextgens.users.User;
 import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.utils.Utils;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
-public class PlayerSettingsInventory extends SimpleInventory {
+public class PlayerSettingsInventory extends FastInv {
 
     public static void openInventory(Player player, UserManager userManager) {
         // create the gui
@@ -29,7 +29,7 @@ public class PlayerSettingsInventory extends SimpleInventory {
     private final UserManager userManager;
 
     public PlayerSettingsInventory(Player player, UserManager userManager) {
-        super(NextGens.SETTINGS_GUI_CONFIG.getInt("size"), NextGens.SETTINGS_GUI_CONFIG.getString("title"));
+        super(NextGens.SETTINGS_GUI_CONFIG.getInt("size"), Common.color(NextGens.SETTINGS_GUI_CONFIG.getString("title")));
         this.player = player;
         this.userManager = userManager;
 
@@ -52,7 +52,7 @@ public class PlayerSettingsInventory extends SimpleInventory {
                             .add("{status_gens_autosell}", user.isToggleGensAutoSell() ? on : off))
                     .build();
             // set the items
-            this.setItems(slots, stack, event -> {
+            this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
                 if (type == null || type.equalsIgnoreCase("dummy")) return;
                 // check if the type is toggle cashback
                 if (type.equalsIgnoreCase("toggle_cashback")) {

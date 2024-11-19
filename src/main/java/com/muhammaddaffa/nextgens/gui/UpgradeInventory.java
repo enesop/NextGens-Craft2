@@ -1,6 +1,6 @@
 package com.muhammaddaffa.nextgens.gui;
 
-import com.muhammaddaffa.mdlib.gui.SimpleInventory;
+import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemFlag;
 
 import java.util.List;
 
-public class UpgradeInventory extends SimpleInventory {
+public class UpgradeInventory extends FastInv {
 
     private final Player player;
     private final ActiveGenerator active;
@@ -84,7 +84,7 @@ public class UpgradeInventory extends SimpleInventory {
         }
 
         // set the item
-        this.setItems(slots, builder.build(), event -> {
+        this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {
             Block block = this.active.getLocation().getBlock();
             // money check
             if (VaultEconomy.getBalance(this.player) < this.generator.cost()) {
@@ -153,7 +153,7 @@ public class UpgradeInventory extends SimpleInventory {
         }
 
         // set the item
-        this.setItems(slots, builder.build(), event -> {
+        this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {
             NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
                     .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
                     .add("{upgradecost}", Common.digits(this.generator.cost()))
@@ -170,7 +170,7 @@ public class UpgradeInventory extends SimpleInventory {
         if (builder == null) {
             return;
         }
-        this.setItems(slots, builder.build());
+        this.setItems(Utils.convertListToIntArray(slots), builder.build());
     }
 
     private void setAcceptButton() {
@@ -183,7 +183,7 @@ public class UpgradeInventory extends SimpleInventory {
             return;
         }
         // set the item
-        this.setItems(slots, builder.build(), event -> {
+        this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {
             // if the next generator is null, skip it
             if (this.nextGenerator == null) {
                 return;
@@ -241,7 +241,7 @@ public class UpgradeInventory extends SimpleInventory {
             return;
         }
         // set the item
-        this.setItems(slots, builder.build(), event -> {
+        this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {
             // close the inventory
             this.player.closeInventory();
         });

@@ -2,7 +2,8 @@ package com.muhammaddaffa.nextgens.commands;
 
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.*;
-import com.muhammaddaffa.mdlib.gui.SimpleInventoryManager;
+import com.muhammaddaffa.mdlib.fastinv.FastInv;
+import com.muhammaddaffa.mdlib.fastinv.FastInvManager;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
@@ -340,7 +341,7 @@ public class MainCommand {
                     // send message to the sender
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.reload");
                     // close all gui
-                    SimpleInventoryManager.closeAll();
+                    FastInvManager.closeAll();
                 });
     }
 
