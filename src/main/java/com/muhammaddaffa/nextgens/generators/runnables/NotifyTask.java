@@ -19,54 +19,58 @@ import java.util.concurrent.TimeUnit;
 
 public class NotifyTask extends BukkitRunnable {
 
-    private static NotifyTask runnable;
+    private static NotifyTask currentTask;
+    private final GeneratorManager generatorManager;
 
-    public static void start(GeneratorManager generatorManager) {
-        if (runnable != null) {
-            runnable.cancel();
-            runnable = null;
-        }
-        // set back the runnable
-        runnable = new NotifyTask(generatorManager);
-        // get the interval
-        long interval = 20L * TimeUnit.MINUTES.toSeconds(Settings.CORRUPTION_NOTIFY_INTERVAL);
-        // run the task
-        runnable.runTaskTimerAsynchronously(NextGens.getInstance(), interval, interval);
+    private NotifyTask(GeneratorManager generatorManager) {
+        this.generatorManager = generatorManager;
     }
 
-    private final GeneratorManager generatorManager;
-    public NotifyTask(GeneratorManager generatorManager) {
-        this.generatorManager = generatorManager;
+    public static void start(GeneratorManager generatorManager) {
+        if (currentTask != null) {
+            currentTask.cancel();
+        }
+
+        currentTask = new NotifyTask(generatorManager);
+        long intervalTicks = TimeUnit.MINUTES.toSeconds(Settings.CORRUPTION_NOTIFY_INTERVAL) * 20L;
+        currentTask.runTaskTimerAsynchronously(NextGens.getInstance(), intervalTicks, intervalTicks);
     }
 
     @Override
     public void run() {
-        // if corruption is not enabled, skip this
         if (!Settings.CORRUPTION_ENABLED) {
             return;
         }
-        // create the map to store data
-        Map<UUID, Integer> counter = new HashMap<>();
-        // loop through all active generator
-        for (ActiveGenerator active : this.generatorManager.getActiveGenerator()) {
-            // if the generator is corrupted, store it
-            if (active.isCorrupted()) {
-                counter.put(active.getOwner(), counter.getOrDefault(active.getOwner(), 0) + 1);
+
+        Map<UUID, Integer> corruptedGeneratorCount = collectCorruptedGenerators();
+        notifyPlayers(corruptedGeneratorCount);
+    }
+
+    private Map<UUID, Integer> collectCorruptedGenerators() {
+        Map<UUID, Integer> corruptedCount = new HashMap<>();
+
+        for (ActiveGenerator generator : generatorManager.getActiveGenerator()) {
+            if (generator.isCorrupted()) {
+                corruptedCount.merge(generator.getOwner(), 1, Integer::sum);
             }
         }
-        // after the data has been collected
-        // proceed to notify the player if online
-        counter.forEach((owner, amount) -> {
+
+        return corruptedCount;
+    }
+
+    private void notifyPlayers(Map<UUID, Integer> corruptedGeneratorCount) {
+        corruptedGeneratorCount.forEach((owner, count) -> {
             Player player = Bukkit.getPlayer(owner);
-            if (player == null) {
-                return;
+
+            if (player != null) {
+                sendNotification(player, count);
             }
-            // send the message
-            Settings.CORRUPTION_NOTIFY_MESSAGE.send(player, new Placeholder()
-                    .add("{amount}", Common.digits(amount)));
-            // play note pling sound
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
         });
+    }
+
+    private void sendNotification(Player player, int corruptedCount) {
+        Settings.CORRUPTION_NOTIFY_MESSAGE.send(player, new Placeholder().add("{amount}", Common.digits(corruptedCount)));
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
     }
 
 }
