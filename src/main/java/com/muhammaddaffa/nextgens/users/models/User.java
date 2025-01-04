@@ -1,6 +1,5 @@
-package com.muhammaddaffa.nextgens.users;
+package com.muhammaddaffa.nextgens.users.models;
 
-import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import org.bukkit.Bukkit;
 
 import java.util.UUID;

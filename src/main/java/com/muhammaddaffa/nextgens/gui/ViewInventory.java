@@ -8,8 +8,8 @@ import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.gui.helpers.ViewPagination;
-import com.muhammaddaffa.nextgens.users.User;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.users.models.User;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import com.muhammaddaffa.nextgens.utils.VisualAction;
 import org.bukkit.Bukkit;
@@ -38,8 +38,8 @@ public class ViewInventory extends FastInv {
     private ViewPagination pagination;
 
     public ViewInventory(Player player, User user, GeneratorManager generatorManager, UserManager userManager) {
-        super(NextGens.VIEW_GUI_CONFIG.getInt("size"), NextGens.VIEW_GUI_CONFIG.getString("title")
-                .replace("{player}", user.getName()));
+        super(NextGens.VIEW_GUI_CONFIG.getInt("size"), Common.color(NextGens.VIEW_GUI_CONFIG.getString("title")
+                .replace("{player}", user.getName())));
         this.player = player;
         this.user = user;
         this.generatorManager = generatorManager;

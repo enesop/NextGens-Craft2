@@ -1,7 +1,7 @@
 package com.muhammaddaffa.nextgens.utils;
 
-import com.muhammaddaffa.nextgens.sellwand.SellwandData;
-import com.muhammaddaffa.nextgens.users.User;
+import com.muhammaddaffa.nextgens.sellwand.models.SellwandData;
+import com.muhammaddaffa.nextgens.users.models.User;
 
 public class SellData {
 
@@ -9,38 +9,40 @@ public class SellData {
     private final double totalValue;
     private final int totalItems;
     private double multiplier;
-    private final SellwandData sellwandData;
+    private final SellwandData sellwand;
 
-    public SellData(User user, double totalValue, int totalItems, double multiplier, SellwandData sellwandData) {
+    public SellData(User user, double totalValue, int totalItems, double multiplier, SellwandData sellwand) {
         this.user = user;
         this.totalValue = totalValue;
         this.totalItems = totalItems;
         this.multiplier = multiplier;
-        this.sellwandData = sellwandData;
+        this.sellwand = sellwand;
     }
 
-    public User user() {
+    // Getters and setters
+
+    public User getUser() {
         return user;
     }
 
-    public double totalValue() {
+    public double getTotalValue() {
         return totalValue;
     }
 
-    public int totalItems() {
+    public int getTotalItems() {
         return totalItems;
     }
 
-    public double multiplier() {
+    public double getMultiplier() {
         return multiplier;
     }
 
-    public void multiplier(double amount) {
-        this.multiplier = amount;
+    public void setMultiplier(double multiplier) {
+        this.multiplier = multiplier;
     }
 
-    public SellwandData sellwandData() {
-        return sellwandData;
+    public SellwandData getSellwand() {
+        return sellwand;
     }
 
 }

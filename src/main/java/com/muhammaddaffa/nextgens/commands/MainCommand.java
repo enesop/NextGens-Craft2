@@ -2,7 +2,6 @@ package com.muhammaddaffa.nextgens.commands;
 
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.*;
-import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.fastinv.FastInvManager;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
@@ -16,9 +15,10 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.gui.ViewInventory;
-import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
-import com.muhammaddaffa.nextgens.users.User;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.sellwand.managers.SellwandManager;
+import com.muhammaddaffa.nextgens.users.UserRepository;
+import com.muhammaddaffa.nextgens.users.models.User;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import com.muhammaddaffa.nextgens.worth.WorthManager;
 import org.bukkit.entity.Player;
@@ -94,7 +94,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(player);
                     user.addMultiplier(amount);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.multiplier-increase", new Placeholder()
                             .add("{player}", player.getName())
@@ -124,7 +124,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(player);
                     user.removeMultiplier(amount);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.multiplier-decrease", new Placeholder()
                             .add("{player}", player.getName())
@@ -154,7 +154,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(player);
                     user.setMultiplier(amount);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.set-multiplier", new Placeholder()
                             .add("{player}", player.getName())
@@ -224,7 +224,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(target);
                     user.addBonus(amount);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message to the command sender
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.add-max", new Placeholder()
                             .add("{amount}", amount)
@@ -254,7 +254,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(target);
                     user.removeBonus(amount);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message to the command sender
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.remove-max", new Placeholder()
                             .add("{amount}", amount)
@@ -281,7 +281,7 @@ public class MainCommand {
                     User user = this.userManager.getUser(target);
                     user.setBonus(0);
                     // save the user data afterward
-                    Executor.async(() -> this.userManager.saveUser(user));
+                    Executor.async(() -> NextGens.getInstance().getUserRepository().saveUser(user));
                     // send message to the command sender
                     NextGens.DEFAULT_CONFIG.sendMessage(sender, "messages.reset-max", new Placeholder()
                             .add("{player}", target.getName()));
@@ -331,8 +331,6 @@ public class MainCommand {
                     this.generatorManager.loadGenerators();
                     // refresh the active generator
                     Executor.async(this.generatorManager::refreshActiveGenerator);
-                    // start back the auto save
-                    this.generatorManager.startAutosaveTask();
                     // events stuff
                     this.eventManager.loadEvents();
                     this.eventManager.refresh();

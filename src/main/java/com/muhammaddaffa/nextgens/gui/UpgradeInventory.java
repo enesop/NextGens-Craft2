@@ -6,8 +6,9 @@ import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
+import com.muhammaddaffa.nextgens.generators.listeners.helpers.GeneratorUpdateHelper;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -30,7 +31,7 @@ public class UpgradeInventory extends FastInv {
     public UpgradeInventory(Player player, ActiveGenerator active, Generator generator, Generator nextGenerator,
                             GeneratorManager generatorManager, UserManager userManager) {
         super(NextGens.UPGRADE_GUI_CONFIG.getInt("size"),
-                NextGens.UPGRADE_GUI_CONFIG.getString("title"));
+                Common.color(NextGens.UPGRADE_GUI_CONFIG.getString("title")));
         this.player = player;
         this.active = active;
         this.generator = generator;
@@ -79,51 +80,9 @@ public class UpgradeInventory extends FastInv {
                         .add("{cost}", Common.digits(this.generator.cost()))
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
 
-        if (config.getBoolean("display-enough-money.glowing")) {
-            builder.enchant(Enchantment.INFINITY);
-        }
-
         // set the item
-        this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {
-            Block block = this.active.getLocation().getBlock();
-            // money check
-            if (VaultEconomy.getBalance(this.player) < this.generator.cost()) {
-                NextGens.DEFAULT_CONFIG.sendMessage(this.player, "messages.not-enough-money", new Placeholder()
-                        .add("{money}", Common.digits(VaultEconomy.getBalance(this.player)))
-                        .add("{upgradecost}", Common.digits(this.generator.cost()))
-                        .add("{remaining}", Common.digits(VaultEconomy.getBalance(this.player) - this.generator.cost())));
-                // play bass sound
-                Utils.bassSound(this.player);
-                // close the gui
-                this.player.closeInventory();
-                return;
-            }
-            // if the block is no longer a generator, skip it
-            if (this.generatorManager.getActiveGenerator(this.active.getLocation()) == null) {
-                this.player.closeInventory();
-                return;
-            }
-            // take the money from player
-            VaultEconomy.withdraw(this.player, this.generator.cost());
-            // register the generator again
-            this.generatorManager.registerGenerator(this.player, this.nextGenerator, block);
-            // visual actions
-            VisualAction.send(this.player, NextGens.DEFAULT_CONFIG.getConfig(), "generator-upgrade-options", new Placeholder()
-                    .add("{previous}", this.generator.displayName())
-                    .add("{current}", this.nextGenerator.displayName())
-                    .add("{cost}", Common.digits(this.generator.cost())));
-            // play particle
-            Executor.async(() -> {
-                if (NextGens.DEFAULT_CONFIG.getBoolean("generator-upgrade-options.particles")) {
-                    // block crack particle
-                    block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, this.nextGenerator.item().getType().createBlockData());
-                    // happy villager particle
-                    block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
-                }
-            });
-            // give cashback to the player
-            Utils.performCashback(player, this.userManager, this.generator.cost());
-            // close the inventory
+        this.setItems(slots, builder.build(), event -> {
+            GeneratorUpdateHelper.upgradeGenerator(player, active, generator, nextGenerator);
             this.player.closeInventory();
         });
     }
@@ -147,10 +106,6 @@ public class UpgradeInventory extends FastInv {
                         .add("{next_repair}", Common.digits(this.nextGenerator.fixCost()))
                         .add("{cost}", Common.digits(this.generator.cost()))
                         .add("{balance}", Common.digits(VaultEconomy.getBalance(this.player))));
-
-        if (config.getBoolean("display-no-money.glowing")) {
-            builder.enchant(Enchantment.INFINITY);
-        }
 
         // set the item
         this.setItems(Utils.convertListToIntArray(slots), builder.build(), event -> {

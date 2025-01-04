@@ -1,6 +1,5 @@
 package com.muhammaddaffa.nextgens.database;
 
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.LocationUtils;
 import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -15,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Collection;
+import java.util.List;
 
 public class DatabaseManager {
 
@@ -65,7 +65,7 @@ public class DatabaseManager {
             hikari.setConnectionTestQuery("SELECT 1");
             hikari.setDriverClassName("org.sqlite.JDBC");
             hikari.setJdbcUrl("jdbc:sqlite:" + path);
-            hikari.setMaximumPoolSize(1);
+            hikari.setMaximumPoolSize(10);
 
             Logger.info("Trying to connect to the SQLite database...");
             // create the file if it's not exist
@@ -136,84 +136,46 @@ public class DatabaseManager {
         if (active == null || active.getOwner() == null || active.getLocation().getWorld() == null) {
             return;
         }
-
-        String mysqlSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE generator_id=?, timer=?, is_corrupted=?;";
-        String sqliteSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON CONFLICT(location) DO UPDATE SET generator_id=?, timer=?, is_corrupted=?;";
-        String query = this.mysql ? mysqlSyntax : sqliteSyntax;
-
-        try (Connection connection = this.getConnection();
-                PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, active.getOwner().toString());
-            statement.setString(2, LocationUtils.serialize(active.getLocation()));
-            statement.setString(3, active.getGenerator().id());
-            statement.setDouble(4, active.getTimer());
-            statement.setBoolean(5, active.isCorrupted());
-
-            statement.setString(6, active.getGenerator().id());
-            statement.setDouble(7, active.getTimer());
-            statement.setBoolean(8, active.isCorrupted());
-
-            statement.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        this.saveGenerator(List.of(active));
     }
 
     public void saveGenerator(Collection<ActiveGenerator> activeGenerators) {
-        String mysqlSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE generator_id=?, timer=?, is_corrupted=?;";
-        String sqliteSyntax = "INSERT INTO " + GENERATOR_TABLE + " (owner, location, generator_id, timer, is_corrupted) VALUES (?,?,?,?,?) ON CONFLICT(location) DO UPDATE SET generator_id=?, timer=?, is_corrupted=?;";
-        String query = this.mysql ? mysqlSyntax : sqliteSyntax;
+        String query = this.mysql ?
+                "INSERT INTO " + GENERATOR_TABLE + " " +
+                        "(owner, location, generator_id, timer, is_corrupted) " +
+                        "VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE generator_id = VALUES(generator_id), timer = VALUES(timer), is_corrupted = VALUES(is_corrupted)" :
+                "INSERT INTO " + GENERATOR_TABLE + " " +
+                        "(owner, location, generator_id, timer, is_corrupted) " +
+                        "VALUES (?,?,?,?,?) ON CONFLICT(location) DO UPDATE SET generator_id = excluded.generator_id, timer = excluded.timer, is_corrupted = excluded.is_corrupted";
 
-        int maxRetries = 3;
-        int attempt = 0;
-        boolean success = false;
+        try (Connection connection = this.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-        while (attempt < maxRetries && !success) {
-            attempt++;
+            int batchSize = 0;
 
-            try (Connection connection = this.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(query)) {
+            for (ActiveGenerator active : activeGenerators) {
+                if (active.getOwner() == null || active.getLocation().getWorld() == null) continue;
 
-                connection.setAutoCommit(false);
+                statement.setString(1, active.getOwner().toString());
+                statement.setString(2, LocationUtils.serialize(active.getLocation()));
+                statement.setString(3, active.getGenerator().id());
+                statement.setDouble(4, active.getTimer());
+                statement.setBoolean(5, active.isCorrupted());
 
-                for (ActiveGenerator active : activeGenerators) {
-                    if (active.getOwner() == null) continue;
-                    if (active.getLocation().getWorld() == null) continue;
-                    statement.setString(1, active.getOwner().toString());
-                    statement.setString(2, LocationUtils.serialize(active.getLocation()));
-                    statement.setString(3, active.getGenerator().id());
-                    statement.setDouble(4, active.getTimer());
-                    statement.setBoolean(5, active.isCorrupted());
+                statement.addBatch();
+                batchSize++;
 
-                    statement.setString(6, active.getGenerator().id());
-                    statement.setDouble(7, active.getTimer());
-                    statement.setBoolean(8, active.isCorrupted());
-                    // add the batch
-                    statement.addBatch();
-                }
-
-                statement.executeBatch();
-                connection.commit();
-                success = true;
-
-                if (activeGenerators.size() > 1) {
-                    Logger.info("Successfully saved " + activeGenerators.size() + " active generators on attempt " + attempt + "!");
-                }
-
-            } catch (SQLException ex) {
-                Logger.severe("Failed to save " + activeGenerators.size() + " generators on attempt " + attempt + "!");
-                if (ex instanceof BatchUpdateException && ex.getCause() instanceof SQLException sqlEx) {
-                    if (sqlEx.getSQLState().equals("40001") || sqlEx.getSQLState().equals("HY000")) {
-                        // Deadlock detected, retry
-                        Logger.warning("Deadlock detected. Retrying... (attempt " + attempt + ")");
-                        continue;
-                    }
-                }
-                ex.printStackTrace();
-                if (attempt == maxRetries) {
-                    throw new RuntimeException("Max retry attempts reached. Failing...");
+                if (batchSize % 100 == 0) {
+                    statement.executeBatch();
+                    batchSize = 0;
                 }
             }
+
+            // Execute the remaining batch
+            statement.executeBatch();
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -271,6 +233,10 @@ public class DatabaseManager {
 
     public Connection getConnection() throws SQLException {
         return this.dataSource.getConnection();
+    }
+
+    public boolean isMysql() {
+        return mysql;
     }
 
     public void close() {

@@ -3,7 +3,6 @@ package com.muhammaddaffa.nextgens;
 import com.bgsoftware.wildtools.api.WildToolsAPI;
 import com.muhammaddaffa.mdlib.MDLib;
 import com.muhammaddaffa.mdlib.configupdater.ConfigUpdater;
-import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Logger;
@@ -14,7 +13,7 @@ import com.muhammaddaffa.nextgens.autosell.AutosellManager;
 import com.muhammaddaffa.nextgens.commands.*;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
-import com.muhammaddaffa.nextgens.generators.listeners.GeneratorListener;
+import com.muhammaddaffa.nextgens.generators.listeners.*;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
@@ -23,10 +22,14 @@ import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
+import com.muhammaddaffa.nextgens.multipliers.MultiplierRegistry;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
-import com.muhammaddaffa.nextgens.sellwand.SellwandListener;
-import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.refund.listeners.RefundListener;
+import com.muhammaddaffa.nextgens.sell.SellManager;
+import com.muhammaddaffa.nextgens.sellwand.listeners.SellwandListener;
+import com.muhammaddaffa.nextgens.sellwand.managers.SellwandManager;
+import com.muhammaddaffa.nextgens.users.UserManager;
+import com.muhammaddaffa.nextgens.users.UserRepository;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import com.muhammaddaffa.nextgens.worth.WorthManager;
 import dev.norska.dsw.DeluxeSellwands;
@@ -70,11 +73,14 @@ public final class NextGens extends JavaPlugin {
     private final DatabaseManager dbm = new DatabaseManager();
     private final EventManager eventManager = new EventManager();
     private final WorthManager worthManager = new WorthManager();
-    private final GeneratorManager generatorManager = new GeneratorManager(this.dbm);
-    private final UserManager userManager = new UserManager(this.dbm, this.eventManager);
-    private final RefundManager refundManager = new RefundManager(this.generatorManager);
-    private final SellwandManager sellwandManager = new SellwandManager(this.userManager);
-    private final AutosellManager autosellManager = new AutosellManager(this.userManager);
+    private final GeneratorManager generatorManager = new GeneratorManager(dbm);
+    private final UserManager userManager = new UserManager();
+    private final UserRepository userRepository = new UserRepository(dbm, userManager);
+    private final SellManager sellManager = new SellManager(userManager, eventManager);
+    private final RefundManager refundManager = new RefundManager(generatorManager);
+    private final SellwandManager sellwandManager = new SellwandManager();
+    private final AutosellManager autosellManager = new AutosellManager(userManager);
+    private final MultiplierRegistry multiplierRegistry = new MultiplierRegistry();
 
     public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
             WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
@@ -91,13 +97,6 @@ public final class NextGens extends JavaPlugin {
         MDLib.onEnable(this);
         // --------------------------------------------
         instance = this;
-        generator_id = new NamespacedKey(this, "nextgens_generator_id");
-        drop_value = new NamespacedKey(this, "nextgens_drop_value");
-        sellwand_global = new NamespacedKey(this, "nextgens_sellwand_global");
-        sellwand_multiplier = new NamespacedKey(this, "nextgens_sellwand_multiplier");
-        sellwand_uses = new NamespacedKey(this, "nextgens_sellwand_uses");
-        sellwand_total_sold = new NamespacedKey(this, "nextgens_sellwand_total_sold");
-        sellwand_total_items = new NamespacedKey(this, "nextgens_sellwand_total_items");
 
         // fancy big text
         Logger.info("""
@@ -111,22 +110,14 @@ public final class NextGens extends JavaPlugin {
                 ╚═╝░░╚══╝╚══════╝╚═╝░░╚═╝░░░╚═╝░░░░╚═════╝░╚══════╝╚═╝░░╚══╝╚═════╝░
                 """);
 
-        // initialize stuff
-        DEFAULT_CONFIG          = new Config("config.yml", null, true);
-        GENERATORS_CONFIG       = new Config("generators.yml", null, true);
-        SHOP_CONFIG             = new Config("shop.yml", null, true);
-        UPGRADE_GUI_CONFIG      = new Config("upgrade_gui.yml", "gui", true);
-        CORRUPT_GUI_CONFIG      = new Config("corrupt_gui.yml", "gui", true);
-        EVENTS_CONFIG           = new Config("events.yml", null, true);
-        DATA_CONFIG             = new Config("data.yml", null, false);
-        WORTH_CONFIG            = new Config("worth.yml", null, true);
-        SETTINGS_GUI_CONFIG     = new Config("settings_gui.yml", "gui", true);
-        VIEW_GUI_CONFIG         = new Config("view_gui.yml", "gui", true);
+        // initialize keys
+        keys();
 
-        VaultEconomy.init();
+        // initialize configs and update
+        configs();
+        update();
 
-        // update config
-        this.updateConfig();
+        // initialize settings
         Settings.init();
 
         // connect to database and create the table
@@ -135,28 +126,27 @@ public final class NextGens extends JavaPlugin {
         this.dbm.createUserTable();
 
         // register commands & listeners
-        this.registerCommands();
-        this.registerListeners();
+        commands();
+        listeners();
 
         // load all generators
         this.generatorManager.loadGenerators();
 
         // register task
-        this.registerTask();
+        tasks();
         // register hook
-        this.registerHook();
+        hooks();
         // update checker
-        this.updateCheck();
+        updateCheck();
 
         Executor.asyncLater(3L, () -> {
             // load active generators
             this.generatorManager.loadActiveGenerator();
             // load users
-            this.userManager.loadUser();
+            this.userRepository.loadUsers();
 
             // load the refund
             this.refundManager.load();
-            this.refundManager.startTask();
 
             // load events
             this.eventManager.loadEvents();
@@ -175,20 +165,31 @@ public final class NextGens extends JavaPlugin {
         MDLib.shutdown();
         // remove all holograms
         GeneratorTask.flush();
-        // save small things first
-        this.refundManager.save();
-        this.eventManager.save();
-        // save users data
-        this.userManager.saveUser();
+        // save all other things
+        save();
         // close the database
         this.dbm.close();
     }
 
-    private void registerTask() {
+    private void save() {
+        // save small things first
+        this.refundManager.saveAll();
+        this.eventManager.save();
+    }
+
+    private void keys() {
+        generator_id = new NamespacedKey(this, "nextgens_generator_id");
+        drop_value = new NamespacedKey(this, "nextgens_drop_value");
+        sellwand_global = new NamespacedKey(this, "nextgens_sellwand_global");
+        sellwand_multiplier = new NamespacedKey(this, "nextgens_sellwand_multiplier");
+        sellwand_uses = new NamespacedKey(this, "nextgens_sellwand_uses");
+        sellwand_total_sold = new NamespacedKey(this, "nextgens_sellwand_total_sold");
+        sellwand_total_items = new NamespacedKey(this, "nextgens_sellwand_total_items");
+    }
+
+    private void tasks() {
         // start generator task
         GeneratorTask.start(this.generatorManager, this.eventManager, this.userManager);
-        // start auto-save task
-        this.generatorManager.startAutosaveTask();
         // corruption task
         CorruptionTask.start(this.generatorManager);
         // notify task
@@ -197,7 +198,7 @@ public final class NextGens extends JavaPlugin {
         this.autosellManager.startTask();
     }
 
-    private void registerHook() {
+    private void hooks() {
         PluginManager pm = Bukkit.getPluginManager();
         // papi hook
         if (pm.getPlugin("PlaceholderAPI") != null) {
@@ -240,7 +241,7 @@ public final class NextGens extends JavaPlugin {
         this.connectMetrics();
     }
 
-    private void updateConfig() {
+    private void update() {
         // check for auto config update
         if (!NextGens.DEFAULT_CONFIG.getConfig().getBoolean("auto-config-update", true)) {
             return;
@@ -256,20 +257,36 @@ public final class NextGens extends JavaPlugin {
             Logger.severe("Failed to update the config.yml!");
             ex.printStackTrace();
         }
-
         // reload the config afterward
         Config.reload();
     }
 
-    private void registerListeners() {
-        PluginManager pm = Bukkit.getPluginManager();
-
-        // register events
-        pm.registerEvents(new GeneratorListener(this.generatorManager, this.userManager), this);
-        pm.registerEvents(new SellwandListener(this.sellwandManager), this);
+    private void configs() {
+        DEFAULT_CONFIG          = new Config("config.yml", null, true);
+        GENERATORS_CONFIG       = new Config("generators.yml", null, true);
+        SHOP_CONFIG             = new Config("shop.yml", null, true);
+        UPGRADE_GUI_CONFIG      = new Config("upgrade_gui.yml", "gui", true);
+        CORRUPT_GUI_CONFIG      = new Config("corrupt_gui.yml", "gui", true);
+        EVENTS_CONFIG           = new Config("events.yml", null, true);
+        DATA_CONFIG             = new Config("data.yml", null, false);
+        WORTH_CONFIG            = new Config("worth.yml", null, true);
+        SETTINGS_GUI_CONFIG     = new Config("settings_gui.yml", "gui", true);
+        VIEW_GUI_CONFIG         = new Config("view_gui.yml", "gui", true);
     }
 
-    private void registerCommands() {
+    private void listeners() {
+        PluginManager pm = Bukkit.getPluginManager();
+        // register events
+        pm.registerEvents(new GeneratorBreakListener(this.generatorManager, this.userManager), this);
+        pm.registerEvents(new GeneratorPlaceListener(this.generatorManager, this.userManager), this);
+        pm.registerEvents(new GeneratorPreventionListener(this.generatorManager), this);
+        pm.registerEvents(new GeneratorUpgradeListener(this.generatorManager, this.userManager), this);
+        pm.registerEvents(new PlayerJoinListener(this.generatorManager), this);
+        pm.registerEvents(new SellwandListener(this.sellwandManager), this);
+        pm.registerEvents(new RefundListener(this.refundManager), this);
+    }
+
+    private void commands() {
         // register commands
         MainCommand.register(this.generatorManager, this.userManager, this.eventManager, this.worthManager, this.sellwandManager);
         SellCommand.register(this.userManager);
@@ -360,6 +377,22 @@ public final class NextGens extends JavaPlugin {
 
     public EventManager getEventManager() {
         return eventManager;
+    }
+
+    public UserRepository getUserRepository() {
+        return userRepository;
+    }
+
+    public SellManager getSellManager() {
+        return sellManager;
+    }
+
+    public MultiplierRegistry getMultiplierRegistry() {
+        return multiplierRegistry;
+    }
+
+    public DatabaseManager getDatabaseManager() {
+        return dbm;
     }
 
     public static NextGens getInstance() {

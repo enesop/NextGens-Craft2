@@ -15,68 +15,112 @@ import java.util.*;
 public class RefundManager {
 
     private final Map<UUID, List<String>> itemMap = new HashMap<>();
-
     private final GeneratorManager generatorManager;
+
     public RefundManager(GeneratorManager generatorManager) {
         this.generatorManager = generatorManager;
     }
 
+    /**
+     * Adds a generator ID to a player's refund list.
+     *
+     * @param uuid Player's UUID
+     * @param id   Generator ID
+     */
     public void delayedGiveGeneratorItem(UUID uuid, String id) {
-        List<String> generators = this.itemMap.computeIfAbsent(uuid, k -> new ArrayList<>());
+        List<String> generators = itemMap.computeIfAbsent(uuid, k -> new ArrayList<>());
         generators.add(id);
+        // Update the configuration immediately
+        savePlayerData(uuid);
     }
 
-    public void giveItemJoin(Player player) {
-        List<String> generators = this.itemMap.remove(player.getUniqueId());
-        // if there is no generators, return
-        if (generators == null) {
+    /**
+     * Gives the refunded items to the player upon joining and removes their data.
+     *
+     * @param player The player who joined
+     */
+    public void giveItemOnJoin(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        List<String> generators = itemMap.remove(playerUUID);
+
+        if (generators == null || generators.isEmpty()) {
             return;
         }
-        // loop through all generators
+
+        // Give the generators to the player
         for (String id : generators) {
-            // get the generator
-            Generator generator = this.generatorManager.getGenerator(id);
-            // proceed to give player the generator
+            Generator generator = generatorManager.getGenerator(id);
             if (generator != null) {
                 Common.addInventoryItem(player, generator.createItem(1));
+            } else {
+                NextGens.getInstance().getLogger().warning(
+                        "Generator with ID '" + id + "' not found for player " + player.getName()
+                );
             }
         }
+
+        // Remove player's data from config and save
+        Executor.async(() -> removePlayerData(playerUUID));
     }
 
+    /**
+     * Loads refund data from the configuration file into memory.
+     */
     public void load() {
         FileConfiguration config = NextGens.DATA_CONFIG.getConfig();
-        // check if there are any data
+
         if (!config.isConfigurationSection("items")) {
             return;
         }
-        // loop through all data
+
         for (String uuidString : config.getConfigurationSection("items").getKeys(false)) {
-            // get the data
             UUID uuid = UUID.fromString(uuidString);
             List<String> generators = config.getStringList("items." + uuidString);
 
-            // store it on the cache
-            this.itemMap.put(uuid, generators);
+            itemMap.put(uuid, generators);
         }
     }
 
-    public void save() {
+    /**
+     * Saves all refund data from memory to the configuration file.
+     */
+    public void saveAll() {
         Config data = NextGens.DATA_CONFIG;
         FileConfiguration config = data.getConfig();
-        // We should clear the data first
-        config.set("items", null);
-        // loop through all data
-        this.itemMap.forEach((uuid, generators) -> {
-            config.set("items." + uuid.toString(), generators);
-        });
-        // save the config
+
+        config.set("items", null); // Clear existing data
+
+        itemMap.forEach((uuid, generators) -> config.set("items." + uuid.toString(), generators));
+
         data.saveConfig();
     }
 
-    public void startTask() {
-        Executor.syncTimer(0L, 5L, () -> {
-            Bukkit.getOnlinePlayers().forEach(this::giveItemJoin);
-        });
+    /**
+     * Saves a specific player's refund data to the configuration file.
+     *
+     * @param uuid Player's UUID
+     */
+    private void savePlayerData(UUID uuid) {
+        Config data = NextGens.DATA_CONFIG;
+        FileConfiguration config = data.getConfig();
+
+        config.set("items." + uuid.toString(), itemMap.get(uuid));
+
+        data.saveConfig();
+    }
+
+    /**
+     * Removes a specific player's refund data from the configuration file.
+     *
+     * @param uuid Player's UUID
+     */
+    private void removePlayerData(UUID uuid) {
+        Config data = NextGens.DATA_CONFIG;
+        FileConfiguration config = data.getConfig();
+
+        config.set("items." + uuid.toString(), null);
+
+        data.saveConfig();
     }
 
 }

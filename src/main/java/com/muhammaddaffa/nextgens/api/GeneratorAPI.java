@@ -1,6 +1,5 @@
 package com.muhammaddaffa.nextgens.api;
 
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
@@ -8,14 +7,13 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
-import com.muhammaddaffa.nextgens.sellwand.SellwandManager;
-import com.muhammaddaffa.nextgens.users.User;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.sellwand.managers.SellwandManager;
+import com.muhammaddaffa.nextgens.users.models.User;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.worth.WorthManager;
 import net.brcdev.shopgui.ShopGuiPlusApi;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

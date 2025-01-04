@@ -1,12 +1,11 @@
 package com.muhammaddaffa.nextgens.commands;
 
-import com.muhammaddaffa.mdlib.commandapi.CommandAPI;
 import com.muhammaddaffa.mdlib.commandapi.CommandAPIBukkit;
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
 import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -66,7 +65,7 @@ public class SellCommand {
                         finalTarget = target;
                     }
                     // perform the sell
-                    this.userManager.performSell(finalTarget, null, finalTarget.getInventory());
+                    NextGens.getInstance().getSellManager().performSell(finalTarget, null, finalTarget.getInventory());
                 });
         this.command.setAliases(aliases.toArray(new String[0]));
     }

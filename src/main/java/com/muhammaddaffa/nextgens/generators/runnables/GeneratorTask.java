@@ -12,8 +12,9 @@ import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.users.User;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.sell.SellDataCalculator;
+import com.muhammaddaffa.nextgens.users.models.User;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Settings;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -193,7 +194,7 @@ public class GeneratorTask extends BukkitRunnable {
                         if (player != null && Autosell.hasAutosellGensPermission(player) &&
                                 user.isToggleGensAutoSell()) {
                             // check if item is sellable
-                            if (this.userManager.sell(player, drop.getItem())) {
+                            if (NextGens.getInstance().getSellManager().sell(player, drop.getItem())) {
                                 // spawn the random drop without dropping the item
                                 drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwnerName()), false);
                                 continue;

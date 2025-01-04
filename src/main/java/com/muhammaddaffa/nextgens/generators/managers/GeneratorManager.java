@@ -38,8 +38,6 @@ public class GeneratorManager {
 
     private final Map<UUID, Integer> generatorCount = new HashMap<>();
 
-    private BukkitTask saveTask;
-
     private final DatabaseManager dbm;
     public GeneratorManager(DatabaseManager dbm) {
         this.dbm = dbm;
@@ -347,21 +345,6 @@ public class GeneratorManager {
         this.generatorMap.put(id, generator);
         // send log message
         Logger.info("Loaded generator '" + id + "'");
-    }
-
-    public void startAutosaveTask() {
-        if (this.saveTask != null) {
-            this.saveTask.cancel();
-            this.saveTask = null;
-        }
-        // check for auto save enabled
-        /*if (Config.getFileConfiguration("config.yml").getBoolean("auto-save.enabled")) {
-            // get the interval
-            int interval = Config.getFileConfiguration("config.yml").getInt("auto-save.interval");
-            long timer = 20L * interval;
-            // start the auto-save task
-            this.saveTask = Executor.asyncTimer(timer, timer, this::saveActiveGenerator);
-        }*/
     }
 
     public void refreshActiveGenerator() {

@@ -35,7 +35,7 @@ public class ShopInventory extends FastInv {
     private int guiPage = 1;
 
     public ShopInventory(Player player, GeneratorManager generatorManager) {
-        super(NextGens.SHOP_CONFIG.getInt("size"), NextGens.SHOP_CONFIG.getString("title"));
+        super(NextGens.SHOP_CONFIG.getInt("size"), Common.color(NextGens.SHOP_CONFIG.getString("title")));
         this.player = player;
         this.generatorManager = generatorManager;
 

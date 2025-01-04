@@ -1,12 +1,10 @@
 package com.muhammaddaffa.nextgens.commands;
 
 import com.muhammaddaffa.mdlib.commandapi.CommandAPICommand;
-import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.gui.PlayerSettingsInventory;
-import com.muhammaddaffa.nextgens.users.managers.UserManager;
+import com.muhammaddaffa.nextgens.users.UserManager;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 

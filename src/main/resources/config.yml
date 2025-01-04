@@ -31,6 +31,10 @@ mysql:
   password: ''
   useSSL: false
 
+# Should we save the data immediately when there's a changes?
+database:
+  immediate-saving: false
+
 # Corruption System, check resource description on the market for details
 # tldr; if this option is enabled, generators will be broken occasionally
 #       and player need to fix the broken generator with money by

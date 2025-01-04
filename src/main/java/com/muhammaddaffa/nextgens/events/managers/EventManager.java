@@ -143,44 +143,55 @@ public class EventManager {
     }
 
     private void whenEventIsOnCooldown() {
-        // if there is an event running
+        // If an event is running, reset wait time
         if (this.activeEvent != null) {
             this.waitTime = this.getDefaultWaitTime();
             return;
         }
-        // below or equals to 0 wait time
-        if (this.waitTime <= 0) {
-            // reset back the wait time
+
+        // Ensure wait time is initialized
+        if (this.waitTime == null) {
             this.waitTime = this.getDefaultWaitTime();
-            // assign next event
-            if (this.isRandom()) {
-                this.activeEvent = this.getRandomEvent().clone();
-            } else {
-                this.activeEvent = this.getNextEvent(true).clone();
+        }
+
+        // Check if wait time is below or equals to 0
+        if (this.waitTime <= 0) {
+            // Reset the wait time
+            this.waitTime = this.getDefaultWaitTime();
+
+            // Assign the next event
+            this.activeEvent = this.isRandom()
+                    ? this.getRandomEvent().clone()
+                    : this.getNextEvent(true).clone();
+
+            // Send start messages
+            if (this.activeEvent != null) {
+                this.activeEvent.sendStartMessage();
             }
-            // send start messages
-            this.activeEvent.sendStartMessage();
-            // return the code
+
             return;
         }
-        // decrease the wait time
-        this.waitTime -= 0.1;
+
+        // Decrease the wait time
+        this.waitTime = Math.max(0, this.waitTime - 0.1); // Avoid negative wait time
     }
 
     private void whenEventIsRunning() {
-        // if there is no event running, skip it
-        if (this.getActiveEvent() == null) {
+        // If no event is running, return early
+        if (this.activeEvent == null) {
             return;
         }
-        // if the start time reaches 0
+
+        // Ensure duration is properly set
         if (this.activeEvent.getDuration() <= 0) {
-            // send end message
+            // End the current event
             this.activeEvent.sendEndMessage();
             this.activeEvent = null;
             return;
         }
-        // reduce the duration
-        this.activeEvent.setDuration(this.activeEvent.getDuration() - 0.1);
+
+        // Decrease the duration
+        this.activeEvent.setDuration(Math.max(0, this.activeEvent.getDuration() - 0.1)); // Avoid negative duration
     }
 
     public void forceStart(Event event) {
