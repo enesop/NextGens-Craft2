@@ -1,0 +1,5 @@
+
+[+] Add 1.21.4 support
+[+] Fix database leak issue
+[+] Improve database system
+[+] Complete recode of the plugin, increasing the modularity aspect so it's easier to make a new update without breaking the code
