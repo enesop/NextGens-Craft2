@@ -13,10 +13,13 @@ import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public record GeneratorPreventionListener(
@@ -25,12 +28,14 @@ public record GeneratorPreventionListener(
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     private void prevention(InventoryClickEvent event) {
-        Inventory inventory = event.getView().getTopInventory();
+        Inventory inventory = getTopInventory(event);
         ItemStack stack = event.getCurrentItem();
+        // Check if the inventory is a grindstone
+        if (inventory.getType() != InventoryType.GRINDSTONE) return;
+        // Check if the item is related to generator
         if (!this.generatorManager.isGeneratorItem(stack)) return;
-        if (inventory.getType() == InventoryType.GRINDSTONE) {
-            event.setCancelled(true);
-        }
+        // Otherwise, we should cancel it
+        event.setCancelled(true);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -120,6 +125,25 @@ public record GeneratorPreventionListener(
                     this.generatorManager.unregisterGenerator(active.getLocation());
                 }
             }
+        }
+    }
+
+    /**
+     * In API versions 1.20.6 and earlier, InventoryView is a class.
+     * In versions 1.21 and later, it is an interface.
+     * This method uses reflection to get the top Inventory object from the
+     * InventoryView associated with an InventoryEvent, to avoid runtime errors.
+     * @param event The generic InventoryEvent with an InventoryView to inspect.
+     * @return The top Inventory object from the event's InventoryView.
+     */
+    private Inventory getTopInventory(InventoryEvent event) {
+        try {
+            Object view = event.getView();
+            Method getTopInventory = view.getClass().getMethod("getTopInventory");
+            getTopInventory.setAccessible(true);
+            return (Inventory) getTopInventory.invoke(view);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
