@@ -40,19 +40,19 @@ public class UserRepository {
     public void saveUsers(List<User> users) {
         String query = NextGens.getInstance().getDatabaseManager().isMysql() ?
                 "INSERT INTO " + DatabaseManager.USER_TABLE + " " +
-                        "(uuid, bonus, multiplier, earnings, items_sold, normal_sell, sellwand_sell, toggle_cashback, toggle_inventory_autosell, toggle_gens_autosell) " +
+                        "(uuid, bonus, multiplier, earnings, items_sold, normal_sell, sellwand_sell, toggle_cashback, toggle_inventory_sell, toggle_gens_sell) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE " +
                         "bonus = VALUES(bonus), multiplier = VALUES(multiplier), earnings = VALUES(earnings), " +
                         "items_sold = VALUES(items_sold), normal_sell = VALUES(normal_sell), sellwand_sell = VALUES(sellwand_sell), " +
-                        "toggle_cashback = VALUES(toggle_cashback), toggle_inventory_autosell = VALUES(toggle_inventory_autosell), " +
-                        "toggle_gens_autosell = VALUES(toggle_gens_autosell)" :
+                        "toggle_cashback = VALUES(toggle_cashback), toggle_inventory_sell = VALUES(toggle_inventory_sell), " +
+                        "toggle_gens_sell = VALUES(toggle_gens_sell)" :
                 "INSERT INTO " + DatabaseManager.USER_TABLE + " " +
-                        "(uuid, bonus, multiplier, earnings, items_sold, normal_sell, sellwand_sell, toggle_cashback, toggle_inventory_autosell, toggle_gens_autosell) " +
+                        "(uuid, bonus, multiplier, earnings, items_sold, normal_sell, sellwand_sell, toggle_cashback, toggle_inventory_sell, toggle_gens_sell) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(uuid) DO UPDATE SET " +
                         "bonus = excluded.bonus, multiplier = excluded.multiplier, earnings = excluded.earnings, " +
                         "items_sold = excluded.items_sold, normal_sell = excluded.normal_sell, sellwand_sell = excluded.sellwand_sell, " +
-                        "toggle_cashback = excluded.toggle_cashback, toggle_inventory_autosell = excluded.toggle_inventory_autosell, " +
-                        "toggle_gens_autosell = excluded.toggle_gens_autosell";
+                        "toggle_cashback = excluded.toggle_cashback, toggle_inventory_sell = excluded.toggle_inventory_sell, " +
+                        "toggle_gens_sell = excluded.toggle_gens_sell";
 
         try (Connection connection = dbManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(query)) {
