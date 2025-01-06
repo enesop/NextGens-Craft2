@@ -137,8 +137,13 @@ public class EventManager {
             if (!this.isEnabled()) {
                 return;
             }
-            this.whenEventIsOnCooldown();
-            this.whenEventIsRunning();
+            if (this.activeEvent == null) {
+                this.whenEventIsOnCooldown();
+            } else {
+                //a
+                this.whenEventIsRunning();
+
+            }
         });
     }
 

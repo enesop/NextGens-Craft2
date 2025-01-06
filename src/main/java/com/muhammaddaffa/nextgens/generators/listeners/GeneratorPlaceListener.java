@@ -129,14 +129,20 @@ public record GeneratorPlaceListener(
                 .add("{current}", this.generatorManager.getGeneratorCount(player))
                 .add("{max}", this.userManager.getMaxSlot(player)));
 
-        Executor.async(() -> playPlacementParticles(block, config, generator));
+        //Executor.async(() -> playPlacementParticles(block, config, generator));
+        Executor.async(() -> {
+            if (!config.getBoolean("generator-place-options.particles")) {
+                block.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+                block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+            }
+        });
     }
 
-    private void playPlacementParticles(Block block, FileConfiguration config, Generator generator) {
+    /*private void playPlacementParticles(Block block, FileConfiguration config, Generator generator) {
         if (!config.getBoolean("generator-place-options.particles")) return;
 
-        block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
+        block.getWorld().spawnParticle(Particle.BLOCK_CRUMBLE, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
         block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
-    }
+    }*/
 
 }
