@@ -9,7 +9,7 @@ public class UserMultiplierProvider implements MultiplierProvider {
 
     @Override
     public double getMultiplier(Player player, User user, SellwandData sellwand) {
-        return 1 + user.getMultiplier();
+        return user.getMultiplier();
     }
 
 }

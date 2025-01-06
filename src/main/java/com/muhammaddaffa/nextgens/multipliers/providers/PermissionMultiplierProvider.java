@@ -28,7 +28,7 @@ public class PermissionMultiplierProvider implements MultiplierProvider {
             }
         }
         // get the multiplier in decimals
-        return ((double) multiplier / 100);
+        return multiplier;
     }
 
 }
