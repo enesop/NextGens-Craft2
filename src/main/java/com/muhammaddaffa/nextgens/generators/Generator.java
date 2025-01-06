@@ -4,6 +4,7 @@ import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.nextgens.NextGens;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -27,6 +28,14 @@ public record Generator(
                 return drop;
 
         return null;
+    }
+
+    @Nullable
+    public Drop getDrop(String id) {
+        return this.drops.stream()
+                .filter(drop -> drop.id().equalsIgnoreCase(id))
+                .findFirst()
+                .orElse(null);
     }
 
     public ItemStack createItem(int amount) {
