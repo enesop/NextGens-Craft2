@@ -328,7 +328,7 @@ public class GeneratorManager {
                 if (dropSection == null) {
                     continue;
                 }
-                drops.add(Drop.fromConfig(dropSection));
+                drops.add(Drop.fromConfig(id, key, dropSection));
             }
         }
 

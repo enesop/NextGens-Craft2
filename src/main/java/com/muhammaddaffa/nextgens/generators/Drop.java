@@ -18,21 +18,14 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public record Drop(
+        String id,
         double chance,
         @Nullable ItemStack item,
         @Nullable Double dropValue,
         List<String> commands
 ) {
 
-    public static Drop fromConfig(FileConfiguration config, String path) {
-        ConfigurationSection section = config.getConfigurationSection(path);
-        if (section == null) {
-            return null;
-        }
-        return fromConfig(section);
-    }
-
-    public static Drop fromConfig(ConfigurationSection section) {
+    public static Drop fromConfig(String id, String key, ConfigurationSection section) {
         double chance = section.getDouble("chance");
         Double sellValue = section.get("sell-value") == null ? null : section.getDouble("sell-value");
 
@@ -41,7 +34,7 @@ public record Drop(
 
         List<String> commands = section.getStringList("commands");
 
-        return new Drop(chance, stack, sellValue, commands);
+        return new Drop(id + "_" + key, chance, stack, sellValue, commands);
     }
 
     public boolean shouldUse() {
