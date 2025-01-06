@@ -177,16 +177,19 @@ public class GeneratorTask extends BukkitRunnable {
                     if (Settings.FORCE_UPDATE_BLOCKS) {
                         block.setType(generator.item().getType());
                     }
+                    // Generate the random drop
+                    Drop drop = finalChosenGenerator.getRandomDrop();
                     // create the event
-                    GeneratorGenerateItemEvent generatorEvent = new GeneratorGenerateItemEvent(finalChosenGenerator, active, dropAmount);
+                    GeneratorGenerateItemEvent generatorEvent = new GeneratorGenerateItemEvent(finalChosenGenerator, active, drop, dropAmount);
                     Bukkit.getPluginManager().callEvent(generatorEvent);
                     if (generatorEvent.isCancelled()) {
                         active.setTimer(0);
                         return;
                     }
+                    // Set the drop
+                    drop = generatorEvent.getDrop();
                     // get the drop amount
                     for (int i = 0; i < generatorEvent.getDropAmount(); i++) {
-                        Drop drop = generatorEvent.getGenerator().getRandomDrop();
                         if (drop == null)
                             continue;
 
@@ -201,7 +204,7 @@ public class GeneratorTask extends BukkitRunnable {
                             }
                         }
                         // spawn the random drop
-                        drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwner()), true);
+                        drop.spawn(block, Bukkit.getOfflinePlayer(active.getOwner()), generatorEvent.isDropItem());
                     }
                     // set the timer to 0
                     active.setTimer(0);
