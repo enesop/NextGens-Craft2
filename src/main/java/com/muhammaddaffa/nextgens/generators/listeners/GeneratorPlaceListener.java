@@ -2,10 +2,12 @@ package com.muhammaddaffa.nextgens.generators.listeners;
 
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.particles.XParticle;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorPlaceEvent;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
+import com.muhammaddaffa.nextgens.generators.listeners.helpers.GeneratorParticle;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -129,11 +131,9 @@ public record GeneratorPlaceListener(
                 .add("{current}", this.generatorManager.getGeneratorCount(player))
                 .add("{max}", this.userManager.getMaxSlot(player)));
 
-        //Executor.async(() -> playPlacementParticles(block, config, generator));
         Executor.async(() -> {
             if (config.getBoolean("generator-place-options.particles")) {
-                block.getWorld().spawnParticle(XParticle.BLOCK.get(), block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
-                block.getWorld().spawnParticle(XParticle.HAPPY_VILLAGER.get(), block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                GeneratorParticle.successParticle(block, generator);
             }
         });
     }

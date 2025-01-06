@@ -38,10 +38,7 @@ public class GeneratorFixHelper {
         // play particle
         Executor.async(() -> {
             if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("corrupt-fix-options.particles")) {
-                // block crack particle
-                block.getWorld().spawnParticle(Particle.BLOCK, block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, generator.item().getType().createBlockData());
-                // happy villager particle
-                block.getWorld().spawnParticle(Particle.HAPPY_VILLAGER, block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                GeneratorParticle.successParticle(block, generator);
             }
             // Save the generator
             Executor.async(() -> NextGens.getInstance().getGeneratorManager().saveActiveGenerator(active));

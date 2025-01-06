@@ -55,10 +55,7 @@ public class GeneratorUpdateHelper {
         // play particle
         Executor.async(() -> {
             if (NextGens.DEFAULT_CONFIG.getConfig().getBoolean("generator-upgrade-options.particles")) {
-                // block crack particle
-                block.getWorld().spawnParticle(XParticle.BLOCK.get(), block.getLocation().add(0.5, 0.85, 0.5), 30, 0.5, 0.5, 0.5, 2.5, nextGenerator.item().getType().createBlockData());
-                // happy villager particle
-                block.getWorld().spawnParticle(XParticle.HAPPY_VILLAGER.get(), block.getLocation().add(0.5, 0.85, 0.5), 50, 0.5, 0.5, 0.5, 2.5);
+                GeneratorParticle.successParticle(block, generator);
             }
         });
         // give cashback to the player
