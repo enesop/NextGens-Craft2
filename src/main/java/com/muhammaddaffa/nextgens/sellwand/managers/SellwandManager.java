@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.sellwand.managers;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.sellwand.models.SellwandData;
 import com.muhammaddaffa.nextgens.users.UserManager;
@@ -59,7 +60,7 @@ public class SellwandManager {
             // Destroy the item
             stack.setAmount(0);
             NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-broke");
-            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
+            player.playSound(player.getLocation(), XSound.ENTITY_ITEM_BREAK.get(), 1.0f, 1.0f);
             return true;
         }
 

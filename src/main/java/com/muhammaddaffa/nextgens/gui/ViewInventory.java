@@ -4,6 +4,7 @@ import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -100,7 +101,7 @@ public class ViewInventory extends FastInv {
                             .add("{max}", this.userManager.getMaxSlot(owner)));
                 }
                 // play click button sound
-                this.player.playSound(this.player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+                this.player.playSound(this.player.getLocation(), XSound.UI_BUTTON_CLICK.get(), 1.0f, 1.0f);
 
                 // update the gui
                 int currentPage = this.pagination.currentPage;

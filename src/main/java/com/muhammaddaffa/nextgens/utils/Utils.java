@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.utils;
 import com.muhammaddaffa.mdlib.hooks.VaultEconomy;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.PlayerCashbackEvent;
 import com.muhammaddaffa.nextgens.users.UserManager;
@@ -106,7 +107,7 @@ public class Utils {
     }
 
     public static void bassSound(Player player) {
-        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 2.0f);
+        player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_BASS.get(), 1.0f, 2.0f);
     }
 
 }

@@ -4,6 +4,7 @@ import com.muhammaddaffa.mdlib.fastinv.FastInv;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.autosell.Autosell;
 import com.muhammaddaffa.nextgens.users.models.User;
@@ -86,11 +87,11 @@ public class PlayerSettingsInventory extends FastInv {
     }
 
     private void playSuccessSound() {
-        this.player.playSound(this.player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+        this.player.playSound(this.player.getLocation(), XSound.UI_BUTTON_CLICK.get(), 1.0f, 1.0f);
     }
 
     private void playFailedSound() {
-        this.player.playSound(this.player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+        this.player.playSound(this.player.getLocation(), XSound.ENTITY_VILLAGER_NO.get(), 1.0f, 1.0f);
     }
 
 }

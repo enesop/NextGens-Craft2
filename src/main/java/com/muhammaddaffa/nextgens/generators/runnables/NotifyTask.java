@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.generators.runnables;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -70,7 +71,7 @@ public class NotifyTask extends BukkitRunnable {
 
     private void sendNotification(Player player, int corruptedCount) {
         Settings.CORRUPTION_NOTIFY_MESSAGE.send(player, new Placeholder().add("{amount}", Common.digits(corruptedCount)));
-        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+        player.playSound(player.getLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.get(), 1.0f, 1.0f);
     }
 
 }

@@ -5,6 +5,7 @@ import com.muhammaddaffa.mdlib.commandapi.arguments.PlayerArgument;
 import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Config;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
+import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -86,7 +87,7 @@ public class PickupCommand {
                     NextGens.DEFAULT_CONFIG.sendMessage(actualTarget, "messages.pickup-gens", new Placeholder()
                             .add("{amount}", Common.digits(total)));
                     // send sound
-                    actualTarget.playSound(actualTarget.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f);
+                    actualTarget.playSound(actualTarget.getLocation(), XSound.ENTITY_PLAYER_LEVELUP.get(), 1.0f, 2.0f);
                 });
         this.command.setAliases(aliases.toArray(new String[0]));
     }
