@@ -11,10 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -26,16 +23,16 @@ public record GeneratorPreventionListener(
         GeneratorManager generatorManager
 ) implements Listener {
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    private void prevention(InventoryClickEvent event) {
-        Inventory inventory = getTopInventory(event);
-        ItemStack stack = event.getCurrentItem();
-        // Check if the inventory is a grindstone
-        if (inventory.getType() != InventoryType.GRINDSTONE) return;
-        // Check if the item is related to generator
-        if (!this.generatorManager.isGeneratorItem(stack)) return;
-        // Otherwise, we should cancel it
-        event.setCancelled(true);
+    @EventHandler(ignoreCancelled = true)
+    private void onGrindstoneUse(PrepareGrindstoneEvent event) {
+        // Check if one of the item is a generator item
+        for (ItemStack stack : event.getInventory().getContents()) {
+            if (this.generatorManager.isGeneratorItem(stack)) {
+                // Set the result to null
+                event.setResult(null);
+                break;
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
