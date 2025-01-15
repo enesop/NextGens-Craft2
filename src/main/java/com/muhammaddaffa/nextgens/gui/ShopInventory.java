@@ -9,6 +9,7 @@ import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -72,16 +73,12 @@ public class ShopInventory extends FastInv {
         // loop through the items
         for (String key : pageItems) {
             // get the data
-            String type = config.getString(key + ".type");
+            String type = config.getString(key + ".type", "dummy");
             List<Integer> slots = config.getIntegerList(key + ".slots");
+            List<String> commands = config.getStringList(key + ".commands");
             ItemBuilder builder = ItemBuilder.fromConfig(config, key);
             if (builder == null) continue;
             ItemStack stack = builder.build();
-
-            if (type == null) {
-                this.setItems(Utils.convertListToIntArray(slots), stack);
-                continue;
-            }
 
             if (type.equalsIgnoreCase("GENERATOR")) {
                 String id = config.getString(key + ".generator");
@@ -145,7 +142,12 @@ public class ShopInventory extends FastInv {
             }
 
             // set the normal items
-            this.setItems(Utils.convertListToIntArray(slots), stack);
+            this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
+                if (!(event.getWhoClicked() instanceof Player player)) return;
+                // Execute the console commands
+                commands.forEach(command -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command
+                        .replace("{player}", player.getName())));
+            });
         }
 
     }
