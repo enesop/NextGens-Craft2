@@ -23,6 +23,13 @@ public record GeneratorPreventionListener(
         GeneratorManager generatorManager
 ) implements Listener {
 
+    @EventHandler
+    private void onBlockFade(BlockFadeEvent event) {
+        if (this.generatorManager.getActiveGenerator(event.getBlock()) != null) {
+            event.setCancelled(true);
+        }
+    }
+
     @EventHandler(ignoreCancelled = true)
     private void onGrindstoneUse(PrepareGrindstoneEvent event) {
         // Check if one of the item is a generator item
