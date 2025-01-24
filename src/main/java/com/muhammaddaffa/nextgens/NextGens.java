@@ -129,15 +129,21 @@ public final class NextGens extends JavaPlugin {
         commands();
         listeners();
 
-        // load all generators
-        this.generatorManager.loadGenerators();
-
         // register task
         tasks();
         // register hook
         hooks();
-        // update checker
-        updateCheck();
+
+        // load all generators
+        this.generatorManager.loadGenerators();
+
+        // system to reload generators to fix some issues
+        Executor.syncLater(60L, () -> {
+            // load back the generators
+            this.generatorManager.loadGenerators();
+            // refresh the active generator
+            Executor.async(this.generatorManager::refreshActiveGenerator);
+        });
 
         Executor.asyncLater(3L, () -> {
             // load active generators
@@ -155,6 +161,9 @@ public final class NextGens extends JavaPlugin {
 
             // worth system
             this.worthManager.load();
+
+            // update checker
+            updateCheck();
         });
     }
 
