@@ -8,7 +8,11 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
+import com.muhammaddaffa.nextgens.requirements.GensRequirement;
+import com.muhammaddaffa.nextgens.requirements.impl.PermissionRequirement;
+import com.muhammaddaffa.nextgens.requirements.impl.PlaceholderRequirement;
 import com.muhammaddaffa.nextgens.utils.*;
+import net.brcdev.shopgui.core.BConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -332,8 +336,11 @@ public class GeneratorManager {
             }
         }
 
+        List<GensRequirement> placeRequirements = this.loadRequirement(section, "place-requirements");
+        List<GensRequirement> upgradeRequirements = this.loadRequirement(section, "upgrade-requirements");
+
         Generator generator = new Generator(id, displayName, interval, item, drops, nextTier, upgradeCost,
-                corrupted, fixCost, corruptChance, onlineOnly);
+                corrupted, fixCost, corruptChance, onlineOnly, placeRequirements, upgradeRequirements);
 
         // call the custom event
         GeneratorLoadEvent loadEvent = new GeneratorLoadEvent(generator);
@@ -345,6 +352,28 @@ public class GeneratorManager {
         this.generatorMap.put(id, generator);
         // send log message
         Logger.info("Loaded generator '" + id + "'");
+    }
+
+    private List<GensRequirement> loadRequirement(ConfigurationSection section, String path) {
+        List<GensRequirement> requirements = new ArrayList<>();
+        if (section.isConfigurationSection(path)) {
+            for (String key : section.getConfigurationSection(path).getKeys(false)) {
+                String type = section.getString(path + "." + key + ".type", "DUMMY");
+                String message = section.getString(path + "." + key + ".message", "&cYou don't have the requirement to do this!");
+                switch (type.toUpperCase()) {
+                    case "PERMISSION" -> {
+                        String permission = section.getString(path + "." + key + ".permission");
+                        requirements.add(new PermissionRequirement(message, permission));
+                    }
+                    case "PLACEHOLDER" -> {
+                        String placeholder = section.getString(path + "." + key + ".placeholder");
+                        String value = section.getString(path + "." + key + ".value");
+                        requirements.add(new PlaceholderRequirement(message, placeholder, value));
+                    }
+                }
+            }
+        }
+        return requirements;
     }
 
     public void refreshActiveGenerator() {

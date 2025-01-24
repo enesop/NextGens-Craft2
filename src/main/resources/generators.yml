@@ -18,6 +18,8 @@ wheat_generator:
     # If you don't want the generator to be upgradeable, simply put "null"
     next-generator: melon_generator
     upgrade-cost: 50
+  # The requirement to upgrade this generator
+  upgrade-requirements: []
   # The generator item
   item:
     material: HAY_BLOCK

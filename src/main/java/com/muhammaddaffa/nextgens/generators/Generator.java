@@ -2,10 +2,13 @@ package com.muhammaddaffa.nextgens.generators;
 
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
 import com.muhammaddaffa.nextgens.NextGens;
+import com.muhammaddaffa.nextgens.requirements.GensRequirement;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record Generator(
@@ -19,8 +22,20 @@ public record Generator(
         boolean corrupted,
         double fixCost,
         double corruptChance,
-        Boolean onlineOnly
+        Boolean onlineOnly,
+        List<GensRequirement> placeRequirements,
+        List<GensRequirement> upgradeRequirements
 ) {
+
+    public List<String> checkRequirements(Player player, List<GensRequirement> requirements) {
+        List<String> messages = new ArrayList<>();
+        for (GensRequirement requirement : requirements) {
+            if (!requirement.isSuccessful(player)) {
+                messages.add(requirement.getMessage());
+            }
+        }
+        return messages;
+    }
 
     public Drop getRandomDrop() {
         for (Drop drop : this.drops)

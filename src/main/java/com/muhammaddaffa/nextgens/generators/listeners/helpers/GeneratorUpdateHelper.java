@@ -16,6 +16,8 @@ import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.List;
+
 public class GeneratorUpdateHelper {
 
     public static void upgradeGenerator(Player player, ActiveGenerator active, Generator generator, Generator nextGenerator) {
@@ -33,6 +35,13 @@ public class GeneratorUpdateHelper {
                     .add("{upgradecost}", Common.digits(generator.cost()))
                     .add("{remaining}", Common.digits(VaultEconomy.getBalance(player) - generator.cost())));
             // play bass sound
+            Utils.bassSound(player);
+            return;
+        }
+        // Check requirements
+        List<String> requirementsNotPassed = generator.checkRequirements(player, generator.upgradeRequirements());
+        if (!requirementsNotPassed.isEmpty()) {
+            Common.sendMessage(player, requirementsNotPassed);
             Utils.bassSound(player);
             return;
         }

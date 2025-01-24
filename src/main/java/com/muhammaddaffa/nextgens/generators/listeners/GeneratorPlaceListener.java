@@ -1,5 +1,6 @@
 package com.muhammaddaffa.nextgens.generators.listeners;
 
+import com.muhammaddaffa.mdlib.utils.Common;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.mdlib.xseries.particles.XParticle;
@@ -9,6 +10,7 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.listeners.helpers.GeneratorParticle;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.requirements.GensRequirement;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import com.muhammaddaffa.nextgens.utils.VisualAction;
@@ -22,6 +24,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public record GeneratorPlaceListener(
         GeneratorManager generatorManager,
@@ -57,6 +62,18 @@ public record GeneratorPlaceListener(
             notifyTooClose(player, event);
             return;
         }
+
+        // Check requirements
+        List<String> requirementsNotPassed = generator.checkRequirements(player, generator.placeRequirements());
+        if (!requirementsNotPassed.isEmpty()) {
+            Common.sendMessage(player, requirementsNotPassed);
+            // Cancel the event
+            event.setCancelled(true);
+            // Bass sound
+            Utils.bassSound(player);
+            return;
+        }
+
 
         handleGeneratorPlacement(player, block, generator, config, event);
     }
