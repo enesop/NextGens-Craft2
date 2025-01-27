@@ -1,9 +1,6 @@
 package com.muhammaddaffa.nextgens.sell.multipliers;
 
-import com.muhammaddaffa.nextgens.sell.multipliers.providers.EventSellMultiplierProvider;
-import com.muhammaddaffa.nextgens.sell.multipliers.providers.PermissionSellMultiplierProvider;
-import com.muhammaddaffa.nextgens.sell.multipliers.providers.SellwandSellMultiplierProvider;
-import com.muhammaddaffa.nextgens.sell.multipliers.providers.UserSellMultiplierProvider;
+import com.muhammaddaffa.nextgens.sell.multipliers.providers.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +15,7 @@ public class SellMultiplierRegistry {
         multipliers.add(new PermissionSellMultiplierProvider());
         multipliers.add(new SellwandSellMultiplierProvider());
         multipliers.add(new UserSellMultiplierProvider());
+        multipliers.add(new WorldSellMultiplierProvider());
     }
 
     public void registerMultiplier(SellMultiplierProvider provider) {

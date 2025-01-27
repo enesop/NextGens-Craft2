@@ -293,6 +293,7 @@ public final class NextGens extends JavaPlugin {
         pm.registerEvents(new PlayerJoinListener(this.generatorManager), this);
         pm.registerEvents(new SellwandListener(this.sellwandManager), this);
         pm.registerEvents(new RefundListener(this.refundManager), this);
+        pm.registerEvents(new GeneratorWorldDropMultiplier(), this);
     }
 
     private void commands() {

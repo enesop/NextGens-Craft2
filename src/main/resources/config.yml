@@ -306,6 +306,14 @@ corrupt-fix-options:
     volume: 1.0
     pitch: 2.0
 
+# List of world that's going to have certain multipliers
+world-multipliers:
+  example_world: # World name
+    sell-multiplier: 2.0
+    speed-multiplier: 30 # in percentage
+    drop-multiplier: 1
+
+
 messages:
   no-permission: '&6[NextGens] &cYou don''t have permission'
   reload: '&6[NextGens] &aYou have reloaded the configuration!'
