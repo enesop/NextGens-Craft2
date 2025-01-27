@@ -12,6 +12,7 @@ import com.muhammaddaffa.nextgens.requirements.GensRequirement;
 import com.muhammaddaffa.nextgens.requirements.impl.PermissionRequirement;
 import com.muhammaddaffa.nextgens.requirements.impl.PlaceholderRequirement;
 import com.muhammaddaffa.nextgens.utils.*;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.brcdev.shopgui.core.BConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -254,6 +255,8 @@ public class GeneratorManager {
     }
 
     public void loadGenerators() {
+        // Clear the generators map
+        this.generatorMap.clear();
         // log message
         Logger.info("Starting to load all generators...");
         // load all generators files inside the 'generators' directory
@@ -324,6 +327,7 @@ public class GeneratorManager {
             return;
         }
         ItemStack item = builder.build();
+
         List<Drop> drops = new ArrayList<>();
 
         if (section.isConfigurationSection("drops")) {
