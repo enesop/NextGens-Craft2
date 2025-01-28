@@ -123,6 +123,11 @@ public class GensExpansion extends PlaceholderExpansion {
                     .replace("{timer}", TimeUtils.format((long) event.getDuration()));
         }
 
+        if (params.equalsIgnoreCase("event_isactive")) {
+            return this.eventManager.getActiveEvent() == null ?
+                    "false" : "true";
+        }
+
         return null; // Placeholder is unknown by the Expansion
     }
 
