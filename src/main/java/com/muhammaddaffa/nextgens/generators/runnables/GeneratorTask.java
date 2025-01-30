@@ -120,6 +120,15 @@ public class GeneratorTask extends BukkitRunnable {
             double interval = generator.interval();
             int dropAmount;
             /**
+             * World multipliers code
+             */
+            double worldDiscount = NextGens.DEFAULT_CONFIG.getDouble("world-multipliers." + active.getLocation().getWorld().getName() + ".speed-multiplier");
+            if (worldDiscount > 0) {
+                double discount = (generator.interval() * worldDiscount) / 100;
+                // deduct the interval
+                interval -= discount;
+            }
+            /**
              * Event-related code
              */
             if (event != null) {

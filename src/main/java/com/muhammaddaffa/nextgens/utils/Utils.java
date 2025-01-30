@@ -7,6 +7,7 @@ import com.muhammaddaffa.mdlib.xseries.XSound;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.PlayerCashbackEvent;
 import com.muhammaddaffa.nextgens.users.UserManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -20,6 +21,24 @@ import java.util.List;
 public class Utils {
 
     private static final FormatBalance formatBalance = new FormatBalance();
+
+    public static ItemStack parsePlaceholderAPI(ItemStack stack) {
+        if (stack == null || stack.getItemMeta() == null) {
+            return stack;
+        }
+        ItemMeta meta = stack.getItemMeta();
+        // Parse the display name
+        if (meta.getDisplayName() != null && !meta.getDisplayName().isEmpty()) {
+            meta.setDisplayName(PlaceholderAPI.setPlaceholders(null, meta.getDisplayName()));
+        }
+        if (meta.getLore() != null && !meta.getLore().isEmpty()) {
+            meta.setLore(PlaceholderAPI.setPlaceholders(null, meta.getLore()));
+        }
+        // Set the item meta
+        stack.setItemMeta(meta);
+        // Return the item
+        return stack;
+    }
 
     public static int[] convertListToIntArray(List<Integer> list) {
         // Create an int array of the same size as the list

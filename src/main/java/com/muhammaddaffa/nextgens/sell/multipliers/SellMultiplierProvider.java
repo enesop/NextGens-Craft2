@@ -1,10 +1,10 @@
-package com.muhammaddaffa.nextgens.multipliers;
+package com.muhammaddaffa.nextgens.sell.multipliers;
 
 import com.muhammaddaffa.nextgens.sellwand.models.SellwandData;
 import com.muhammaddaffa.nextgens.users.models.User;
 import org.bukkit.entity.Player;
 
-public interface MultiplierProvider {
+public interface SellMultiplierProvider {
 
     /**
      * Returns the additive multiplier value for a sale.

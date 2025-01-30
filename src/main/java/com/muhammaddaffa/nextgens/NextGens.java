@@ -22,7 +22,7 @@ import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
-import com.muhammaddaffa.nextgens.multipliers.MultiplierRegistry;
+import com.muhammaddaffa.nextgens.sell.multipliers.SellMultiplierRegistry;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
 import com.muhammaddaffa.nextgens.refund.listeners.RefundListener;
 import com.muhammaddaffa.nextgens.sell.SellManager;
@@ -80,7 +80,7 @@ public final class NextGens extends JavaPlugin {
     private final RefundManager refundManager = new RefundManager(generatorManager);
     private final SellwandManager sellwandManager = new SellwandManager();
     private final AutosellManager autosellManager = new AutosellManager(userManager);
-    private final MultiplierRegistry multiplierRegistry = new MultiplierRegistry();
+    private final SellMultiplierRegistry sellMultiplierRegistry = new SellMultiplierRegistry();
 
     public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
             WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
@@ -138,7 +138,7 @@ public final class NextGens extends JavaPlugin {
         this.generatorManager.loadGenerators();
 
         // system to reload generators to fix some issues
-        Executor.syncLater(60L, () -> {
+        Executor.syncLater(20L, () -> {
             // load back the generators
             this.generatorManager.loadGenerators();
             // refresh the active generator
@@ -293,6 +293,7 @@ public final class NextGens extends JavaPlugin {
         pm.registerEvents(new PlayerJoinListener(this.generatorManager), this);
         pm.registerEvents(new SellwandListener(this.sellwandManager), this);
         pm.registerEvents(new RefundListener(this.refundManager), this);
+        pm.registerEvents(new GeneratorWorldDropMultiplier(), this);
     }
 
     private void commands() {
@@ -396,8 +397,8 @@ public final class NextGens extends JavaPlugin {
         return sellManager;
     }
 
-    public MultiplierRegistry getMultiplierRegistry() {
-        return multiplierRegistry;
+    public SellMultiplierRegistry getMultiplierRegistry() {
+        return sellMultiplierRegistry;
     }
 
     public DatabaseManager getDatabaseManager() {

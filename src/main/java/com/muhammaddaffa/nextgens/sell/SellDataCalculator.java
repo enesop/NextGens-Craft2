@@ -1,7 +1,7 @@
 package com.muhammaddaffa.nextgens.sell;
 
 import com.muhammaddaffa.nextgens.NextGens;
-import com.muhammaddaffa.nextgens.multipliers.MultiplierProvider;
+import com.muhammaddaffa.nextgens.sell.multipliers.SellMultiplierProvider;
 import com.muhammaddaffa.nextgens.sellwand.models.SellwandData;
 import com.muhammaddaffa.nextgens.users.models.User;
 import com.muhammaddaffa.nextgens.utils.SellData;
@@ -14,7 +14,7 @@ public class SellDataCalculator {
         double totalMultiplier = 0;
 
         // Get all multipliers
-        for (MultiplierProvider provider : NextGens.getInstance().getMultiplierRegistry().getMultipliers()) {
+        for (SellMultiplierProvider provider : NextGens.getInstance().getMultiplierRegistry().getMultipliers()) {
             double multiplier = provider.getMultiplier(player, user, sellwand);
             if (multiplier > 0) {
                 totalMultiplier += multiplier;
