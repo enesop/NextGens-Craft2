@@ -24,6 +24,13 @@ public record GeneratorPreventionListener(
 ) implements Listener {
 
     @EventHandler
+    private void onDecay(LeavesDecayEvent event) {
+        if (this.generatorManager.getActiveGenerator(event.getBlock()) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     private void onBlockFade(BlockFadeEvent event) {
         if (this.generatorManager.getActiveGenerator(event.getBlock()) != null) {
             event.setCancelled(true);
