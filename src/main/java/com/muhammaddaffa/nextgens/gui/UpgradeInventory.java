@@ -11,6 +11,7 @@ import com.muhammaddaffa.nextgens.generators.listeners.helpers.GeneratorUpdateHe
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.*;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -63,11 +64,19 @@ public class UpgradeInventory extends FastInv {
 
     private void setUpgradeButton(List<Integer> slots) {
         FileConfiguration config = NextGens.UPGRADE_GUI_CONFIG.getConfig();
+        // Get the desired variables
+        String displayName = config.getString("display-enough-money.display-name");
+        List<String> lore = config.getStringList("display-enough-money.lore");
+
+        // Parse the placeholder api for those variables
+        displayName = PlaceholderAPI.setPlaceholders(null, displayName);
+        lore = PlaceholderAPI.setPlaceholders(null, lore);
+
         // build the item
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
-                .name(config.getString("display-enough-money.display-name"))
+                .name(displayName)
                 .customModelData(config.getInt("display-enough-money.custom-model-data"))
-                .lore(config.getStringList("display-enough-money.lore"))
+                .lore(lore)
                 .flags(ItemFlag.values())
                 .placeholder(new Placeholder()
                         .add("{current}", this.generator.displayName())
@@ -91,10 +100,17 @@ public class UpgradeInventory extends FastInv {
     private void setNoMoneyButton(List<Integer> slots) {
         FileConfiguration config = NextGens.UPGRADE_GUI_CONFIG.getConfig();
         // build the item
+        String displayName = config.getString("display-no-money.display-name");
+        List<String> lore = config.getStringList("display-no-money.lore");
+
+        // Parse the placeholder api for those variables
+        displayName = PlaceholderAPI.setPlaceholders(null, displayName);
+        lore = PlaceholderAPI.setPlaceholders(null, lore);
+
         ItemBuilder builder = new ItemBuilder(this.generator.item().getType())
-                .name(config.getString("display-no-money.display-name"))
+                .name(displayName)
                 .customModelData(config.getInt("display-no-money.custom-model-data"))
-                .lore(config.getStringList("display-no-money.lore"))
+                .lore(lore)
                 .flags(ItemFlag.values())
                 .placeholder(new Placeholder()
                         .add("{current}", this.generator.displayName())
