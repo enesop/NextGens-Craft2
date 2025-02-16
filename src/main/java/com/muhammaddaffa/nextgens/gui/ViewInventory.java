@@ -58,9 +58,7 @@ public class ViewInventory extends FastInv {
         }
 
         // clear the inventory first
-        for (int i = 0; i < this.getInventory().getSize(); i++) {
-            this.setItem(i, new ItemStack(Material.AIR));
-        }
+        this.clearItems();
 
         List<String> additionalLore = config.getStringList("additional-lore");
         String pickupPermission = config.getString("pickup-own");
