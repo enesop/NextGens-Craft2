@@ -9,6 +9,7 @@ import com.muhammaddaffa.nextgens.sellwand.models.SellwandData;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.SellData;
 import com.muhammaddaffa.nextgens.utils.Utils;
+import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SellwandManager {
@@ -93,8 +95,15 @@ public class SellwandManager {
         }
 
         // Set display name and lore
-        builder.name(config.getString("sellwand.item.display-name"));
-        builder.lore(config.getStringList("sellwand.item.lore"));
+        String displayName = config.getString("sellwand.item.display-name");
+        List<String> lore = config.getStringList("sellwand.item.lore");
+
+        // Parse the placeholder api
+        displayName = PlaceholderAPI.setPlaceholders(null, displayName);
+        lore = PlaceholderAPI.setPlaceholders(null, lore);
+
+        builder.name(displayName);
+        builder.lore(lore);
         builder.placeholder(new Placeholder()
                 .add("{multiplier}", Common.digits(multiplier))
                 .add("{uses}", getUsesPlaceholder(uses))
