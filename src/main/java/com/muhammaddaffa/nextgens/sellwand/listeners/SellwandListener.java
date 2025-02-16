@@ -54,10 +54,17 @@ public class SellwandListener implements Listener {
             AdvancedChest<?, ?> advancedChest = AdvancedChestsAPI.getChestManager().getAdvancedChest(block.getLocation());
             if (advancedChest != null) {
                 if (!advancedChest.getWhoPlaced().equals(player.getUniqueId())) {
-                    NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-failed");
-                    Utils.bassSound(player);
-                    return;
+                    boolean hasAccess = this.hasAccess(player, block);
+                    boolean memberSell = NextGens.DEFAULT_CONFIG.getBoolean("advancedchests-member-sell");
+
+                    // If the player doesn't have access or member selling is disallowed, abort
+                    if (!hasAccess || !memberSell) {
+                        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-failed");
+                        Utils.bassSound(player);
+                        return;
+                    }
                 }
+
                 List<Inventory> inventories = advancedChest.getPages().values()
                         .stream()
                         .map(InteractiveInventory::getBukkitInventory)
@@ -70,7 +77,7 @@ public class SellwandListener implements Listener {
 
         // Normal Container
         if (block.getState() instanceof Container container) {
-            if (!hasAccess(player, container)) {
+            if (!hasAccess(player, block)) {
                 NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.sellwand-failed");
                 Utils.bassSound(player);
                 return;
@@ -85,11 +92,11 @@ public class SellwandListener implements Listener {
         event.setCancelled(true);
     }
 
-    private boolean hasAccess(Player player, Container container) {
+    private boolean hasAccess(Player player, Block block) {
         // LWC Check
         if (Bukkit.getPluginManager().isPluginEnabled("LWC")) {
             LWC lwc = ((LWCPlugin) Bukkit.getPluginManager().getPlugin("LWC")).getLWC();
-            if (!lwc.canAccessProtection(player, container.getBlock())) {
+            if (!lwc.canAccessProtection(player, block)) {
                 return false;
             }
         }
@@ -98,7 +105,7 @@ public class SellwandListener implements Listener {
         if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
             SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(player);
             Island playerIsland = superiorPlayer.getIsland();
-            Island islandAt = SuperiorSkyblockAPI.getIslandAt(container.getLocation());
+            Island islandAt = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
 
             if (playerIsland == null || islandAt == null) {
                 return false;
@@ -109,7 +116,7 @@ public class SellwandListener implements Listener {
         // BentoBox Check
         if (Bukkit.getPluginManager().isPluginEnabled("BentoBox")) {
             Optional<world.bentobox.bentobox.database.objects.Island> islandAt =
-                    BentoBox.getInstance().getIslandsManager().getIslandAt(container.getLocation());
+                    BentoBox.getInstance().getIslandsManager().getIslandAt(block.getLocation());
 
             if (islandAt.isEmpty()) {
                 return false;
