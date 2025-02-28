@@ -4,12 +4,15 @@ import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
@@ -22,6 +25,21 @@ import java.util.List;
 public record GeneratorPreventionListener(
         GeneratorManager generatorManager
 ) implements Listener {
+
+    @EventHandler
+    private void onFallingBlock(EntityChangeBlockEvent event) {
+        // check if it's not falling block then return
+        if (!(event.getEntity() instanceof FallingBlock)) return;
+
+        // get generator variable
+        ActiveGenerator generator = this.generatorManager.getActiveGenerator(event.getBlock());
+        // if it's generator then cancel
+        if (generator != null) {
+            event.setCancelled(true);
+        }
+
+
+    }
 
     @EventHandler
     private void onDecay(LeavesDecayEvent event) {
