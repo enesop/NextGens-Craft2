@@ -28,10 +28,17 @@ public record GeneratorPreventionListener(
 
     @EventHandler
     private void onFallingBlock(EntityChangeBlockEvent event) {
-        // check all instance of falling blocks
-        if (event.getEntity() instanceof FallingBlock) {
+        // check if it's not falling block then return
+        if (!(event.getEntity() instanceof FallingBlock)) return;
+
+        // get generator variable
+        ActiveGenerator generator = this.generatorManager.getActiveGenerator(event.getBlock());
+        // if it's generator then cancel
+        if (generator != null) {
             event.setCancelled(true);
         }
+
+
     }
 
     @EventHandler
