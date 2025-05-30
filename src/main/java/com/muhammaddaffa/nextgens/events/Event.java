@@ -1,6 +1,7 @@
 package com.muhammaddaffa.nextgens.events;
 
 import com.muhammaddaffa.mdlib.utils.Common;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.mdlib.utils.TimeUtils;
 import com.muhammaddaffa.nextgens.NextGens;
@@ -36,7 +37,7 @@ public class Event implements Cloneable{
         this.startMessage = config.getStringList(path + ".start-message");
         this.endMessage = config.getStringList(path + ".end-message");
         this.duration = config.getDouble(path + ".duration");
-        this.setBlacklistedGenerators(config.getStringList(path + ".blacklisted-generators"));
+        this.setBlacklistedGenerators(config.getStringList(path + ".blacklisted_generators"));
         this.chance = config.getDouble(path + ".chance", 65);
         this.onlyByCommand = config.getBoolean(path + ".only-by-command");
     }
