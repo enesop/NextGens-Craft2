@@ -1,5 +1,7 @@
 package com.muhammaddaffa.nextgens.generators.runnables;
 
+import com.artillexstudios.axboosters.hooks.booster.BoosterHook;
+import com.artillexstudios.axboosters.libs.kyori.adventure.key.Key;
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.LocationUtils;
 import com.muhammaddaffa.mdlib.utils.Logger;
@@ -13,6 +15,7 @@ import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
+import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterSpeedListener;
 import com.muhammaddaffa.nextgens.sell.SellDataCalculator;
 import com.muhammaddaffa.nextgens.users.models.User;
 import com.muhammaddaffa.nextgens.users.UserManager;
@@ -120,6 +123,15 @@ public class GeneratorTask extends BukkitRunnable {
             Generator chosenGenerator = generator;
             double interval = generator.interval();
             int dropAmount;
+
+            float boosts = 1.0f;
+            if (Bukkit.getPluginManager().isPluginEnabled("AxBoosters") && player != null) {
+                com.artillexstudios.axboosters.users.User boosterUser = com.artillexstudios.axboosters.users.UserList.getUser(player);
+                if (boosterUser != null) {
+                    boosts = boosterUser.getBoost(AxBoosterSpeedListener.INSTANCE);
+                }
+            }
+            interval = interval / boosts;
             /**
              * World multipliers code
              */
@@ -176,9 +188,11 @@ public class GeneratorTask extends BukkitRunnable {
             }
             // add timer
             active.addTimer(0.25);
+            //Logger.info("Generator " + generator.id() + " timer: " + active.getTimer() + " / " + interval);
             // check if the generator should drop
             if (active.getTimer() >= interval) {
                 // execute drop mechanics
+                //Logger.info("Generator " + generator.id() + " is dropping item!");
                 Block block = active.getLocation().getBlock();
                 // execute it in sync task
                 Generator finalChosenGenerator = chosenGenerator;
