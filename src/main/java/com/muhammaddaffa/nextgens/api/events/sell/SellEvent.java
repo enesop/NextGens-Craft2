@@ -36,6 +36,14 @@ public class SellEvent extends Event implements Cancellable {
         return sellData;
     }
 
+    public double getMultiplier() {
+        return sellData.getMultiplier();
+    }
+
+    public void setMultiplier(double multiplier) {
+        sellData.setMultiplier(multiplier);
+    }
+
     public void setSellData(SellData sellData) {
         this.sellData = sellData;
     }
