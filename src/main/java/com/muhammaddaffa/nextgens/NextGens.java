@@ -18,6 +18,7 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
+import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterLoad;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
@@ -41,6 +42,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.popcraft.bolt.BoltAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +83,9 @@ public final class NextGens extends JavaPlugin {
     private final SellwandManager sellwandManager = new SellwandManager();
     private final AutosellManager autosellManager = new AutosellManager(userManager);
     private final SellMultiplierRegistry sellMultiplierRegistry = new SellMultiplierRegistry();
+
+    // API
+    private BoltAPI boltAPI;
 
     public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
             WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
@@ -125,45 +130,48 @@ public final class NextGens extends JavaPlugin {
         this.dbm.createGeneratorTable();
         this.dbm.createUserTable();
 
-        // register commands & listeners
-        commands();
-        listeners();
+        Executor.sync(() -> {
+            // register commands & listeners
+            commands();
+            listeners();
 
-        // register task
-        tasks();
-        // register hook
-        hooks();
+            // register task
+            tasks();
+            // register hook
+            hooks();
 
-        // load all generators
-        this.generatorManager.loadGenerators();
-
-        // system to reload generators to fix some issues
-        Executor.syncLater(20L, () -> {
-            // load back the generators
             this.generatorManager.loadGenerators();
-            // refresh the active generator
-            Executor.async(this.generatorManager::refreshActiveGenerator);
-        });
 
-        Executor.asyncLater(3L, () -> {
+            // system to reload generators to fix some issues
+            Executor.syncLater(20L, () -> {
+                // load back the generators
+                this.generatorManager.loadGenerators();
+                // refresh the active generator
+                Executor.async(this.generatorManager::refreshActiveGenerator);
+            });
+
+
             // load active generators
-            this.generatorManager.loadActiveGenerator();
-            // load users
-            this.userRepository.loadUsers();
+            this.generatorManager.whenLoaded(() -> Executor.async(this.generatorManager::loadActiveGenerator));
 
-            // load the refund
-            this.refundManager.load();
+            Executor.asyncLater(3L, () -> {
+                // load users
+                this.userRepository.loadUsers();
 
-            // load events
-            this.eventManager.loadEvents();
-            this.eventManager.load();
-            this.eventManager.startTask();
+                // load the refund
+                this.refundManager.load();
 
-            // worth system
-            this.worthManager.load();
+                // load events
+                this.eventManager.loadEvents();
+                this.eventManager.load();
+                this.eventManager.startTask();
 
-            // update checker
-            updateCheck();
+                // worth system
+                this.worthManager.load();
+
+                // update checker
+                updateCheck();
+            });
         });
     }
 
@@ -212,7 +220,7 @@ public final class NextGens extends JavaPlugin {
         // papi hook
         if (pm.getPlugin("PlaceholderAPI") != null) {
             Logger.info("Found PlaceholderAPI! Registering hook...");
-            new GensExpansion(this.generatorManager, this.userManager, this.eventManager).register();
+            new GensExpansion(this.generatorManager, this.userManager, this.eventManager, this.sellMultiplierRegistry).register();
         }
         if (pm.getPlugin("SuperiorSkyblock2") != null) {
             Logger.info("Found SuperiorSkyblock2! Registering hook...");
@@ -242,9 +250,20 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("LWC") != null) {
             Logger.info("Found LWC! Registering hook...");
         }
+
+        if (pm.getPlugin("Bolt") != null) {
+            Logger.info("Found Bolt! Registering hook...");
+            this.boltAPI = Bukkit.getServicesManager().load(BoltAPI.class);
+        }
+
         if (pm.getPlugin("FabledSkyblock") != null) {
             Logger.info("Found FabledSkyblock! Registering hook...");
             pm.registerEvents(new FabledSbListener(this.generatorManager, this.refundManager), this);
+        }
+        // AxBoosters intergration
+        if (pm.isPluginEnabled("AxBoosters")) {
+            Logger.info("Found AxBoosters, registering hook...");
+            pm.registerEvents(new AxBoosterLoad(this), this);
         }
         // register bstats metrics hook
         this.connectMetrics();
@@ -403,6 +422,10 @@ public final class NextGens extends JavaPlugin {
 
     public DatabaseManager getDatabaseManager() {
         return dbm;
+    }
+
+    public BoltAPI getBoltAPI() {
+        return boltAPI;
     }
 
     public static NextGens getInstance() {
