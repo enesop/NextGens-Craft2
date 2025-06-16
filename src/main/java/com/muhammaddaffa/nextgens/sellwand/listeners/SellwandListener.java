@@ -5,6 +5,7 @@ import com.bgsoftware.superiorskyblock.api.island.Island;
 import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.griefcraft.lwc.LWC;
 import com.griefcraft.lwc.LWCPlugin;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.sellwand.managers.SellwandManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -20,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.popcraft.bolt.BoltAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.AdvancedChestsAPI;
 import us.lynuxcraft.deadsilenceiv.advancedchests.chest.AdvancedChest;
 import us.lynuxcraft.deadsilenceiv.advancedchests.utils.inventory.InteractiveInventory;
@@ -93,6 +95,12 @@ public class SellwandListener implements Listener {
     }
 
     private boolean hasAccess(Player player, Block block) {
+        // Bolt Check
+        if (Bukkit.getPluginManager().isPluginEnabled("Bolt")) {
+            BoltAPI bolt = NextGens.getInstance().getBoltAPI();
+            return bolt.canAccess(block, player, "interact");
+        }
+
         // LWC Check
         if (Bukkit.getPluginManager().isPluginEnabled("LWC")) {
             LWC lwc = ((LWCPlugin) Bukkit.getPluginManager().getPlugin("LWC")).getLWC();
