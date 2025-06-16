@@ -43,8 +43,6 @@ public class GeneratorManager {
 
     private final Map<UUID, Integer> generatorCount = new HashMap<>();
 
-    private boolean generatorLoaded = false;
-
     private final DatabaseManager dbm;
     public GeneratorManager(DatabaseManager dbm) {
         this.dbm = dbm;
@@ -218,11 +216,6 @@ public class GeneratorManager {
     }
 
     public void loadActiveGenerator() {
-        if (!this.generatorLoaded) {
-            Logger.warning("Tried to load active generators before generators are loaded!");
-            return;
-        }
-
         String query = "SELECT * FROM " + DatabaseManager.GENERATOR_TABLE;
         this.dbm.executeQuery(query, result -> {
             while (result.next()) {
@@ -264,7 +257,6 @@ public class GeneratorManager {
     public void loadGenerators() {
         // Clear the generators map
         this.generatorMap.clear();
-        this.generatorLoaded = false;
         // log message
         Logger.info("Starting to load all generators...");
         // load all generators files inside the 'generators' directory
@@ -280,7 +272,6 @@ public class GeneratorManager {
             this.loadGenerators(NextGens.GENERATORS_CONFIG.getConfig());
             // send log message
             Logger.info("Successfully loaded " + this.generatorMap.size() + " generators!");
-            this.generatorLoaded = true;
         } else {
             directory.mkdirs();
             // generate default files
@@ -419,18 +410,6 @@ public class GeneratorManager {
 
     private File getMainDirectory() {
         return new File(NextGens.getInstance().getDataFolder() + File.separator + "generators");
-    }
-
-    public boolean areGeneratorsLoaded() {
-        return generatorLoaded;
-    }
-
-    public void whenLoaded(Runnable runnable) {
-        if (this.generatorLoaded) {
-            runnable.run();
-        } else {
-            Executor.syncLater(5L, () -> whenLoaded(runnable));
-        }
     }
 
 }
