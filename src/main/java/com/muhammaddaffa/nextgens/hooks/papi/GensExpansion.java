@@ -7,6 +7,8 @@ import com.muhammaddaffa.nextgens.events.Event;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
+import com.muhammaddaffa.nextgens.sell.multipliers.SellMultiplierProvider;
+import com.muhammaddaffa.nextgens.sell.multipliers.SellMultiplierRegistry;
 import com.muhammaddaffa.nextgens.users.models.User;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
@@ -19,11 +21,13 @@ public class GensExpansion extends PlaceholderExpansion {
     private final GeneratorManager generatorManager;
     private final UserManager userManager;
     private final EventManager eventManager;
+    private final SellMultiplierRegistry registery;
 
-    public GensExpansion(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager) {
+    public GensExpansion(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager, SellMultiplierRegistry registery) {
         this.generatorManager = generatorManager;
         this.userManager = userManager;
         this.eventManager = eventManager;
+        this.registery = registery;
     }
 
     @Override
@@ -87,11 +91,27 @@ public class GensExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("statistics_earnings_formatted")) {
             return Utils.formatBalance((long) user.getEarnings());
         }
+        if (params.equalsIgnoreCase("statistics_earnings_string")) {
+            try {
+                String earnings = Common.digits(user.getEarnings());
+                earnings = earnings.replace(",", "").replace(".", ",");
+                return String.valueOf((int) Double.parseDouble(earnings));
+            } catch (NumberFormatException e) {
+                // Handle the exception or return a default value, e.g., "0"
+                return "0";
+            }
+        }
         if (params.equalsIgnoreCase("statistics_earnings")) {
             return Common.digits(user.getEarnings());
         }
         if (params.equalsIgnoreCase("multiplier")) {
-            return Common.digits(user.getMultiplier());
+            double multiplier = 0.0;
+
+            for (SellMultiplierProvider provider : registery.getMultipliers()) {
+                multiplier += provider.getMultiplier(player, user, null);
+            }
+
+            return Common.digits(multiplier);
         }
         if (params.equalsIgnoreCase("currentplaced")) {
             return Common.digits(this.generatorManager.getGeneratorCount(player));
