@@ -11,7 +11,9 @@ import com.muhammaddaffa.mdlib.utils.updatechecker.UpdateChecker;
 import com.muhammaddaffa.nextgens.api.GeneratorAPI;
 import com.muhammaddaffa.nextgens.autosell.AutosellManager;
 import com.muhammaddaffa.nextgens.commands.*;
+import com.muhammaddaffa.nextgens.database.ChunkCoord;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
+import com.muhammaddaffa.nextgens.database.listeners.GeneratorLoadChunkListener;
 import com.muhammaddaffa.nextgens.events.managers.EventManager;
 import com.muhammaddaffa.nextgens.generators.listeners.*;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
@@ -37,7 +39,9 @@ import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -47,8 +51,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class NextGens extends JavaPlugin {
+
+    public static final Set<ChunkCoord> LOADED_CHUNKS = ConcurrentHashMap.newKeySet();
 
     private static final int BSTATS_ID = 19417;
     private static final int SPIGOT_ID = 111857;
@@ -137,17 +145,9 @@ public final class NextGens extends JavaPlugin {
         // load all generators
         this.generatorManager.loadGenerators();
 
-        // system to reload generators to fix some issues
-        Executor.syncLater(20L, () -> {
-            // load back the generators
-            this.generatorManager.loadGenerators();
-            // refresh the active generator
-            Executor.async(this.generatorManager::refreshActiveGenerator);
-        });
-
-        Executor.asyncLater(3L, () -> {
-            // load active generators
-            this.generatorManager.loadActiveGenerator();
+        Executor.asyncLater(1, () -> {
+            // load chunk coords for active generators
+            this.generatorManager.loadChunkCoords();
             // load users
             this.userRepository.loadUsers();
 
@@ -164,6 +164,23 @@ public final class NextGens extends JavaPlugin {
 
             // update checker
             updateCheck();
+        });
+
+        // Check all loaded chunks on all worlds
+        Executor.syncLater(20, () -> {
+            for (World w : Bukkit.getWorlds()) {
+                for (Chunk chunk : w.getLoadedChunks()) {
+                    ChunkCoord key = new ChunkCoord(chunk.getWorld().getName(), chunk.getX(), chunk.getZ());
+                    // If the chunk is already loaded, skip this
+                    if (!NextGens.LOADED_CHUNKS.add(key)) continue;
+                    // If there's no generators on this chunk, skip this
+                    List<String> list = this.generatorManager.getGeneratorsByChunk().get(key);
+                    if (list == null || list.isEmpty()) continue;
+
+                    // Proceed to load the active generators
+                    Executor.async(() -> this.generatorManager.loadActiveGenerator(key, list));
+                }
+            }
         });
     }
 
@@ -285,14 +302,19 @@ public final class NextGens extends JavaPlugin {
 
     private void listeners() {
         PluginManager pm = Bukkit.getPluginManager();
-        // register events
+        // generators
         pm.registerEvents(new GeneratorBreakListener(this.generatorManager, this.userManager), this);
         pm.registerEvents(new GeneratorPlaceListener(this.generatorManager, this.userManager), this);
         pm.registerEvents(new GeneratorPreventionListener(this.generatorManager), this);
         pm.registerEvents(new GeneratorUpgradeListener(this.generatorManager, this.userManager), this);
+        pm.registerEvents(new GeneratorLoadChunkListener(this.generatorManager), this);
+        // first join
         pm.registerEvents(new PlayerJoinListener(this.generatorManager), this);
+        // sellwand
         pm.registerEvents(new SellwandListener(this.sellwandManager), this);
+        // refund
         pm.registerEvents(new RefundListener(this.refundManager), this);
+        // multipliers
         pm.registerEvents(new GeneratorWorldDropMultiplier(), this);
     }
 

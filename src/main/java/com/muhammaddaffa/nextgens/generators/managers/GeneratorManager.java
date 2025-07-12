@@ -3,6 +3,7 @@ package com.muhammaddaffa.nextgens.generators.managers;
 import com.muhammaddaffa.mdlib.utils.*;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorLoadEvent;
+import com.muhammaddaffa.nextgens.database.ChunkCoord;
 import com.muhammaddaffa.nextgens.database.DatabaseManager;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Drop;
@@ -30,6 +31,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,6 +45,8 @@ public class GeneratorManager {
 
     private final Map<String, Generator> generatorMap = new HashMap<>();
     private final ConcurrentMap<String, ActiveGenerator> activeGenerators = new ConcurrentHashMap<>();
+
+    private final Map<ChunkCoord, List<String>> generatorsByChunk = new ConcurrentHashMap<>();
 
     private final Map<UUID, Integer> generatorCount = new HashMap<>();
 
@@ -215,35 +222,94 @@ public class GeneratorManager {
         });
     }
 
-    public void loadActiveGenerator() {
+    public void loadActiveGenerator(ChunkCoord coord, List<String> serializedLocations) {
+        // 1) early-out if empty
+        if (serializedLocations.isEmpty()) return;
+
+        // 2) build placeholders "(?,?,…)"
+        String placeholders = serializedLocations.stream()
+                .map(s -> "?")
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT owner, location, generator_id, timer, is_corrupted " +
+                "FROM " + DatabaseManager.GENERATOR_TABLE +
+                " WHERE location IN (" + placeholders + ")";
+
+        try (Connection conn = this.dbm.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            // 3) bind all of them at once
+            for (int i = 0; i < serializedLocations.size(); i++) {
+                ps.setString(i + 1, serializedLocations.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                int count = 0;
+                List<ActiveGenerator> toRegister = new ArrayList<>();
+
+                while (rs.next()) {
+                    UUID owner = UUID.fromString(rs.getString("owner"));
+                    String serialized = rs.getString("location");
+                    Location loc = LocationUtils.deserialize(serialized);
+                    String genId = rs.getString("generator_id");
+                    double timer = rs.getDouble("timer");
+                    boolean corrupted = rs.getBoolean("is_corrupted");
+
+                    Generator gen = this.getGenerator(genId);
+                    if (gen == null || loc.getWorld() == null) continue;
+
+                    toRegister.add(new ActiveGenerator(owner, loc, gen, timer, corrupted));
+                    count++;
+                }
+
+                // 4) switch back to the main thread to actually register them
+                int finalCount = count;
+                Executor.sync(() -> {
+                    for (ActiveGenerator ag : toRegister) {
+                        String key = LocationUtils.serialize(ag.getLocation());
+                        activeGenerators.put(key, ag);
+                    }
+                    Logger.info("Successfully loaded " + finalCount
+                            + " active generators in chunk [" + coord.x() + "," + coord.z() + "]");
+                });
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Failed loading generators for chunk ["
+                    + coord.x() + "," + coord.z() + "]", ex);
+
+        }
+    }
+
+    public void loadChunkCoords() {
         String query = "SELECT * FROM " + DatabaseManager.GENERATOR_TABLE;
         this.dbm.executeQuery(query, result -> {
             while (result.next()) {
+
                 // get the uuid string
                 String uuidString = result.getString(1);
                 // if the uuid string is null, skip the iteration
                 if (uuidString == null) {
                     continue;
                 }
-                // otherwise, continue to load
-                UUID owner = UUID.fromString(uuidString);
+                // Add the generator count
+                addGeneratorCount(UUID.fromString(uuidString), 1);
+                // Load the chunk coords
                 String serialized = result.getString(2);
                 Location location = LocationUtils.deserialize(serialized);
-                String generatorId = result.getString(3);
-                double timer = result.getDouble(4);
-                boolean isCorrupted = result.getBoolean(5);
+                ChunkCoord coord = ChunkCoord.fromLocation(location);
+                // Store the data into the map
+                this.generatorsByChunk
+                        .computeIfAbsent(coord, k -> new ArrayList<>())
+                        .add(serialized);
 
-                Generator generator = this.getGenerator(generatorId);
-                if (generatorId == null || generator == null || location.getWorld() == null) continue;
-
-                // store it on the map
-                this.activeGenerators.put(serialized, new ActiveGenerator(owner, location, generator, timer, isCorrupted));
-                // add generator count
-                this.addGeneratorCount(owner, 1);
             }
             // send log message
-            Logger.info("Successfully loaded " + this.activeGenerators.size() + " active generators!");
+            Logger.info("Successfully stored chunk coords for " + this.generatorsByChunk.size() + " active generators!");
         });
+    }
+
+    public Map<ChunkCoord, List<String>> getGeneratorsByChunk() {
+        return generatorsByChunk;
     }
 
     public void saveActiveGenerator(ActiveGenerator active) {
