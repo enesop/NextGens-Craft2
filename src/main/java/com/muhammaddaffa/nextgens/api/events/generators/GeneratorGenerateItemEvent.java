@@ -4,6 +4,8 @@ import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 
+import java.util.UUID;
+
 public class GeneratorGenerateItemEvent extends GeneratorEvent{
 
     private final ActiveGenerator activeGenerator;
@@ -44,6 +46,18 @@ public class GeneratorGenerateItemEvent extends GeneratorEvent{
 
     public void setDropItem(boolean dropItem) {
         this.dropItem = dropItem;
+    }
+
+    public UUID getOwner() {
+        return this.activeGenerator.getOwner();
+    }
+
+    public double getTimer() {
+        return this.activeGenerator.getTimer();
+    }
+
+    public void setTimer(double timer) {
+        this.activeGenerator.setTimer(timer);
     }
 
 }
