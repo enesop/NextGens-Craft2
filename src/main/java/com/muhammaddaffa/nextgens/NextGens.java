@@ -90,6 +90,9 @@ public final class NextGens extends JavaPlugin {
     private final AutosellManager autosellManager = new AutosellManager(userManager);
     private final SellMultiplierRegistry sellMultiplierRegistry = new SellMultiplierRegistry();
 
+    // API
+    private BoltAPI boltAPI;
+
     public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
             WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
 
@@ -259,9 +262,18 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("LWC") != null) {
             Logger.info("Found LWC! Registering hook...");
         }
+        if (pm.getPlugin("Bolt") != null) {
+            Logger.info("Found Bolt! Registering hook...");
+            this.boltAPI = Bukkit.getServicesManager().load(BoltAPI.class);
+        }
         if (pm.getPlugin("FabledSkyblock") != null) {
             Logger.info("Found FabledSkyblock! Registering hook...");
             pm.registerEvents(new FabledSbListener(this.generatorManager, this.refundManager), this);
+        }
+        // AxBoosters intergration
+        if (pm.isPluginEnabled("AxBoosters")) {
+            Logger.info("Found AxBoosters, registering hook...");
+            pm.registerEvents(new AxBoosterLoad(this), this);
         }
         // register bstats metrics hook
         this.connectMetrics();

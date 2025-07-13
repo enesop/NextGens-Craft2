@@ -16,6 +16,7 @@ public class SellMultiplierRegistry {
         multipliers.add(new SellwandSellMultiplierProvider());
         multipliers.add(new UserSellMultiplierProvider());
         multipliers.add(new WorldSellMultiplierProvider());
+        multipliers.add(new AxBoostersSellMultiplierProvider());
     }
 
     public void registerMultiplier(SellMultiplierProvider provider) {

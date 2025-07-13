@@ -73,8 +73,8 @@
 
     <repositories>
         <repository>
-            <id>craftaro-minecraft-plugins</id>
-            <url>https://repo.craftaro.com/repository/minecraft-plugins/</url>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
             <id>spigotmc-repo</id>
@@ -123,6 +123,10 @@
         <repository>
             <id>enginehub-repo</id>
             <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+        <repository>
+            <id>Artillex-Studios</id>
+            <url>https://repo.artillex-studios.com/releases/</url>
         </repository>
     </repositories>
 
@@ -265,12 +269,27 @@
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>3.1.0</version>
+            <scope>compile</scope>
         </dependency>
         <!-- HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>6.3.0</version>
+        </dependency>
+        <!-- AxBoosters -->
+        <dependency>
+            <groupId>com.artillexstudios</groupId>
+            <artifactId>AxBoostersAPI</artifactId>
+            <version>5</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Bolt -->
+        <dependency>
+            <groupId>org.popcraft</groupId>
+            <artifactId>bolt-bukkit</artifactId>
+            <version>1.1.33</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
