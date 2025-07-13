@@ -377,6 +377,7 @@ messages:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
     - '&6/pickupgens [player] &7- pickup all of specific player generators'
+    - '&6/repairgens &7- repair all corrupted gens'
     - '&6/sell [player] &7- sell player''s inventory contents'
     - '&6/itemworth &7- get the worth of the item that you holding'
     - "&7"
