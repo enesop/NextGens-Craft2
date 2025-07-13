@@ -16,15 +16,21 @@ public class PermissionSellMultiplierProvider implements SellMultiplierProvider 
     private double getSellMultiplier(Player player) {
         if (player == null) return 0;
 
-        int multiplier = 0;
+        double multiplier = 0.0;
         for (PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
             String permission = pai.getPermission();
             if (!permission.startsWith("nextgens.multiplier.sell")) {
                 continue;
             }
-            int current = Integer.parseInt(permission.split("\\.")[3]);
-            if (current > multiplier) {
-                multiplier = current;
+            try {
+                String[] stripPermission = permission.split("\\.");
+                String split = stripPermission[3].replace("_", ".");
+                double current = Double.parseDouble(split);
+                if (current > multiplier) {
+                    multiplier = current;
+                }
+            } catch (Exception ignored) {
+
             }
         }
         // get the multiplier in decimals

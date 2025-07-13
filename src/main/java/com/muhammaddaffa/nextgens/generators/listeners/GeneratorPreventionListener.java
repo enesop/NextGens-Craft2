@@ -27,6 +27,13 @@ public record GeneratorPreventionListener(
 ) implements Listener {
 
     @EventHandler
+    private void onPhysicBlock(BlockPhysicsEvent event) {
+        if (this.generatorManager.getActiveGenerator(event.getBlock()) != null) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     private void onFallingBlock(EntityChangeBlockEvent event) {
         // check if it's not falling block then return
         if (!(event.getEntity() instanceof FallingBlock)) return;
@@ -69,12 +76,40 @@ public record GeneratorPreventionListener(
         if (!config.getBoolean("disable-crafting.enabled")) {
             return;
         }
-        for (ItemStack stack : event.getInventory()) {
-            if (this.generatorManager.isGeneratorItem(stack) || this.generatorManager.isDropItem(stack)) {
-                event.setCancelled(true);
-                // send message
-                NextGens.DEFAULT_CONFIG.sendMessage(event.getWhoClicked(), "disable-crafting.message");
-                return;
+        String type = config.getString("disable-crafting.type", "ALL");
+        switch (type.toUpperCase()) {
+            case "ALL" -> {
+                // Check if one of the item is a generator item
+                for (ItemStack stack : event.getInventory().getContents()) {
+                    if (this.generatorManager.isGeneratorItem(stack) || this.generatorManager.isDropItem(stack)) {
+                        event.setCancelled(true);
+                        // send message
+                        NextGens.DEFAULT_CONFIG.sendMessage(event.getWhoClicked(), "disable-crafting.message");
+                        return;
+                    }
+                }
+            }
+            case "DROP" -> {
+                // Check if one of the item is a generator item
+                for (ItemStack stack : event.getInventory().getContents()) {
+                    if (this.generatorManager.isDropItem(stack)) {
+                        event.setCancelled(true);
+                        // send message
+                        NextGens.DEFAULT_CONFIG.sendMessage(event.getWhoClicked(), "disable-crafting.message");
+                        return;
+                    }
+                }
+            }
+            case "GENERATOR" -> {
+                // Check if one of the item is a generator item
+                for (ItemStack stack : event.getInventory().getContents()) {
+                    if (this.generatorManager.isGeneratorItem(stack)) {
+                        event.setCancelled(true);
+                        // send message
+                        NextGens.DEFAULT_CONFIG.sendMessage(event.getWhoClicked(), "disable-crafting.message");
+                        return;
+                    }
+                }
             }
         }
     }
