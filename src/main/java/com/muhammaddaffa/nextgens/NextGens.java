@@ -20,6 +20,7 @@ import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
+import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterLoad;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
@@ -45,6 +46,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.popcraft.bolt.BoltAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,6 +187,14 @@ public final class NextGens extends JavaPlugin {
                 }
             }
         });
+
+        // We should reload the generators
+        Executor.syncLater(40L, () -> {
+            // load back the generators
+            this.generatorManager.loadGenerators();
+            // refresh the active generator
+            Executor.async(this.generatorManager::refreshActiveGenerator);
+        });
     }
 
     @Override
@@ -232,7 +242,7 @@ public final class NextGens extends JavaPlugin {
         // papi hook
         if (pm.getPlugin("PlaceholderAPI") != null) {
             Logger.info("Found PlaceholderAPI! Registering hook...");
-            new GensExpansion(this.generatorManager, this.userManager, this.eventManager).register();
+            new GensExpansion(this.generatorManager, this.userManager, this.eventManager, this.sellMultiplierRegistry).register();
         }
         if (pm.getPlugin("SuperiorSkyblock2") != null) {
             Logger.info("Found SuperiorSkyblock2! Registering hook...");
@@ -274,6 +284,11 @@ public final class NextGens extends JavaPlugin {
         if (pm.isPluginEnabled("AxBoosters")) {
             Logger.info("Found AxBoosters, registering hook...");
             pm.registerEvents(new AxBoosterLoad(this), this);
+        }
+        // Slimefun integration
+        if (pm.isPluginEnabled("Slimfun")) {
+            Logger.info("Found Slimefun, registering hook...");
+            pm.registerEvents(new GeneratorSlimefunPreventionListener(this.generatorManager), this);
         }
         // register bstats metrics hook
         this.connectMetrics();
@@ -438,6 +453,10 @@ public final class NextGens extends JavaPlugin {
 
     public DatabaseManager getDatabaseManager() {
         return dbm;
+    }
+
+    public BoltAPI getBoltAPI() {
+        return boltAPI;
     }
 
     public static NextGens getInstance() {

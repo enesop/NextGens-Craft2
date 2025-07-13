@@ -284,6 +284,13 @@
             <version>5</version>
             <scope>provided</scope>
         </dependency>
+        <!-- slimefun4 -->
+        <dependency>
+            <groupId>com.github.Slimefun</groupId>
+            <artifactId>Slimefun4</artifactId>
+            <version>RC-37</version>
+            <scope>provided</scope>
+        </dependency>
         <!-- Bolt -->
         <dependency>
             <groupId>org.popcraft</groupId>

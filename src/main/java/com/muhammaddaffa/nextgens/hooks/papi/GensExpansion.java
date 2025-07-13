@@ -21,13 +21,13 @@ public class GensExpansion extends PlaceholderExpansion {
     private final GeneratorManager generatorManager;
     private final UserManager userManager;
     private final EventManager eventManager;
-    private final SellMultiplierRegistry registery;
+    private final SellMultiplierRegistry registry;
 
-    public GensExpansion(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager, SellMultiplierRegistry registery) {
+    public GensExpansion(GeneratorManager generatorManager, UserManager userManager, EventManager eventManager, SellMultiplierRegistry registry) {
         this.generatorManager = generatorManager;
         this.userManager = userManager;
         this.eventManager = eventManager;
-        this.registery = registery;
+        this.registry = registry;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class GensExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("multiplier")) {
             double multiplier = 0.0;
 
-            for (SellMultiplierProvider provider : registery.getMultipliers()) {
+            for (SellMultiplierProvider provider : registry.getMultipliers()) {
                 multiplier += provider.getMultiplier(player, user, null);
             }
 
