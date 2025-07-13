@@ -2,6 +2,7 @@ package com.muhammaddaffa.nextgens.generators.runnables;
 
 import com.muhammaddaffa.mdlib.utils.Executor;
 import com.muhammaddaffa.mdlib.utils.LocationUtils;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorGenerateItemEvent;
 import com.muhammaddaffa.nextgens.autosell.Autosell;
@@ -159,7 +160,7 @@ public class GeneratorTask extends BukkitRunnable {
                 }
                 if (event.getType() == Event.Type.MIXED_UP &&
                         !event.getBlacklistedGenerators().contains(generator.id())) {
-                    // choose a random generator
+                    // get random generator
                     chosenGenerator = this.generatorManager.getRandomGenerator();
                 }
                 if (event.getType() == Event.Type.DROP_MULTIPLIER &&
