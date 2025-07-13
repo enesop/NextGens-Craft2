@@ -7,11 +7,14 @@ import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import com.muhammaddaffa.nextgens.generators.ActiveGenerator;
 import com.muhammaddaffa.nextgens.generators.Generator;
+import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
 import com.muhammaddaffa.nextgens.utils.Utils;
 import com.muhammaddaffa.nextgens.utils.VisualAction;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 public class GeneratorFixHelper {
 
@@ -45,6 +48,45 @@ public class GeneratorFixHelper {
         });
         // give cashback to the player
         Utils.performCashback(player, NextGens.getInstance().getUserManager(), generator.fixCost());
+    }
+
+    public static void fixGenerators(Player player, GeneratorManager generatorManager) {
+        List<ActiveGenerator> corrupted = generatorManager.getActiveGenerator(player).stream()
+                .filter(ActiveGenerator::isCorrupted)
+                .toList();
+
+        // If there is no generators, skip it
+        if (corrupted.isEmpty()) {
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.fix-empty");
+            return;
+        }
+
+        double balance = VaultEconomy.getBalance(player);
+        double cost = corrupted.stream()
+                .mapToDouble(g -> g.getGenerator().fixCost())
+                .sum();
+
+        if (balance < cost) {
+            NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-enough-money",
+                    new Placeholder()
+                            .add("{money}", Common.digits(balance))
+                            .add("{upgradecost}", Common.digits(cost))
+                            .add("{remaining}", Common.digits(balance - cost))
+            );
+            Utils.bassSound(player);
+            return;
+        }
+
+        // Withdraw money and actually repair the generator
+        VaultEconomy.withdraw(player, cost);
+        corrupted.forEach(active -> {
+            active.setCorrupted(false);
+            Executor.async(() -> generatorManager.saveActiveGenerator(active));
+        });
+
+        // Sends message and perform cashback
+        NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.fix-all");
+        Utils.performCashback(player, NextGens.getInstance().getUserManager(), cost);
     }
 
 }

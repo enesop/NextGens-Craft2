@@ -326,6 +326,7 @@ public final class NextGens extends JavaPlugin {
         PickupCommand.register(this.generatorManager);
         WorthCommand.registerThis();
         PlayerSettingsCommand.register(this.userManager);
+        RepairGensCommand.register(this.generatorManager);
     }
 
     private void connectMetrics() {

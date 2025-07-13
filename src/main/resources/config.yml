@@ -102,6 +102,9 @@ commands:
     enabled: true
     command: genssettings
     aliases: [setting, settings, gensetting, gensettings, options, option]
+  repair_gens:
+    command: repairgens
+    aliases: [repairgen, genrepair, gensrepair]
 
 # What is the default max generator for every player
 default-max-generator:
@@ -368,6 +371,8 @@ messages:
   corrupt-gens: '&6[NextGens] &aYou have executed the corruption event!'
   invalid-user: '&6[NextGens] &cThere is no user with that name!'
   remove-all: '&6[NextGens] &aYou have removed all &e{player} &agenerators!'
+  fix-all: "&6[NextGens] &aYou have repaired all corrupted generators!"
+  fix-empty: "&6[NextGens] &cYou don't have a corrupted generators!"
   help:
     - '&6&lNextGens &7- by aglerr'
     - '&6/genshop [player] &7- open up the generator shop gui'
