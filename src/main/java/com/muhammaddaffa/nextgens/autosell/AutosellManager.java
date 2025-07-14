@@ -17,10 +17,9 @@ public record AutosellManager(
             for (Player player : Bukkit.getOnlinePlayers()) {
                 User user = this.userManager.getUser(player);
                 // check if player has autosell inventory permission
-                if (!Autosell.hasAutosellInventoryPermission(player) ||
-                        !user.isToggleInventoryAutoSell()) continue;
+                if (!user.isToggleInventoryAutoSell()) continue;
                 // get the interval
-                int sellInterval = Autosell.getAutosellInventoryInterval(player);
+                int sellInterval = NextGens.DEFAULT_CONFIG.getConfig().getInt("autosell.inventory-interval");
                 // check if sell interval is equals or greater than user interval
                 if (sellInterval >= user.getInterval()) {
                     // sell the inventory

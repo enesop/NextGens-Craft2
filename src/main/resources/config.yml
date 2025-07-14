@@ -177,6 +177,11 @@ player-multiplier-limit:
   enabled: false
   limit: 5.0
 
+# Configuration for autosell
+# The interval in seconds for autosell to check player's inventory
+autosell:
+  inventory-interval: 20
+
 # Configuration options for sellwand
 sellwand:
   hooks:
