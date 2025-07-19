@@ -1,6 +1,7 @@
 package com.muhammaddaffa.nextgens.sell.multipliers;
 
 import com.muhammaddaffa.nextgens.sell.multipliers.providers.*;
+import org.bukkit.Bukkit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,9 @@ public class SellMultiplierRegistry {
         multipliers.add(new SellwandSellMultiplierProvider());
         multipliers.add(new UserSellMultiplierProvider());
         multipliers.add(new WorldSellMultiplierProvider());
-        multipliers.add(new AxBoostersSellMultiplierProvider());
+        if (Bukkit.getPluginManager().isPluginEnabled("AxBoosters")) {
+            multipliers.add(new AxBoostersSellMultiplierProvider());
+        }
     }
 
     public void registerMultiplier(SellMultiplierProvider provider) {

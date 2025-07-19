@@ -16,11 +16,8 @@ public class AxBoosterLoad implements Listener {
 
     @EventHandler
     public void onLoad(AxBoostersLoadEvent event) {
-        AxBoosterSellListener sellHook = new AxBoosterSellListener();
         AxBoosterSpeedListener speedHook = new AxBoosterSpeedListener();
-        plugin.getServer().getPluginManager().registerEvents(sellHook, plugin);
         plugin.getServer().getPluginManager().registerEvents(speedHook, plugin);
-        AxBoostersAPI.registerBoosterHook(plugin, sellHook);
         AxBoostersAPI.registerBoosterHook(plugin, speedHook);
     }
 }
