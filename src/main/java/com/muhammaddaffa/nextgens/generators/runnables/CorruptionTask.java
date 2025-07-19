@@ -72,16 +72,14 @@ public class CorruptionTask extends BukkitRunnable {
         // get possibly infected generators
         AtomicInteger actuallyCorrupted = new AtomicInteger();
         for (ActiveGenerator active : this.getPossiblyInfectedGenerators()) {
-            // get Player
-            Player player = Bukkit.getPlayer(active.getOwner());
-            // check for online-only option
-            if (Settings.CORRUPTION_ONLINE_ONLY && player == null) {
-                continue;
-            }
             // check for chances
             if (ThreadLocalRandom.current().nextDouble(101) <= active.getGenerator().corruptChance()) {
                 // must run in a sync task
                 Executor.sync(() -> {
+                    // get Player
+                    Player player = Bukkit.getPlayer(active.getOwner());
+                    // check for online-only option
+                    if (Settings.CORRUPTION_ONLINE_ONLY && player == null) return;
                     // call the event, and check for cancelled
                     GeneratorCorruptedEvent corruptedEvent = new GeneratorCorruptedEvent(active.getGenerator(), active);
                     Bukkit.getPluginManager().callEvent(corruptedEvent);
