@@ -124,13 +124,7 @@ public class GeneratorTask extends BukkitRunnable {
             double interval = generator.interval();
             int dropAmount;
 
-            float boosts = 1.0f;
-            if (Bukkit.getPluginManager().isPluginEnabled("AxBoosters") && player != null) {
-                com.artillexstudios.axboosters.users.User boosterUser = com.artillexstudios.axboosters.users.UserList.getUser(player);
-                if (boosterUser != null) {
-                    boosts = boosterUser.getBoost(AxBoosterSpeedListener.INSTANCE);
-                }
-            }
+            float boosts = NextGens.getInstance().getBoosterHook().getSpeedBoost(player);
             interval = interval / boosts;
             /**
              * World multipliers code
@@ -188,7 +182,7 @@ public class GeneratorTask extends BukkitRunnable {
             }
             // add timer
             active.addTimer(0.25);
-            //Logger.info("Generator " + generator.id() + " timer: " + active.getTimer() + " / " + interval);
+            Logger.info("Generator " + generator.id() + " timer: " + active.getTimer() + " / " + interval);
             // check if the generator should drop
             if (active.getTimer() >= interval) {
                 // execute drop mechanics
