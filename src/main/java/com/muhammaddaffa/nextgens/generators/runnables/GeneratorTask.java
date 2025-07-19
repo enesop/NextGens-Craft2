@@ -182,7 +182,7 @@ public class GeneratorTask extends BukkitRunnable {
             }
             // add timer
             active.addTimer(0.25);
-            Logger.info("Generator " + generator.id() + " timer: " + active.getTimer() + " / " + interval);
+            //Logger.info("Generator " + generator.id() + " timer: " + active.getTimer() + " / " + interval);
             // check if the generator should drop
             if (active.getTimer() >= interval) {
                 // execute drop mechanics
