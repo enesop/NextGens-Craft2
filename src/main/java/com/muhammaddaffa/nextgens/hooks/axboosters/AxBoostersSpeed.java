@@ -8,7 +8,6 @@ import com.artillexstudios.axboosters.users.UserList;
 import com.muhammaddaffa.nextgens.api.events.generators.GeneratorGenerateItemEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,15 +15,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class AxBoosterSpeedListener implements BoosterHook, Listener {
-
-    public static final AxBoosterSpeedListener INSTANCE = new AxBoosterSpeedListener();
+public class AxBoostersSpeed implements Listener, BoosterHook {
 
     @Override
     public Key getKey() {
         return Key.key("nextgens", "speed_multiplier");
     }
-
 
     @Override
     public Material getIcon() {
@@ -54,7 +50,17 @@ public class AxBoosterSpeedListener implements BoosterHook, Listener {
 
         double before = event.getTimer();
         double boosted = BoosterManager.multiply(boost, before);
+        if (boosted == before) return;
 
         event.setTimer(boosted);
     }
+
+    @Override
+    public void apply(User user) {
+    }
+
+    @Override
+    public void unapply(User user) {
+    }
+
 }
