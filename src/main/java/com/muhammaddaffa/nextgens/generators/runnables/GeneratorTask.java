@@ -15,8 +15,6 @@ import com.muhammaddaffa.nextgens.generators.CorruptedHologram;
 import com.muhammaddaffa.nextgens.generators.Drop;
 import com.muhammaddaffa.nextgens.generators.Generator;
 import com.muhammaddaffa.nextgens.generators.managers.GeneratorManager;
-import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterSpeedListener;
-import com.muhammaddaffa.nextgens.sell.SellDataCalculator;
 import com.muhammaddaffa.nextgens.users.models.User;
 import com.muhammaddaffa.nextgens.users.UserManager;
 import com.muhammaddaffa.nextgens.utils.Settings;
@@ -124,8 +122,8 @@ public class GeneratorTask extends BukkitRunnable {
             double interval = generator.interval();
             int dropAmount;
 
-            float boosts = NextGens.getInstance().getBoosterHook().getSpeedBoost(player);
-            interval = interval / boosts;
+            /*float boosts = NextGens.getInstance().getBoosterHook().getSpeedBoost(player);
+            interval = interval / boosts;*/
             /**
              * World multipliers code
              */
