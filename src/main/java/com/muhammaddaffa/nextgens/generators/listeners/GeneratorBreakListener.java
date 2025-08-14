@@ -22,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
@@ -30,8 +31,44 @@ public record GeneratorBreakListener(
         UserManager userManager
 ) implements Listener {
 
+    private boolean getAnimationBreak() {
+        return NextGens.DEFAULT_CONFIG.getConfig().getBoolean("animation-break");
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    private void onBlockBreak(BlockBreakEvent event) {
+        if (!getAnimationBreak() || NextGens.STOPPING) return;
+
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        ActiveGenerator active = this.generatorManager.getActiveGenerator(block);
+        if (active == null) return;
+
+        // Ownership/permission
+        if (!isPlayerAllowedToBreak(active, player)) {
+            notifyNotAllowed(player, active);
+            event.setCancelled(true);
+            return;
+        }
+
+        // Corrupted generators cannot be picked up
+        if (active.isCorrupted()) {
+            notifyCorruptedGenerator(player);
+            event.setCancelled(true);
+            return;
+        }
+
+        // Suppress vanilla drops/exp to avoid dupes
+        event.setDropItems(false);
+        event.setExpToDrop(0);
+
+        // Unregister & custom drop next tick (ensures block is already gone)
+        handleGeneratorBreak(active, player, block, NextGens.DEFAULT_CONFIG.getConfig(), event);
+    }
+
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     private void generatorBreak(PlayerInteractEvent event) {
+        if (getAnimationBreak()) return;
         if (!isValidEvent(event)) return;
 
         Player player = event.getPlayer();
@@ -72,10 +109,23 @@ public record GeneratorBreakListener(
         NextGens.DEFAULT_CONFIG.sendMessage(player, "messages.not-owner");
         Utils.bassSound(player);
     }
+    private void handleGeneratorBreak(ActiveGenerator active, Player player, Block block, FileConfiguration config, BlockBreakEvent event) {
+        Generator generator = active.getGenerator();
+
+        GeneratorBreakEvent breakEvent = new GeneratorBreakEvent(generator, player);
+        Bukkit.getPluginManager().callEvent(breakEvent);
+
+        if (breakEvent.isCancelled()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        unregisterAndDropGenerator(player, block, config, generator);
+        playBreakVisuals(block, config, active, player);
+    }
 
     private void handleGeneratorBreak(ActiveGenerator active, Player player, Block block, FileConfiguration config, PlayerInteractEvent event) {
         Generator generator = active.getGenerator();
-        event.setCancelled(true);
 
         if (active.isCorrupted()) {
             notifyCorruptedGenerator(player);

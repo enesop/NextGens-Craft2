@@ -145,6 +145,8 @@ close-on-no-money: false
 drop-on-break: false
 # Should /pickupgens pickup broken generator?
 broken-pickup: true
+# Should we allow animation when breaking generator?
+animation-break: true
 # Should a broken generator can only be repaired by the owner of the generator?
 repair-owner-only: true
 # Should we set the block if the block type isn't matching with the generator?

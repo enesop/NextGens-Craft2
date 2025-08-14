@@ -21,8 +21,6 @@ import com.muhammaddaffa.nextgens.generators.runnables.CorruptionTask;
 import com.muhammaddaffa.nextgens.generators.runnables.GeneratorTask;
 import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
 import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterLoad;
-import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoostersHook;
-import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoostersWrapper;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
@@ -96,7 +94,7 @@ public final class NextGens extends JavaPlugin {
 
     // API
     private BoltAPI boltAPI;
-    private AxBoostersWrapper boosterHook = player -> 1.0f;
+    // private AxBoostersWrapper boosterHook = player -> 1.0f;
 
     public static Config DEFAULT_CONFIG, GENERATORS_CONFIG, SHOP_CONFIG, UPGRADE_GUI_CONFIG, CORRUPT_GUI_CONFIG, EVENTS_CONFIG, DATA_CONFIG,
             WORTH_CONFIG, SETTINGS_GUI_CONFIG, VIEW_GUI_CONFIG;
@@ -113,6 +111,13 @@ public final class NextGens extends JavaPlugin {
         MDLib.onEnable(this);
         // --------------------------------------------
         instance = this;
+
+        PluginManager pm = Bukkit.getPluginManager();
+        // AxBoosters intergration
+        if (pm.isPluginEnabled("AxBoosters")) {
+            Logger.info("Found AxBoosters, registering hook...");
+            pm.registerEvents(new AxBoosterLoad(this), this);
+        }
 
         // fancy big text
         Logger.info("""
@@ -145,10 +150,10 @@ public final class NextGens extends JavaPlugin {
         commands();
         listeners();
 
-        // register task
-        tasks();
         // register hook
         hooks();
+        // register task
+        tasks();
 
         // load all generators
         this.generatorManager.loadGenerators();
@@ -287,12 +292,6 @@ public final class NextGens extends JavaPlugin {
         if (pm.isPluginEnabled("Slimfun")) {
             Logger.info("Found Slimefun, registering hook...");
             pm.registerEvents(new GeneratorSlimefunPreventionListener(this.generatorManager), this);
-        }
-        // AxBoosters intergration
-        if (pm.isPluginEnabled("AxBoosters")) {
-            Logger.info("Found AxBoosters, registering hook...");
-            pm.registerEvents(new AxBoosterLoad(this), this);
-            this.boosterHook = new AxBoostersHook();
         }
         // register bstats metrics hook
         this.connectMetrics();
@@ -463,9 +462,9 @@ public final class NextGens extends JavaPlugin {
         return boltAPI;
     }
 
-    public AxBoostersWrapper getBoosterHook() {
+    /*public AxBoostersWrapper getBoosterHook() {
         return boosterHook;
-    }
+    }*/
 
     public static NextGens getInstance() {
         return instance;
