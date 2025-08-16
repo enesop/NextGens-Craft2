@@ -1,16 +1,18 @@
 package com.muhammaddaffa.nextgens.generators;
 
 import com.muhammaddaffa.mdlib.utils.ItemBuilder;
+import com.muhammaddaffa.mdlib.utils.Logger;
 import com.muhammaddaffa.mdlib.utils.Placeholder;
 import com.muhammaddaffa.nextgens.NextGens;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +33,21 @@ public record Drop(
 
         ItemBuilder builder = ItemBuilder.fromConfig(section.getConfigurationSection("item"));
         ItemStack stack = builder == null ? null : builder.build();
+        ItemMeta meta = stack.getItemMeta();
+        if (meta == null) return null;
+
+        String modelItemString = section.getString("item.item-model");
+
+        if (modelItemString != null) {
+            String[] parts = modelItemString.split(":", 2);
+            if (parts.length == 2) {
+                NamespacedKey modelItem = new NamespacedKey(parts[0], parts[1]);
+                meta.setItemModel(modelItem);
+                stack.setItemMeta(meta);
+            } else {
+                Logger.warning("Invalid model item format for drop " + id + " with key " + key);
+            }
+        }
 
         List<String> commands = section.getStringList("commands");
 

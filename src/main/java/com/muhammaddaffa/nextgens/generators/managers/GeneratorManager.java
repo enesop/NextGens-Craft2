@@ -18,12 +18,14 @@ import net.brcdev.shopgui.core.BConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -393,6 +395,20 @@ public class GeneratorManager {
             return;
         }
         ItemStack item = builder.build();
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        String modelItemString = section.getString("item.item-model");
+        if (modelItemString != null) {
+            String[] parts = modelItemString.split(":", 2);
+            if (parts.length == 2) {
+                NamespacedKey modelItem = new NamespacedKey(parts[0], parts[1]);
+                meta.setItemModel(modelItem);
+                item.setItemMeta(meta);
+            } else {
+                Logger.warning("Invalid model item format for generator " + id);
+            }
+        }
 
         List<Drop> drops = new ArrayList<>();
 
