@@ -114,6 +114,11 @@ default-max-generator:
   amount: 10
 # Should we use and override /sell command?
 sell-command: true
+# Should players be able to right-click the drops to sell them
+hand-sell:
+  enabled: true
+  # The interaction type RIGHT, LEFT, SHFT_CLICK, SHIFT_RIGHTCLICK, ALL
+  interaction: RIGHT
 # Should we use permission to place specific generator?
 # The permission will be 'nextgens.generator.<id>'
 place-permission: false

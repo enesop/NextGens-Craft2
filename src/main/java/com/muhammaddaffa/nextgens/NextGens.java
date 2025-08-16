@@ -25,6 +25,7 @@ import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
+import com.muhammaddaffa.nextgens.sell.listeners.HandSellListener;
 import com.muhammaddaffa.nextgens.sell.multipliers.SellMultiplierRegistry;
 import com.muhammaddaffa.nextgens.refund.RefundManager;
 import com.muhammaddaffa.nextgens.refund.listeners.RefundListener;
@@ -342,6 +343,8 @@ public final class NextGens extends JavaPlugin {
         pm.registerEvents(new PlayerJoinListener(this.generatorManager), this);
         // sellwand
         pm.registerEvents(new SellwandListener(this.sellwandManager), this);
+        // handsell
+        pm.registerEvents(new HandSellListener(this.sellManager), this);
         // refund
         pm.registerEvents(new RefundListener(this.refundManager), this);
         // multipliers
