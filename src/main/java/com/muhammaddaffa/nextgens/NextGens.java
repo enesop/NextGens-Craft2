@@ -23,6 +23,7 @@ import com.muhammaddaffa.nextgens.generators.runnables.NotifyTask;
 import com.muhammaddaffa.nextgens.hooks.axboosters.AxBoosterLoad;
 import com.muhammaddaffa.nextgens.hooks.bento.BentoListener;
 import com.muhammaddaffa.nextgens.hooks.fabledsb.FabledSbListener;
+import com.muhammaddaffa.nextgens.hooks.modelengine.ModelEngineLoad;
 import com.muhammaddaffa.nextgens.hooks.papi.GensExpansion;
 import com.muhammaddaffa.nextgens.hooks.ssb2.SSB2Listener;
 import com.muhammaddaffa.nextgens.sell.listeners.HandSellListener;
@@ -256,6 +257,10 @@ public final class NextGens extends JavaPlugin {
         if (pm.getPlugin("SuperiorSkyblock2") != null) {
             Logger.info("Found SuperiorSkyblock2! Registering hook...");
             pm.registerEvents(new SSB2Listener(this.generatorManager, this.refundManager), this);
+        }
+        if (pm.getPlugin("ModelEngine") != null){
+            Logger.info("Found ModelEngine! Registering hook...");
+            pm.registerEvents(new ModelEngineLoad(this.generatorManager, this.eventManager), this);
         }
         if (pm.getPlugin("BentoBox") != null) {
             Logger.info("Found BentoBox! Registering hook...");
