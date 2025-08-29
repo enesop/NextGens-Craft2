@@ -51,13 +51,6 @@ public record GeneratorBreakListener(
             return;
         }
 
-        // Corrupted generators cannot be picked up
-        if (active.isCorrupted()) {
-            notifyCorruptedGenerator(player);
-            event.setCancelled(true);
-            return;
-        }
-
         // Suppress vanilla drops/exp to avoid dupes
         event.setDropItems(false);
         event.setExpToDrop(0);
@@ -66,10 +59,9 @@ public record GeneratorBreakListener(
         handleGeneratorBreak(active, player, block, NextGens.DEFAULT_CONFIG.getConfig(), event);
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     private void generatorBreak(PlayerInteractEvent event) {
-        if (getAnimationBreak()) return;
-        if (!isValidEvent(event)) return;
+        if (!isValidEvent(event) || getAnimationBreak()) return;
 
         Player player = event.getPlayer();
         Block block = event.getClickedBlock();
@@ -111,6 +103,11 @@ public record GeneratorBreakListener(
     }
     private void handleGeneratorBreak(ActiveGenerator active, Player player, Block block, FileConfiguration config, BlockBreakEvent event) {
         Generator generator = active.getGenerator();
+
+        if (active.isCorrupted()) {
+            notifyCorruptedGenerator(player);
+            return;
+        }
 
         GeneratorBreakEvent breakEvent = new GeneratorBreakEvent(generator, player);
         Bukkit.getPluginManager().callEvent(breakEvent);

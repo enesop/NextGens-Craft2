@@ -141,6 +141,13 @@ public class ShopInventory extends FastInv {
                 continue;
             }
 
+            if (type.equalsIgnoreCase("CLOSE")) {
+                this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
+                    this.player.closeInventory();
+                });
+                continue;
+            }
+
             // set the normal items
             this.setItems(Utils.convertListToIntArray(slots), stack, event -> {
                 if (!(event.getWhoClicked() instanceof Player player)) return;
